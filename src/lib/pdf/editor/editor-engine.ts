@@ -64,8 +64,29 @@ export class PdfEditorEngine {
     }
 
     const sourceBytes = new Uint8Array(arrayBuffer.slice(0));
-    const pdfDoc = await PDFDocument.load(sourceBytes, { ignoreEncryption: true });
-    const pageCount = pdfDoc.getPageCount();
+    let pdfDoc: PDFDocument;
+    let pageCount = 0;
+    try {
+      pdfDoc = await PDFDocument.load(sourceBytes, { ignoreEncryption: true });
+      if (pdfDoc.isEncrypted) {
+        throw new Error(
+          'This PDF is password-protected and cannot be edited here. Try unlocking it first.'
+        );
+      }
+      pageCount = pdfDoc.getPageCount();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (
+        msg.toLowerCase().includes('encrypt') ||
+        msg.toLowerCase().includes('password') ||
+        msg.toLowerCase().includes('decrypt')
+      ) {
+        throw new Error(
+          'This PDF is password-protected and cannot be edited here. Try unlocking it first.'
+        );
+      }
+      throw new Error(`Invalid PDF document: failed to parse document structure (${msg})`);
+    }
 
     if (pageCount === 0) {
       throw new Error('PDF document contains no pages.');
@@ -136,7 +157,13 @@ export class PdfEditorEngine {
   }
 
   public selectObject(id: string | null): void {
-    this.state.selectedObjectId = id;
+    if (id === null) {
+      this.state.selectedObjectId = null;
+      return;
+    }
+    const active = this.getActivePage();
+    const exists = active?.objects.some((o) => o.id === id);
+    this.state.selectedObjectId = exists ? id : null;
   }
 
   // --- Object Operations ---
@@ -170,10 +197,43 @@ export class PdfEditorEngine {
     const objIndex = page.objects.findIndex((o) => o.id === objectId);
     if (objIndex === -1) throw new Error(`Object ID ${objectId} not found on page ${pageIndex}.`);
 
+    // Sanitize updates
+    const sanitizedUpdates = { ...updates };
+    if ('width' in sanitizedUpdates && sanitizedUpdates.width !== undefined) {
+      sanitizedUpdates.width = Math.max(
+        1,
+        Number.isFinite(sanitizedUpdates.width) ? sanitizedUpdates.width : 10
+      );
+    }
+    if ('height' in sanitizedUpdates && sanitizedUpdates.height !== undefined) {
+      sanitizedUpdates.height = Math.max(
+        1,
+        Number.isFinite(sanitizedUpdates.height) ? sanitizedUpdates.height : 10
+      );
+    }
+    if ('fontSize' in sanitizedUpdates && sanitizedUpdates.fontSize !== undefined) {
+      sanitizedUpdates.fontSize = Math.max(
+        4,
+        Math.min(288, Number.isFinite(sanitizedUpdates.fontSize) ? sanitizedUpdates.fontSize : 14)
+      );
+    }
+    if ('opacity' in sanitizedUpdates && sanitizedUpdates.opacity !== undefined) {
+      sanitizedUpdates.opacity = Math.max(
+        0.05,
+        Math.min(1, Number.isFinite(sanitizedUpdates.opacity) ? sanitizedUpdates.opacity : 1)
+      );
+    }
+    if ('strokeWidth' in sanitizedUpdates && sanitizedUpdates.strokeWidth !== undefined) {
+      sanitizedUpdates.strokeWidth = Math.max(
+        0.5,
+        Math.min(72, Number.isFinite(sanitizedUpdates.strokeWidth) ? sanitizedUpdates.strokeWidth : 2)
+      );
+    }
+
     const previous = cloneEditorObject(page.objects[objIndex]);
     const updated = {
       ...previous,
-      ...updates,
+      ...sanitizedUpdates,
       id: previous.id,
       type: previous.type,
       pageIndex: previous.pageIndex,
@@ -394,12 +454,17 @@ export class PdfEditorEngine {
 
       case 'DELETE_PAGE': {
         this.state.pages = deletePage(this.state.pages, action.pageIndex);
+        if (this.state.activePageIndex >= this.state.pages.length) {
+          this.state.activePageIndex = Math.max(0, this.state.pages.length - 1);
+        }
+        this.state.selectedObjectId = null;
         break;
       }
 
       case 'DUPLICATE_PAGE': {
         this.state.pages = duplicatePage(this.state.pages, action.pageIndex);
-        this.state.activePageIndex = action.newPageIndex;
+        this.state.activePageIndex = Math.min(action.newPageIndex, this.state.pages.length - 1);
+        this.state.selectedObjectId = null;
         break;
       }
 

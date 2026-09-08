@@ -66,6 +66,19 @@ export function rgbToHex(color: ColorRgb): string {
   return `#${r}${g}${b}`;
 }
 
+function safeNumber(
+  val: number | undefined,
+  fallback: number,
+  min?: number,
+  max?: number
+): number {
+  if (val === undefined || !Number.isFinite(val)) return fallback;
+  let res = val;
+  if (min !== undefined) res = Math.max(min, res);
+  if (max !== undefined) res = Math.min(max, res);
+  return res;
+}
+
 export function createTextObject(params: {
   pageIndex: number;
   x: number;
@@ -81,15 +94,15 @@ export function createTextObject(params: {
   return {
     type: 'text',
     id: params.id || generateObjectId(),
-    pageIndex: params.pageIndex,
-    x: params.x,
-    y: params.y,
-    text: params.text,
-    fontSize: params.fontSize ?? 14,
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    x: safeNumber(params.x, 0),
+    y: safeNumber(params.y, 0),
+    text: typeof params.text === 'string' ? params.text : '',
+    fontSize: safeNumber(params.fontSize, 14, 4, 288),
     fontFamily: params.fontFamily ?? 'Helvetica',
     color: params.color ?? COLORS.BLACK,
-    opacity: params.opacity ?? 1,
-    rotation: params.rotation ?? 0,
+    opacity: safeNumber(params.opacity, 1, 0.05, 1),
+    rotation: safeNumber(params.rotation, 0),
   };
 }
 
@@ -106,13 +119,13 @@ export function createHighlightObject(params: {
   return {
     type: 'highlight',
     id: params.id || generateObjectId(),
-    pageIndex: params.pageIndex,
-    x: params.x,
-    y: params.y,
-    width: Math.max(1, params.width),
-    height: Math.max(1, params.height),
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    x: safeNumber(params.x, 0),
+    y: safeNumber(params.y, 0),
+    width: safeNumber(params.width, 10, 1),
+    height: safeNumber(params.height, 10, 1),
     color: params.color ?? COLORS.YELLOW_HIGHLIGHT,
-    opacity: params.opacity ?? 0.35,
+    opacity: safeNumber(params.opacity, 0.35, 0.05, 1),
   };
 }
 
@@ -124,14 +137,26 @@ export function createDrawingObject(params: {
   opacity?: number;
   id?: string;
 }): DrawingObject {
+  // Deduplicate redundant micro-jitter points and enforce finite bounds
+  const validPoints: Point[] = [];
+  for (const pt of params.points || []) {
+    if (!Number.isFinite(pt.x) || !Number.isFinite(pt.y)) continue;
+    if (validPoints.length > 0) {
+      const last = validPoints[validPoints.length - 1];
+      const dist = Math.hypot(pt.x - last.x, pt.y - last.y);
+      if (dist < 0.5) continue; // skip redundant sub-point jitter
+    }
+    validPoints.push({ x: pt.x, y: pt.y });
+  }
+
   return {
     type: 'drawing',
     id: params.id || generateObjectId(),
-    pageIndex: params.pageIndex,
-    points: params.points.map((p) => ({ ...p })),
-    strokeWidth: params.strokeWidth ?? 2,
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    points: validPoints,
+    strokeWidth: safeNumber(params.strokeWidth, 2, 0.5, 72),
     color: params.color ?? COLORS.BLACK,
-    opacity: params.opacity ?? 1,
+    opacity: safeNumber(params.opacity, 1, 0.05, 1),
   };
 }
 
@@ -150,15 +175,15 @@ export function createRectangleObject(params: {
   return {
     type: 'rectangle',
     id: params.id || generateObjectId(),
-    pageIndex: params.pageIndex,
-    x: params.x,
-    y: params.y,
-    width: Math.max(1, params.width),
-    height: Math.max(1, params.height),
-    strokeWidth: params.strokeWidth ?? 2,
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    x: safeNumber(params.x, 0),
+    y: safeNumber(params.y, 0),
+    width: safeNumber(params.width, 10, 1),
+    height: safeNumber(params.height, 10, 1),
+    strokeWidth: safeNumber(params.strokeWidth, 2, 0.5, 72),
     strokeColor: params.strokeColor ?? COLORS.BLACK,
     fillColor: params.fillColor,
-    opacity: params.opacity ?? 1,
+    opacity: safeNumber(params.opacity, 1, 0.05, 1),
   };
 }
 
@@ -177,15 +202,15 @@ export function createEllipseObject(params: {
   return {
     type: 'ellipse',
     id: params.id || generateObjectId(),
-    pageIndex: params.pageIndex,
-    x: params.x,
-    y: params.y,
-    width: Math.max(1, params.width),
-    height: Math.max(1, params.height),
-    strokeWidth: params.strokeWidth ?? 2,
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    x: safeNumber(params.x, 0),
+    y: safeNumber(params.y, 0),
+    width: safeNumber(params.width, 10, 1),
+    height: safeNumber(params.height, 10, 1),
+    strokeWidth: safeNumber(params.strokeWidth, 2, 0.5, 72),
     strokeColor: params.strokeColor ?? COLORS.BLACK,
     fillColor: params.fillColor,
-    opacity: params.opacity ?? 1,
+    opacity: safeNumber(params.opacity, 1, 0.05, 1),
   };
 }
 
@@ -201,12 +226,18 @@ export function createLineObject(params: {
   return {
     type: 'line',
     id: params.id || generateObjectId(),
-    pageIndex: params.pageIndex,
-    start: { ...params.start },
-    end: { ...params.end },
-    strokeWidth: params.strokeWidth ?? 2,
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    start: {
+      x: safeNumber(params.start?.x, 0),
+      y: safeNumber(params.start?.y, 0),
+    },
+    end: {
+      x: safeNumber(params.end?.x, 0),
+      y: safeNumber(params.end?.y, 0),
+    },
+    strokeWidth: safeNumber(params.strokeWidth, 2, 0.5, 72),
     strokeColor: params.strokeColor ?? COLORS.BLACK,
-    opacity: params.opacity ?? 1,
+    opacity: safeNumber(params.opacity, 1, 0.05, 1),
   };
 }
 
@@ -223,13 +254,19 @@ export function createArrowObject(params: {
   return {
     type: 'arrow',
     id: params.id || generateObjectId(),
-    pageIndex: params.pageIndex,
-    start: { ...params.start },
-    end: { ...params.end },
-    strokeWidth: params.strokeWidth ?? 2,
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    start: {
+      x: safeNumber(params.start?.x, 0),
+      y: safeNumber(params.start?.y, 0),
+    },
+    end: {
+      x: safeNumber(params.end?.x, 0),
+      y: safeNumber(params.end?.y, 0),
+    },
+    strokeWidth: safeNumber(params.strokeWidth, 2, 0.5, 72),
     strokeColor: params.strokeColor ?? COLORS.BLACK,
-    headLength: params.headLength ?? 12,
-    opacity: params.opacity ?? 1,
+    headLength: safeNumber(params.headLength, 12, 4, 100),
+    opacity: safeNumber(params.opacity, 1, 0.05, 1),
   };
 }
 

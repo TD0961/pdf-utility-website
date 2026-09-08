@@ -17,6 +17,7 @@ import { LocalProcessingNotice } from '@/components/pdf/LocalProcessingNotice';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
 import { formatBytes } from '@/lib/utils';
+import Link from 'next/link';
 import {
   CheckCircle2,
   AlertCircle,
@@ -317,6 +318,14 @@ export function PdfEditorWorkspace() {
             <div>
               <p className="font-semibold">Error Loading Document</p>
               <p className="text-xs mt-0.5">{errorMessage}</p>
+              {errorMessage.toLowerCase().includes('unlock') && (
+                <Link
+                  href="/pdf-tools/unlock-pdf"
+                  className="inline-block mt-2 text-xs font-semibold underline text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
+                >
+                  Go to Unlock PDF →
+                </Link>
+              )}
             </div>
           </div>
         )}

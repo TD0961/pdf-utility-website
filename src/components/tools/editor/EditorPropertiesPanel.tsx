@@ -482,6 +482,12 @@ export function EditorPropertiesPanel({
             )}
           </div>
         )}
+
+        {/* Redaction Limitation Notice */}
+        <div className="mt-auto p-2.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 leading-normal flex items-start gap-2">
+          <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <span>Visual annotations are not a substitute for true PDF redaction.</span>
+        </div>
       </aside>
     );
   }
@@ -651,6 +657,12 @@ export function EditorPropertiesPanel({
           </div>
         </div>
       )}
+
+      {/* Redaction Limitation Notice */}
+      <div className="p-2.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 leading-normal flex items-start gap-2">
+        <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+        <span>Visual annotations are not a substitute for true PDF redaction.</span>
+      </div>
 
       {/* Keyboard Shortcuts Hint */}
       <div className="mt-auto pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 space-y-1">

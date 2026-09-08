@@ -52,10 +52,13 @@ type DragMode =
   | 'move-object'
   | 'resize-handle';
 
+type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
+
 interface HandleInfo {
-  position: 'nw' | 'ne' | 'se' | 'sw';
+  position: HandlePosition;
   x: number;
   y: number;
+  cursor: string;
 }
 
 export function EditorCanvas({
@@ -78,10 +81,12 @@ export function EditorCanvas({
 
   // Interaction State
   const [dragMode, setDragMode] = useState<DragMode>('none');
+  const [activeHandle, setActiveHandle] = useState<HandlePosition | null>(null);
   const [dragStartScreen, setDragStartScreen] = useState<Point | null>(null);
   const [dragCurrentScreen, setDragCurrentScreen] = useState<Point | null>(null);
   const [liveDrawingPoints, setLiveDrawingPoints] = useState<Point[]>([]);
   const [initialObjectState, setInitialObjectState] = useState<EditorObject | null>(null);
+  const [initialScreenBox, setInitialScreenBox] = useState<Rect | null>(null);
 
   const { width: screenWidth, height: screenHeight } = getScreenDimensions(
     activePage,
@@ -89,9 +94,12 @@ export function EditorCanvas({
     zoom
   );
 
-  // 1. PDF.js Background Rendering
+  // 1. PDF.js Background Rendering with cancellation support
   useEffect(() => {
     let isCancelled = false;
+    let renderTask: { cancel: () => void; promise: Promise<void> } | null = null;
+    let docToCleanup: { cleanup: () => Promise<void> } | null = null;
+    let loadingTaskToDestroy: { destroy: () => Promise<void> } | null = null;
 
     async function renderPage() {
       if (!canvasRef.current || sourceBytes.byteLength === 0) return;
@@ -100,7 +108,9 @@ export function EditorCanvas({
         setPageLoading(true);
         const pdfjs = await getPdfJs();
         const loadingTask = pdfjs.getDocument({ data: sourceBytes.slice(0) });
+        loadingTaskToDestroy = loadingTask;
         const doc = await loadingTask.promise;
+        docToCleanup = doc;
 
         if (isCancelled) {
           await doc.cleanup();
@@ -110,7 +120,11 @@ export function EditorCanvas({
 
         const pdfPage = await doc.getPage(activePage.originalPageIndex + 1);
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas) {
+          await doc.cleanup();
+          await loadingTask.destroy();
+          return;
+        }
 
         const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
         canvas.width = Math.round(screenWidth * dpr);
@@ -119,18 +133,24 @@ export function EditorCanvas({
         canvas.style.height = `${screenHeight}px`;
 
         const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        if (!ctx) {
+          await doc.cleanup();
+          await loadingTask.destroy();
+          return;
+        }
 
         const viewport = pdfPage.getViewport({
           scale: zoom * dpr,
           rotation: activePage.rotation,
         });
 
-        await pdfPage.render({
+        renderTask = pdfPage.render({
           canvasContext: ctx,
           viewport,
           canvas,
-        }).promise;
+        });
+
+        await renderTask.promise;
 
         await doc.cleanup();
         await loadingTask.destroy();
@@ -138,9 +158,10 @@ export function EditorCanvas({
         if (!isCancelled) {
           setPageLoading(false);
         }
-      } catch (err) {
-        console.error('Error rendering PDF page in editor canvas:', err);
-        if (!isCancelled) {
+      } catch (err: unknown) {
+        const errName = err && typeof err === 'object' && 'name' in err ? (err as { name: string }).name : '';
+        if (errName !== 'RenderingCancelledException' && !isCancelled) {
+          console.error('Error rendering PDF page in editor canvas:', err);
           setPageLoading(false);
         }
       }
@@ -150,6 +171,19 @@ export function EditorCanvas({
 
     return () => {
       isCancelled = true;
+      if (renderTask) {
+        try {
+          renderTask.cancel();
+        } catch {
+          // ignore cancellation
+        }
+      }
+      if (docToCleanup) {
+        docToCleanup.cleanup().catch(() => {});
+      }
+      if (loadingTaskToDestroy) {
+        loadingTaskToDestroy.destroy().catch(() => {});
+      }
     };
   }, [
     sourceBytes,
@@ -258,14 +292,19 @@ export function EditorCanvas({
 
   const selectedBox = getSelectedObjectScreenBox();
 
-  // Resize handles around selected box
+  // Resize handles around selected box (8 directions: NW, N, NE, E, SE, S, SW, W)
   const getHandles = (): HandleInfo[] => {
     if (!selectedBox) return [];
+    const { x, y, width: w, height: h } = selectedBox;
     return [
-      { position: 'nw', x: selectedBox.x, y: selectedBox.y },
-      { position: 'ne', x: selectedBox.x + selectedBox.width, y: selectedBox.y },
-      { position: 'se', x: selectedBox.x + selectedBox.width, y: selectedBox.y + selectedBox.height },
-      { position: 'sw', x: selectedBox.x, y: selectedBox.y + selectedBox.height },
+      { position: 'nw', x, y, cursor: 'nwse-resize' },
+      { position: 'n', x: x + w / 2, y, cursor: 'ns-resize' },
+      { position: 'ne', x: x + w, y, cursor: 'nesw-resize' },
+      { position: 'e', x: x + w, y: y + h / 2, cursor: 'ew-resize' },
+      { position: 'se', x: x + w, y: y + h, cursor: 'nwse-resize' },
+      { position: 's', x: x + w / 2, y: y + h, cursor: 'ns-resize' },
+      { position: 'sw', x, y: y + h, cursor: 'nesw-resize' },
+      { position: 'w', x, y: y + h / 2, cursor: 'ew-resize' },
     ];
   };
 
@@ -317,9 +356,11 @@ export function EditorCanvas({
 
       if (clickedHandle && selectedObject) {
         setDragMode('resize-handle');
+        setActiveHandle(clickedHandle.position);
         setDragStartScreen(pos);
         setDragCurrentScreen(pos);
         setInitialObjectState(JSON.parse(JSON.stringify(selectedObject)));
+        setInitialScreenBox(selectedBox ? { ...selectedBox } : null);
         return;
       }
 
@@ -450,6 +491,98 @@ export function EditorCanvas({
 
     if (dragMode === 'draw') {
       setLiveDrawingPoints((prev) => [...prev, pos]);
+      return;
+    }
+
+    if (
+      dragMode === 'resize-handle' &&
+      dragStartScreen &&
+      initialObjectState &&
+      initialScreenBox &&
+      activeHandle
+    ) {
+      const dx = pos.x - dragStartScreen.x;
+      const dy = pos.y - dragStartScreen.y;
+      const minSize = 16;
+
+      let newX = initialScreenBox.x;
+      let newY = initialScreenBox.y;
+      let newW = initialScreenBox.width;
+      let newH = initialScreenBox.height;
+
+      if (activeHandle.includes('e')) {
+        newW = Math.max(minSize, initialScreenBox.width + dx);
+      } else if (activeHandle.includes('w')) {
+        const maxDx = initialScreenBox.width - minSize;
+        const clampedDx = Math.min(maxDx, dx);
+        newX = initialScreenBox.x + clampedDx;
+        newW = initialScreenBox.width - clampedDx;
+      }
+
+      if (activeHandle.includes('s')) {
+        newH = Math.max(minSize, initialScreenBox.height + dy);
+      } else if (activeHandle.includes('n')) {
+        const maxDy = initialScreenBox.height - minSize;
+        const clampedDy = Math.min(maxDy, dy);
+        newY = initialScreenBox.y + clampedDy;
+        newH = initialScreenBox.height - clampedDy;
+      }
+
+      const updatedScreenBox: Rect = {
+        x: newX,
+        y: newY,
+        width: newW,
+        height: newH,
+      };
+
+      if (initialObjectState.type === 'rectangle' || initialObjectState.type === 'highlight') {
+        const pdfRect = screenRectToPdfRect(updatedScreenBox, activePage, activePage.rotation, zoom);
+        onUpdateObject(initialObjectState.id, {
+          x: Math.round(pdfRect.x),
+          y: Math.round(pdfRect.y),
+          width: Math.max(10, Math.round(pdfRect.width)),
+          height: Math.max(10, Math.round(pdfRect.height)),
+        });
+      } else if (initialObjectState.type === 'ellipse') {
+        const pdfRect = screenRectToPdfRect(updatedScreenBox, activePage, activePage.rotation, zoom);
+        const isRot = activePage.rotation === 90 || activePage.rotation === 270;
+        const pdfW = isRot ? pdfRect.height : pdfRect.width;
+        const pdfH = isRot ? pdfRect.width : pdfRect.height;
+        onUpdateObject(initialObjectState.id, {
+          x: Math.round(pdfRect.x + pdfRect.width / 2),
+          y: Math.round(pdfRect.y + pdfRect.height / 2),
+          width: Math.max(10, Math.round(pdfW)),
+          height: Math.max(10, Math.round(pdfH)),
+        });
+      } else if (initialObjectState.type === 'text') {
+        const scaleFactor = updatedScreenBox.height / Math.max(1, initialScreenBox.height);
+        const currentFontSize =
+          'fontSize' in initialObjectState ? initialObjectState.fontSize : 14;
+        const newFontSize = Math.max(8, Math.min(120, Math.round(currentFontSize * scaleFactor)));
+        const baselinePdf = screenPointToPdfPoint(
+          { x: updatedScreenBox.x, y: updatedScreenBox.y + updatedScreenBox.height },
+          activePage,
+          activePage.rotation,
+          zoom
+        );
+        onUpdateObject(initialObjectState.id, {
+          fontSize: newFontSize,
+          x: Math.round(baselinePdf.x),
+          y: Math.round(baselinePdf.y),
+        });
+      } else if (initialObjectState.type === 'line' || initialObjectState.type === 'arrow') {
+        if (activeHandle === 'nw' || activeHandle === 'w' || activeHandle === 'n') {
+          const newStartPdf = screenPointToPdfPoint(pos, activePage, activePage.rotation, zoom);
+          onUpdateObject(initialObjectState.id, {
+            start: { x: Math.round(newStartPdf.x), y: Math.round(newStartPdf.y) },
+          });
+        } else {
+          const newEndPdf = screenPointToPdfPoint(pos, activePage, activePage.rotation, zoom);
+          onUpdateObject(initialObjectState.id, {
+            end: { x: Math.round(newEndPdf.x), y: Math.round(newEndPdf.y) },
+          });
+        }
+      }
       return;
     }
 
@@ -632,16 +765,23 @@ export function EditorCanvas({
 
     // Reset interaction states
     setDragMode('none');
+    setActiveHandle(null);
     setDragStartScreen(null);
     setDragCurrentScreen(null);
     setLiveDrawingPoints([]);
     setInitialObjectState(null);
+    setInitialScreenBox(null);
   };
 
   // Cursor style
   const getCursorClass = () => {
     if (dragMode === 'move-object') return 'cursor-move';
-    if (dragMode === 'resize-handle') return 'cursor-nwse-resize';
+    if (dragMode === 'resize-handle' && activeHandle) {
+      if (activeHandle === 'n' || activeHandle === 's') return 'cursor-ns-resize';
+      if (activeHandle === 'e' || activeHandle === 'w') return 'cursor-ew-resize';
+      if (activeHandle === 'nw' || activeHandle === 'se') return 'cursor-nwse-resize';
+      if (activeHandle === 'ne' || activeHandle === 'sw') return 'cursor-nesw-resize';
+    }
     if (activeTool === 'select') return 'cursor-default';
     if (activeTool === 'draw') return 'cursor-crosshair';
     if (activeTool === 'text') return 'cursor-text';
@@ -954,17 +1094,18 @@ export function EditorCanvas({
                 className="pointer-events-none"
               />
 
-              {/* Handles at corners */}
+              {/* Handles at corners & edges */}
               {getHandles().map((handle) => (
                 <circle
                   key={handle.position}
                   cx={handle.x}
                   cy={handle.y}
-                  r={5}
+                  r={4.5}
                   fill="#FFFFFF"
                   stroke="#4F46E5"
                   strokeWidth={2}
-                  className="pointer-events-auto cursor-pointer hover:scale-125 transition-transform"
+                  style={{ cursor: handle.cursor }}
+                  className="pointer-events-auto hover:scale-125 transition-transform"
                 />
               ))}
             </g>

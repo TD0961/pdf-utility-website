@@ -48,11 +48,47 @@ function PageThumbnailCard({
   onMoveDown,
 }: PageThumbnailCardProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [isVisible, setIsVisible] = useState(
+    () => typeof IntersectionObserver === 'undefined'
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // Lazy render observer: only render thumbnail if card is near or within view
   useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: '250px' }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
     let isCancelled = false;
+    let renderTask: { cancel: () => void; promise: Promise<void> } | null = null;
+    let docToCleanup: { cleanup: () => Promise<void> } | null = null;
+    let loadingTaskToDestroy: { destroy: () => Promise<void> } | null = null;
 
     async function renderThumbnail() {
       if (!canvasRef.current || sourceBytes.byteLength === 0) return;
@@ -62,7 +98,9 @@ function PageThumbnailCard({
         setError(false);
         const pdfjs = await getPdfJs();
         const loadingTask = pdfjs.getDocument({ data: sourceBytes.slice(0) });
+        loadingTaskToDestroy = loadingTask;
         const doc = await loadingTask.promise;
+        docToCleanup = doc;
 
         if (isCancelled) {
           await doc.cleanup();
@@ -75,18 +113,23 @@ function PageThumbnailCard({
         const viewport = pdfPage.getViewport({ scale, rotation: page.rotation });
 
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas) {
+          await doc.cleanup();
+          await loadingTask.destroy();
+          return;
+        }
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         const ctx = canvas.getContext('2d');
 
         if (ctx) {
-          await pdfPage.render({
+          renderTask = pdfPage.render({
             canvasContext: ctx,
             viewport,
             canvas,
-          }).promise;
+          });
+          await renderTask.promise;
         }
 
         await doc.cleanup();
@@ -95,9 +138,10 @@ function PageThumbnailCard({
         if (!isCancelled) {
           setLoading(false);
         }
-      } catch (err) {
-        console.error('Thumbnail render error:', err);
-        if (!isCancelled) {
+      } catch (err: unknown) {
+        const errName = err && typeof err === 'object' && 'name' in err ? (err as { name: string }).name : '';
+        if (errName !== 'RenderingCancelledException' && !isCancelled) {
+          console.error('Thumbnail render error:', err);
           setError(true);
           setLoading(false);
         }
@@ -108,11 +152,25 @@ function PageThumbnailCard({
 
     return () => {
       isCancelled = true;
+      if (renderTask) {
+        try {
+          renderTask.cancel();
+        } catch {
+          // ignore cancellation
+        }
+      }
+      if (docToCleanup) {
+        docToCleanup.cleanup().catch(() => {});
+      }
+      if (loadingTaskToDestroy) {
+        loadingTaskToDestroy.destroy().catch(() => {});
+      }
     };
-  }, [sourceBytes, page.originalPageIndex, page.rotation]);
+  }, [isVisible, sourceBytes, page.originalPageIndex, page.rotation]);
 
   return (
     <div
+      ref={cardRef}
       role="button"
       tabIndex={0}
       onClick={onSelect}

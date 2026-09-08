@@ -207,7 +207,11 @@ export async function exportEditedPdf(
 
   const defaultName = state.fileName.replace(/\.[^/.]+$/, '') + '-edited.pdf';
   const finalName = sanitizeDownloadFilename(options?.outputFileName || defaultName);
-  const blob = new Blob([outBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
+
+  const blob = new Blob(
+    [outBytes.buffer.slice(outBytes.byteOffset, outBytes.byteOffset + outBytes.byteLength) as ArrayBuffer],
+    { type: 'application/pdf' }
+  );
 
   return {
     blob,

@@ -10,13 +10,11 @@ import {
   createLineObject,
   createArrowObject,
   cloneEditorObject,
-  rgbToHex,
   hexToRgb,
   COLORS,
 } from '../src/lib/pdf/editor/objects';
 import { ArrowObject } from '../src/lib/pdf/editor/types';
 import {
-  pdfPointToScreenPoint,
   screenPointToPdfPoint,
   pdfRectToScreenRect,
   screenRectToPdfRect,
