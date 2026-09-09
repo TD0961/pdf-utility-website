@@ -10,6 +10,8 @@ import {
   Circle,
   Minus,
   MoveRight,
+  Image as ImageIcon,
+  PenLine,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +23,9 @@ export type EditorTool =
   | 'rectangle'
   | 'ellipse'
   | 'line'
-  | 'arrow';
+  | 'arrow'
+  | 'image'
+  | 'signature';
 
 interface ToolItem {
   id: EditorTool;
@@ -34,11 +38,13 @@ const TOOLS: ToolItem[] = [
   { id: 'select', label: 'Select & Transform', shortcut: 'V', icon: MousePointer },
   { id: 'text', label: 'Add Text', shortcut: 'T', icon: Type },
   { id: 'highlight', label: 'Highlight Area', shortcut: 'H', icon: Highlighter },
-  { id: 'draw', label: 'Freehand Draw', shortcut: 'P', icon: PenTool },
+  { id: 'draw', label: 'Freehand Draw', shortcut: 'D', icon: PenTool },
   { id: 'rectangle', label: 'Rectangle', shortcut: 'R', icon: Square },
   { id: 'ellipse', label: 'Circle / Ellipse', shortcut: 'O', icon: Circle },
   { id: 'line', label: 'Straight Line', shortcut: 'L', icon: Minus },
   { id: 'arrow', label: 'Directional Arrow', shortcut: 'A', icon: MoveRight },
+  { id: 'image', label: 'Insert Image', shortcut: 'I', icon: ImageIcon },
+  { id: 'signature', label: 'Add Signature', shortcut: 'S', icon: PenLine },
 ];
 
 interface ToolPaletteProps {

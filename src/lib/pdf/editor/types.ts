@@ -43,6 +43,10 @@ export interface TextObject extends BaseEditorObject {
   fontFamily: SupportedFontFamily;
   color: ColorRgb;
   rotation?: number; // degrees
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface HighlightObject extends BaseEditorObject {
@@ -105,6 +109,31 @@ export interface ArrowObject extends BaseEditorObject {
   headLength?: number;
 }
 
+export interface ImageObject extends BaseEditorObject {
+  type: 'image';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation?: number; // 0, 90, 180, 270
+  sourceType: 'jpeg' | 'png' | 'webp';
+  /** In-memory data URL or object URL */
+  dataUrl: string;
+  lockAspectRatio?: boolean;
+}
+
+export interface SignatureObject extends BaseEditorObject {
+  type: 'signature';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation?: number;
+  sourceType: 'png' | 'jpeg';
+  dataUrl: string;
+  lockAspectRatio?: boolean;
+}
+
 export type EditorObject =
   | TextObject
   | HighlightObject
@@ -112,7 +141,9 @@ export type EditorObject =
   | RectangleObject
   | EllipseObject
   | LineObject
-  | ArrowObject;
+  | ArrowObject
+  | ImageObject
+  | SignatureObject;
 
 export interface EditorPage {
   /** 0-based visual index of the page in the current document */
@@ -129,24 +160,103 @@ export interface EditorPage {
   objects: EditorObject[];
 }
 
+export interface PdfSearchMatch {
+  pageIndex: number;
+  itemIndex?: number;
+  matchStart?: number;
+  matchEnd?: number;
+  rect: Rect;
+  text: string;
+}
+
+export interface PdfSearchResult {
+  query: string;
+  totalMatches: number;
+  matches: PdfSearchMatch[];
+  activeMatchIndex: number;
+  isSearching: boolean;
+  hasExtractedText: boolean;
+}
+
+export interface PdfMetadata {
+  title?: string;
+  author?: string;
+  subject?: string;
+  keywords?: string[];
+  creator?: string;
+  producer?: string;
+  creationDate?: Date;
+  modificationDate?: Date;
+}
+
+export type PdfFormFieldType =
+  | 'text'
+  | 'checkbox'
+  | 'radio'
+  | 'dropdown'
+  | 'optionList'
+  | 'signature'
+  | 'other';
+
+export interface PdfFormFieldInfo {
+  name: string;
+  type: PdfFormFieldType;
+  pageIndex?: number;
+  readOnly?: boolean;
+  value?: string | boolean | string[];
+}
+
+export interface PdfFormSummary {
+  hasAcroForm: boolean;
+  totalFields: number;
+  counts: {
+    text: number;
+    checkbox: number;
+    radio: number;
+    dropdown: number;
+    optionList: number;
+    signature: number;
+    other: number;
+  };
+  fields: PdfFormFieldInfo[];
+}
+
+export type DocumentSaveState = 'clean' | 'dirty' | 'saving' | 'saved' | 'error';
+
+export interface EditorExportProgress {
+  stage: string;
+  percent: number;
+}
+
 export interface EditorDocumentState {
   sourceBytes: Uint8Array;
   fileName: string;
   pages: EditorPage[];
   activePageIndex: number;
   selectedObjectId: string | null;
+  selectedObjectIds: string[];
   zoom: number;
   isModified: boolean;
+  saveState: DocumentSaveState;
+  lastSavedAt?: number;
+  exportProgress?: EditorExportProgress | null;
+  metadata: PdfMetadata;
+  formSummary: PdfFormSummary;
+  documentGeneration: number;
 }
 
 export type EditorAction =
   | { type: 'ADD_OBJECT'; pageIndex: number; object: EditorObject }
   | { type: 'UPDATE_OBJECT'; pageIndex: number; objectId: string; previous: EditorObject; updated: EditorObject }
   | { type: 'DELETE_OBJECT'; pageIndex: number; object: EditorObject }
+  | { type: 'BATCH_OBJECT_OP'; pageIndex: number; description?: string; selectedObjectIds?: string[]; previous: EditorObject[]; current: EditorObject[] }
+  | { type: 'REORDER_OBJECTS'; pageIndex: number; previousOrder: string[]; newOrder: string[] }
   | { type: 'DELETE_PAGE'; pageIndex: number; page: EditorPage }
   | { type: 'DUPLICATE_PAGE'; pageIndex: number; newPageIndex: number }
   | { type: 'ROTATE_PAGE'; pageIndex: number; previousRotation: number; newRotation: number }
-  | { type: 'MOVE_PAGE'; fromIndex: number; toIndex: number };
+  | { type: 'MOVE_PAGE'; fromIndex: number; toIndex: number }
+  | { type: 'BATCH_PAGE_OP'; description: string; previousPages: EditorPage[]; currentPages: EditorPage[]; previousActiveIndex: number; currentActiveIndex: number }
+  | { type: 'UPDATE_METADATA'; previous: PdfMetadata; updated: PdfMetadata };
 
 export interface EditorExportResult {
   blob: Blob;
@@ -155,3 +265,4 @@ export interface EditorExportResult {
   fileSize: number;
   fileName: string;
 }
+

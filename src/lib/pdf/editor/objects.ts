@@ -13,6 +13,8 @@ import {
   EllipseObject,
   LineObject,
   ArrowObject,
+  ImageObject,
+  SignatureObject,
   Point,
   SupportedFontFamily,
 } from './types';
@@ -89,6 +91,10 @@ export function createTextObject(params: {
   color?: ColorRgb;
   opacity?: number;
   rotation?: number;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  align?: 'left' | 'center' | 'right';
   id?: string;
 }): TextObject {
   return {
@@ -103,6 +109,10 @@ export function createTextObject(params: {
     color: params.color ?? COLORS.BLACK,
     opacity: safeNumber(params.opacity, 1, 0.05, 1),
     rotation: safeNumber(params.rotation, 0),
+    bold: params.bold ?? false,
+    italic: params.italic ?? false,
+    underline: params.underline ?? false,
+    align: params.align ?? 'left',
   };
 }
 
@@ -270,6 +280,64 @@ export function createArrowObject(params: {
   };
 }
 
+export function createImageObject(params: {
+  pageIndex: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  sourceType: 'jpeg' | 'png' | 'webp';
+  dataUrl: string;
+  rotation?: number;
+  opacity?: number;
+  lockAspectRatio?: boolean;
+  id?: string;
+}): ImageObject {
+  return {
+    type: 'image',
+    id: params.id || generateObjectId(),
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    x: safeNumber(params.x, 0),
+    y: safeNumber(params.y, 0),
+    width: safeNumber(params.width, 100, 10),
+    height: safeNumber(params.height, 100, 10),
+    rotation: safeNumber(params.rotation, 0),
+    sourceType: params.sourceType,
+    dataUrl: params.dataUrl,
+    opacity: safeNumber(params.opacity, 1, 0.05, 1),
+    lockAspectRatio: params.lockAspectRatio ?? true,
+  };
+}
+
+export function createSignatureObject(params: {
+  pageIndex: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  dataUrl: string;
+  sourceType?: 'png' | 'jpeg';
+  rotation?: number;
+  opacity?: number;
+  lockAspectRatio?: boolean;
+  id?: string;
+}): SignatureObject {
+  return {
+    type: 'signature',
+    id: params.id || generateObjectId(),
+    pageIndex: safeNumber(params.pageIndex, 0, 0),
+    x: safeNumber(params.x, 0),
+    y: safeNumber(params.y, 0),
+    width: safeNumber(params.width, 150, 10),
+    height: safeNumber(params.height, 60, 10),
+    rotation: safeNumber(params.rotation, 0),
+    sourceType: params.sourceType ?? 'png',
+    dataUrl: params.dataUrl,
+    opacity: safeNumber(params.opacity, 1, 0.05, 1),
+    lockAspectRatio: params.lockAspectRatio ?? true,
+  };
+}
+
 export function cloneEditorObject(obj: EditorObject): EditorObject {
   if (obj.type === 'drawing') {
     return {
@@ -299,8 +367,82 @@ export function cloneEditorObject(obj: EditorObject): EditorObject {
       color: { ...obj.color },
     };
   }
+  if (obj.type === 'image' || obj.type === 'signature') {
+    return {
+      ...obj,
+    };
+  }
   return {
     ...obj,
-    color: { ...obj.color },
+    color: { ...(obj as HighlightObject).color },
   };
 }
+
+export interface ImageValidationResult {
+  valid: boolean;
+  error?: string;
+  width?: number;
+  height?: number;
+  sourceType?: 'jpeg' | 'png' | 'webp';
+  dataUrl?: string;
+}
+
+export async function validateImageFile(file: File): Promise<ImageValidationResult> {
+  const MAX_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB
+  if (file.size > MAX_SIZE_BYTES) {
+    return { valid: false, error: 'Image file size exceeds 15MB limit.' };
+  }
+  if (file.size === 0) {
+    return { valid: false, error: 'Image file is empty (0 bytes).' };
+  }
+
+  const mime = file.type.toLowerCase();
+  const name = file.name.toLowerCase();
+  let sourceType: 'jpeg' | 'png' | 'webp';
+  if (mime === 'image/jpeg' || mime === 'image/jpg' || name.endsWith('.jpg') || name.endsWith('.jpeg')) {
+    sourceType = 'jpeg';
+  } else if (mime === 'image/png' || name.endsWith('.png')) {
+    sourceType = 'png';
+  } else if (mime === 'image/webp' || name.endsWith('.webp')) {
+    sourceType = 'webp';
+  } else {
+    return {
+      valid: false,
+      error: 'Unsupported image format. Please select a JPG, PNG, or WebP image.',
+    };
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onerror = () => resolve({ valid: false, error: 'Failed to read image file.' });
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      if (typeof window === 'undefined') {
+        resolve({ valid: true, width: 200, height: 200, sourceType, dataUrl });
+        return;
+      }
+      const img = new Image();
+      img.onerror = () => resolve({ valid: false, error: 'Invalid or corrupted image file.' });
+      img.onload = () => {
+        if (!Number.isFinite(img.naturalWidth) || !Number.isFinite(img.naturalHeight) || img.naturalWidth <= 0 || img.naturalHeight <= 0) {
+          resolve({ valid: false, error: 'Image contains invalid or zero dimensions.' });
+          return;
+        }
+        if (img.naturalWidth > 8192 || img.naturalHeight > 8192) {
+          resolve({ valid: false, error: 'Image dimensions exceed maximum supported 8192x8192 limit.' });
+          return;
+        }
+        resolve({
+          valid: true,
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+          sourceType,
+          dataUrl,
+        });
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+

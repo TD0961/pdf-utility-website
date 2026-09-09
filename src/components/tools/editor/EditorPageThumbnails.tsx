@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { EditorPage } from '@/lib/pdf/editor/types';
 import { getPdfJs } from '@/lib/pdf/pdf-renderer';
 import {
@@ -13,17 +13,24 @@ import {
   Layers,
   FileText,
   Loader2,
+  CheckSquare,
+  Square,
+  X,
+  ListFilter,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { parsePageRanges } from '@/lib/pdf/range-parser';
 
 interface PageThumbnailCardProps {
   page: EditorPage;
   isActive: boolean;
+  isSelectedInBatch: boolean;
   canDelete: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
   sourceBytes: Uint8Array;
   onSelect: () => void;
+  onToggleBatchSelect: () => void;
   onRotateLeft: () => void;
   onRotateRight: () => void;
   onDuplicate: () => void;
@@ -35,11 +42,13 @@ interface PageThumbnailCardProps {
 function PageThumbnailCard({
   page,
   isActive,
+  isSelectedInBatch,
   canDelete,
   canMoveUp,
   canMoveDown,
   sourceBytes,
   onSelect,
+  onToggleBatchSelect,
   onRotateLeft,
   onRotateRight,
   onDuplicate,
@@ -102,38 +111,37 @@ function PageThumbnailCard({
         const doc = await loadingTask.promise;
         docToCleanup = doc;
 
-        if (isCancelled) {
-          await doc.cleanup();
-          await loadingTask.destroy();
-          return;
-        }
+        if (isCancelled) return;
 
+        // 1-based index in PDF.js
         const pdfPage = await doc.getPage(page.originalPageIndex + 1);
-        const scale = 0.22;
-        const viewport = pdfPage.getViewport({ scale, rotation: page.rotation });
+
+        if (isCancelled) return;
+
+        const unrotatedViewport = pdfPage.getViewport({ scale: 1 });
+        const targetWidth = 140;
+        const scale = targetWidth / unrotatedViewport.width;
+
+        const effectiveRotation = (pdfPage.rotate + page.rotation) % 360;
+        const viewport = pdfPage.getViewport({ scale, rotation: effectiveRotation });
 
         const canvas = canvasRef.current;
-        if (!canvas) {
-          await doc.cleanup();
-          await loadingTask.destroy();
-          return;
-        }
+        if (!canvas) return;
 
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
+        const context = canvas.getContext('2d', { alpha: false });
+        if (!context) return;
 
-        if (ctx) {
-          renderTask = pdfPage.render({
-            canvasContext: ctx,
-            viewport,
-            canvas,
-          });
-          await renderTask.promise;
-        }
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
 
-        await doc.cleanup();
-        await loadingTask.destroy();
+        renderTask = pdfPage.render({
+          canvasContext: context,
+          canvas,
+          viewport,
+          intent: 'display',
+        });
+
+        await renderTask.promise;
 
         if (!isCancelled) {
           setLoading(false);
@@ -181,11 +189,35 @@ function PageThumbnailCard({
       }}
       className={cn(
         'group relative flex flex-col items-center p-2 rounded-2xl border transition-all cursor-pointer select-none bg-slate-50 dark:bg-slate-850',
-        isActive
-          ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-2 ring-indigo-600/30 shadow-md'
+        isSelectedInBatch
+          ? 'border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/40 ring-2 ring-indigo-500 shadow-md'
+          : isActive
+          ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 ring-1 ring-indigo-500 shadow-sm'
           : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
       )}
     >
+      {/* Batch Select Checkbox */}
+      <button
+        type="button"
+        title={isSelectedInBatch ? 'Deselect page from batch' : 'Select page for batch operation'}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleBatchSelect();
+        }}
+        className={cn(
+          'absolute top-2 left-2 z-10 p-1 rounded-md transition-all shadow-xs',
+          isSelectedInBatch
+            ? 'bg-indigo-600 text-white'
+            : 'bg-white/90 dark:bg-slate-800/90 text-slate-400 hover:text-indigo-600 opacity-60 group-hover:opacity-100'
+        )}
+      >
+        {isSelectedInBatch ? (
+          <CheckSquare className="w-3.5 h-3.5" />
+        ) : (
+          <Square className="w-3.5 h-3.5" />
+        )}
+      </button>
+
       {/* Thumbnail Canvas Container */}
       <div className="relative w-full aspect-[3/4] flex items-center justify-center overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700/60 shadow-xs">
         {loading && (
@@ -303,6 +335,9 @@ interface EditorPageThumbnailsProps {
   onDuplicatePage: (index: number) => void;
   onDeletePage: (index: number) => void;
   onMovePage: (fromIndex: number, toIndex: number) => void;
+  onRotatePages?: (indices: number[], delta: 90 | -90 | 180) => void;
+  onDuplicatePages?: (indices: number[]) => void;
+  onDeletePages?: (indices: number[]) => void;
   className?: string;
 }
 
@@ -315,8 +350,91 @@ export function EditorPageThumbnails({
   onDuplicatePage,
   onDeletePage,
   onMovePage,
+  onRotatePages,
+  onDuplicatePages,
+  onDeletePages,
   className,
 }: EditorPageThumbnailsProps) {
+  const [selectedBatchIndices, setSelectedBatchIndices] = useState<number[]>([]);
+  const [showRangeInput, setShowRangeInput] = useState(false);
+  const [rangeInputValue, setRangeInputValue] = useState('');
+  const [rangeError, setRangeError] = useState<string | null>(null);
+
+  const selectedSet = useMemo(() => new Set(selectedBatchIndices), [selectedBatchIndices]);
+
+  const toggleSelectPage = (index: number) => {
+    setSelectedBatchIndices((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedBatchIndices(pages.map((_, i) => i));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedBatchIndices([]);
+    setRangeInputValue('');
+    setRangeError(null);
+  };
+
+  const handleApplyRange = () => {
+    if (!rangeInputValue.trim()) {
+      setRangeError(null);
+      return;
+    }
+    const result = parsePageRanges(rangeInputValue.trim(), pages.length);
+    if (!result.valid) {
+      setRangeError(result.error || 'Invalid page range');
+      return;
+    }
+    setSelectedBatchIndices(result.allPageIndices);
+    setRangeError(null);
+    setShowRangeInput(false);
+  };
+
+  // Batch actions
+  const handleBatchRotate = (delta: 90 | -90) => {
+    if (selectedBatchIndices.length === 0) return;
+    if (onRotatePages) {
+      onRotatePages(selectedBatchIndices, delta);
+    } else {
+      for (const idx of selectedBatchIndices) {
+        onRotatePage(idx, delta);
+      }
+    }
+  };
+
+  const handleBatchDuplicate = () => {
+    if (selectedBatchIndices.length === 0) return;
+    if (onDuplicatePages) {
+      onDuplicatePages(selectedBatchIndices);
+    } else {
+      for (const idx of selectedBatchIndices) {
+        onDuplicatePage(idx);
+      }
+    }
+    handleClearSelection();
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedBatchIndices.length === 0) return;
+    if (selectedBatchIndices.length >= pages.length) {
+      alert('Cannot delete all pages from the document.');
+      return;
+    }
+    if (onDeletePages) {
+      onDeletePages(selectedBatchIndices);
+    } else {
+      // sort descending
+      const sorted = [...selectedBatchIndices].sort((a, b) => b - a);
+      for (const idx of sorted) {
+        onDeletePage(idx);
+      }
+    }
+    handleClearSelection();
+  };
+
   return (
     <aside
       aria-label="Pages Sidebar"
@@ -325,24 +443,143 @@ export function EditorPageThumbnails({
         className
       )}
     >
+      {/* Top Header */}
       <div className="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 text-[11px]">
           <Layers className="w-3.5 h-3.5 text-indigo-500" />
           <span>Pages ({pages.length})</span>
         </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setShowRangeInput((prev) => !prev)}
+            title="Select by range (e.g. 1-3, 5)"
+            className={cn(
+              'p-1 rounded-md text-xs transition-colors',
+              showRangeInput
+                ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+                : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+            )}
+          >
+            <ListFilter className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={selectedBatchIndices.length === pages.length ? handleClearSelection : handleSelectAll}
+            title={selectedBatchIndices.length === pages.length ? 'Deselect All' : 'Select All'}
+            className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline px-1 py-0.5"
+          >
+            {selectedBatchIndices.length === pages.length ? 'Clear' : 'All'}
+          </button>
+        </div>
       </div>
 
+      {/* Range Selection Dropdown Panel */}
+      {showRangeInput && (
+        <div className="p-2.5 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700/60 text-xs space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-slate-700 dark:text-slate-300 text-[11px]">
+              Page Range
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowRangeInput(false)}
+              className="text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="flex items-center gap-1">
+            <input
+              type="text"
+              placeholder="e.g. 1-3, 5"
+              value={rangeInputValue}
+              onChange={(e) => setRangeInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleApplyRange();
+                }
+              }}
+              className="flex-1 px-2 py-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            />
+            <button
+              type="button"
+              onClick={handleApplyRange}
+              className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium text-[11px]"
+            >
+              Select
+            </button>
+          </div>
+          {rangeError && (
+            <p className="text-[10px] text-red-600 dark:text-red-400 font-medium">{rangeError}</p>
+          )}
+        </div>
+      )}
+
+      {/* Sticky Batch Actions Bar */}
+      {selectedBatchIndices.length > 0 && (
+        <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 border-b border-indigo-200 dark:border-indigo-800/60 flex items-center justify-between text-xs">
+          <span className="font-bold text-indigo-700 dark:text-indigo-300 text-[11px]">
+            {selectedBatchIndices.length} {selectedBatchIndices.length === 1 ? 'page' : 'pages'}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => handleBatchRotate(90)}
+              title="Rotate selected pages 90°"
+              className="p-1 rounded bg-white dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-colors"
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchDuplicate}
+              title="Duplicate selected pages"
+              className="p-1 rounded bg-white dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-colors"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchDelete}
+              disabled={selectedBatchIndices.length >= pages.length}
+              title={
+                selectedBatchIndices.length >= pages.length
+                  ? 'Cannot delete all pages'
+                  : 'Delete selected pages'
+              }
+              className="p-1 rounded bg-white dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-950/50 text-red-600 dark:text-red-400 border border-slate-200 dark:border-slate-700 disabled:opacity-40 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleClearSelection}
+              title="Deselect all"
+              className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Pages List */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {pages.map((page, index) => (
           <PageThumbnailCard
             key={`page-${page.originalPageIndex}-${index}`}
             page={page}
             isActive={activePageIndex === index}
+            isSelectedInBatch={selectedSet.has(index)}
             canDelete={pages.length > 1}
             canMoveUp={index > 0}
             canMoveDown={index < pages.length - 1}
             sourceBytes={sourceBytes}
             onSelect={() => onSelectPage(index)}
+            onToggleBatchSelect={() => toggleSelectPage(index)}
             onRotateLeft={() => onRotatePage(index, -90)}
             onRotateRight={() => onRotatePage(index, 90)}
             onDuplicate={() => onDuplicatePage(index)}

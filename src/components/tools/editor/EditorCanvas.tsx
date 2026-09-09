@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   EditorObject,
   EditorPage,
+  PdfSearchMatch,
   Point,
   Rect,
 } from '@/lib/pdf/editor/types';
@@ -36,11 +37,15 @@ interface EditorCanvasProps {
   zoom: number;
   activeTool: EditorTool;
   selectedObjectId: string | null;
+  selectedObjectIds?: string[];
+  searchMatches?: PdfSearchMatch[];
+  activeSearchMatch?: PdfSearchMatch | null;
   toolDefaults: ToolDefaults;
-  onSelectObject: (id: string | null) => void;
+  onSelectObject: (id: string | null, multi?: boolean) => void;
   onAddObject: (object: EditorObject) => void;
   onUpdateObject: (objectId: string, updates: Partial<EditorObject>) => void;
   onDeleteObject: (objectId: string) => void;
+  onDeleteSelected?: () => void;
   onSwitchTool: (tool: EditorTool) => void;
   className?: string;
 }
@@ -67,11 +72,15 @@ export function EditorCanvas({
   zoom,
   activeTool,
   selectedObjectId,
+  selectedObjectIds,
+  searchMatches,
+  activeSearchMatch,
   toolDefaults,
   onSelectObject,
   onAddObject,
   onUpdateObject,
   onDeleteObject,
+  onDeleteSelected,
   onSwitchTool,
   className,
 }: EditorCanvasProps) {
@@ -86,6 +95,7 @@ export function EditorCanvas({
   const [dragCurrentScreen, setDragCurrentScreen] = useState<Point | null>(null);
   const [liveDrawingPoints, setLiveDrawingPoints] = useState<Point[]>([]);
   const [initialObjectState, setInitialObjectState] = useState<EditorObject | null>(null);
+  const [initialObjectsState, setInitialObjectsState] = useState<EditorObject[]>([]);
   const [initialScreenBox, setInitialScreenBox] = useState<Rect | null>(null);
 
   const { width: screenWidth, height: screenHeight } = getScreenDimensions(
@@ -197,100 +207,109 @@ export function EditorCanvas({
   // Selected object helper
   const selectedObject = activePage.objects.find((o) => o.id === selectedObjectId) || null;
 
-  // Compute screen bounding box for selected object
-  const getSelectedObjectScreenBox = useCallback((): Rect | null => {
-    if (!selectedObject) return null;
+  // Compute screen bounding box for any object
+  const getObjectScreenBox = useCallback(
+    (obj: EditorObject): Rect | null => {
+      switch (obj.type) {
+        case 'rectangle':
+        case 'highlight':
+        case 'image':
+        case 'signature': {
+          return pdfRectToScreenRect(
+            {
+              x: obj.x,
+              y: obj.y,
+              width: obj.width,
+              height: obj.height,
+            },
+            activePage,
+            activePage.rotation,
+            zoom
+          );
+        }
+        case 'ellipse': {
+          const center = pdfPointToScreenPoint(
+            { x: obj.x, y: obj.y },
+            activePage,
+            activePage.rotation,
+            zoom
+          );
+          const isRotated = activePage.rotation === 90 || activePage.rotation === 270;
+          const rx = ((isRotated ? obj.height : obj.width) / 2) * zoom;
+          const ry = ((isRotated ? obj.width : obj.height) / 2) * zoom;
+          return {
+            x: center.x - rx,
+            y: center.y - ry,
+            width: rx * 2,
+            height: ry * 2,
+          };
+        }
+        case 'text': {
+          const baseline = pdfPointToScreenPoint(
+            { x: obj.x, y: obj.y },
+            activePage,
+            activePage.rotation,
+            zoom
+          );
+          const approxWidth = Math.max(
+            40,
+            obj.text.length * obj.fontSize * 0.6 * zoom
+          );
+          const approxHeight = obj.fontSize * 1.3 * zoom;
+          let boxX = baseline.x;
+          if (obj.align === 'center') {
+            boxX = baseline.x - approxWidth / 2;
+          } else if (obj.align === 'right') {
+            boxX = baseline.x - approxWidth;
+          }
+          return {
+            x: boxX,
+            y: baseline.y - approxHeight,
+            width: approxWidth,
+            height: approxHeight,
+          };
+        }
+        case 'line':
+        case 'arrow': {
+          const p1 = pdfPointToScreenPoint(obj.start, activePage, activePage.rotation, zoom);
+          const p2 = pdfPointToScreenPoint(obj.end, activePage, activePage.rotation, zoom);
+          const minX = Math.min(p1.x, p2.x);
+          const maxX = Math.max(p1.x, p2.x);
+          const minY = Math.min(p1.y, p2.y);
+          const maxY = Math.max(p1.y, p2.y);
+          return {
+            x: minX - 4,
+            y: minY - 4,
+            width: Math.max(12, maxX - minX + 8),
+            height: Math.max(12, maxY - minY + 8),
+          };
+        }
+        case 'drawing': {
+          if (obj.points.length === 0) return null;
+          const screenPts = obj.points.map((p) =>
+            pdfPointToScreenPoint(p, activePage, activePage.rotation, zoom)
+          );
+          const xs = screenPts.map((p) => p.x);
+          const ys = screenPts.map((p) => p.y);
+          const minX = Math.min(...xs);
+          const maxX = Math.max(...xs);
+          const minY = Math.min(...ys);
+          const maxY = Math.max(...ys);
+          return {
+            x: minX - 4,
+            y: minY - 4,
+            width: Math.max(12, maxX - minX + 8),
+            height: Math.max(12, maxY - minY + 8),
+          };
+        }
+        default:
+          return null;
+      }
+    },
+    [activePage, zoom]
+  );
 
-    switch (selectedObject.type) {
-      case 'rectangle':
-      case 'highlight': {
-        return pdfRectToScreenRect(
-          {
-            x: selectedObject.x,
-            y: selectedObject.y,
-            width: selectedObject.width,
-            height: selectedObject.height,
-          },
-          activePage,
-          activePage.rotation,
-          zoom
-        );
-      }
-      case 'ellipse': {
-        const center = pdfPointToScreenPoint(
-          { x: selectedObject.x, y: selectedObject.y },
-          activePage,
-          activePage.rotation,
-          zoom
-        );
-        const isRotated = activePage.rotation === 90 || activePage.rotation === 270;
-        const rx = ((isRotated ? selectedObject.height : selectedObject.width) / 2) * zoom;
-        const ry = ((isRotated ? selectedObject.width : selectedObject.height) / 2) * zoom;
-        return {
-          x: center.x - rx,
-          y: center.y - ry,
-          width: rx * 2,
-          height: ry * 2,
-        };
-      }
-      case 'text': {
-        const baseline = pdfPointToScreenPoint(
-          { x: selectedObject.x, y: selectedObject.y },
-          activePage,
-          activePage.rotation,
-          zoom
-        );
-        const approxWidth = Math.max(
-          40,
-          selectedObject.text.length * selectedObject.fontSize * 0.6 * zoom
-        );
-        const approxHeight = selectedObject.fontSize * 1.3 * zoom;
-        return {
-          x: baseline.x,
-          y: baseline.y - approxHeight,
-          width: approxWidth,
-          height: approxHeight,
-        };
-      }
-      case 'line':
-      case 'arrow': {
-        const p1 = pdfPointToScreenPoint(selectedObject.start, activePage, activePage.rotation, zoom);
-        const p2 = pdfPointToScreenPoint(selectedObject.end, activePage, activePage.rotation, zoom);
-        const minX = Math.min(p1.x, p2.x);
-        const maxX = Math.max(p1.x, p2.x);
-        const minY = Math.min(p1.y, p2.y);
-        const maxY = Math.max(p1.y, p2.y);
-        return {
-          x: minX - 4,
-          y: minY - 4,
-          width: Math.max(12, maxX - minX + 8),
-          height: Math.max(12, maxY - minY + 8),
-        };
-      }
-      case 'drawing': {
-        if (selectedObject.points.length === 0) return null;
-        const screenPts = selectedObject.points.map((p) =>
-          pdfPointToScreenPoint(p, activePage, activePage.rotation, zoom)
-        );
-        const xs = screenPts.map((p) => p.x);
-        const ys = screenPts.map((p) => p.y);
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
-        return {
-          x: minX - 4,
-          y: minY - 4,
-          width: Math.max(12, maxX - minX + 8),
-          height: Math.max(12, maxY - minY + 8),
-        };
-      }
-      default:
-        return null;
-    }
-  }, [selectedObject, activePage, zoom]);
-
-  const selectedBox = getSelectedObjectScreenBox();
+  const selectedBox = selectedObject ? getObjectScreenBox(selectedObject) : null;
 
   // Resize handles around selected box (8 directions: NW, N, NE, E, SE, S, SW, W)
   const getHandles = (): HandleInfo[] => {
@@ -319,17 +338,22 @@ export function EditorCanvas({
         return;
       }
 
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObjectId) {
-        e.preventDefault();
-        onDeleteObject(selectedObjectId);
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedObjectIds && selectedObjectIds.length > 0 && onDeleteSelected) {
+          e.preventDefault();
+          onDeleteSelected();
+        } else if (selectedObjectId) {
+          e.preventDefault();
+          onDeleteObject(selectedObjectId);
+        }
       } else if (e.key === 'Escape') {
-        onSelectObject(null);
+        onSelectObject(null, false);
       }
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedObjectId, onDeleteObject, onSelectObject]);
+  }, [selectedObjectId, selectedObjectIds, onDeleteObject, onDeleteSelected, onSelectObject]);
 
   // Pointer coordinate calculation relative to canvas
   const getPointerPos = (e: React.PointerEvent): Point => {
@@ -364,68 +388,11 @@ export function EditorCanvas({
         return;
       }
 
-      // Check if clicking on the selection box itself for moving
-      if (
-        selectedBox &&
-        pos.x >= selectedBox.x &&
-        pos.x <= selectedBox.x + selectedBox.width &&
-        pos.y >= selectedBox.y &&
-        pos.y <= selectedBox.y + selectedBox.height
-      ) {
-        setDragMode('move-object');
-        setDragStartScreen(pos);
-        setDragCurrentScreen(pos);
-        setInitialObjectState(JSON.parse(JSON.stringify(selectedObject)));
-        return;
-      }
-
       // Check if clicked directly on an object on the page (hit testing reverse order)
       let hitId: string | null = null;
       for (let i = activePage.objects.length - 1; i >= 0; i--) {
         const obj = activePage.objects[i];
-        let box: Rect | null = null;
-
-        if (obj.type === 'rectangle' || obj.type === 'highlight') {
-          box = pdfRectToScreenRect(
-            { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
-            activePage,
-            activePage.rotation,
-            zoom
-          );
-        } else if (obj.type === 'ellipse') {
-          const c = pdfPointToScreenPoint({ x: obj.x, y: obj.y }, activePage, activePage.rotation, zoom);
-          const isRot = activePage.rotation === 90 || activePage.rotation === 270;
-          const rx = ((isRot ? obj.height : obj.width) / 2) * zoom;
-          const ry = ((isRot ? obj.width : obj.height) / 2) * zoom;
-          box = { x: c.x - rx, y: c.y - ry, width: rx * 2, height: ry * 2 };
-        } else if (obj.type === 'text') {
-          const b = pdfPointToScreenPoint({ x: obj.x, y: obj.y }, activePage, activePage.rotation, zoom);
-          const w = Math.max(40, obj.text.length * obj.fontSize * 0.6 * zoom);
-          const h = obj.fontSize * 1.3 * zoom;
-          box = { x: b.x, y: b.y - h, width: w, height: h };
-        } else if (obj.type === 'line' || obj.type === 'arrow') {
-          const p1 = pdfPointToScreenPoint(obj.start, activePage, activePage.rotation, zoom);
-          const p2 = pdfPointToScreenPoint(obj.end, activePage, activePage.rotation, zoom);
-          box = {
-            x: Math.min(p1.x, p2.x) - 6,
-            y: Math.min(p1.y, p2.y) - 6,
-            width: Math.abs(p2.x - p1.x) + 12,
-            height: Math.abs(p2.y - p1.y) + 12,
-          };
-        } else if (obj.type === 'drawing') {
-          const sPts = obj.points.map((p) =>
-            pdfPointToScreenPoint(p, activePage, activePage.rotation, zoom)
-          );
-          const xs = sPts.map((p) => p.x);
-          const ys = sPts.map((p) => p.y);
-          box = {
-            x: Math.min(...xs) - 6,
-            y: Math.min(...ys) - 6,
-            width: Math.max(12, Math.max(...xs) - Math.min(...xs) + 12),
-            height: Math.max(12, Math.max(...ys) - Math.min(...ys) + 12),
-          };
-        }
-
+        const box = getObjectScreenBox(obj);
         if (
           box &&
           pos.x >= box.x &&
@@ -439,14 +406,45 @@ export function EditorCanvas({
       }
 
       if (hitId) {
-        onSelectObject(hitId);
+        const isAlreadySelected = selectedObjectIds?.includes(hitId);
+        if (e.shiftKey) {
+          onSelectObject(hitId, true);
+        } else if (!isAlreadySelected) {
+          onSelectObject(hitId, false);
+        }
+
         const obj = activePage.objects.find((o) => o.id === hitId)!;
+        const targetIds =
+          isAlreadySelected && !e.shiftKey && (selectedObjectIds?.length ?? 0) > 1
+            ? selectedObjectIds!
+            : [hitId];
+        const targetObjects = activePage.objects.filter((o) => targetIds.includes(o.id));
+
         setDragMode('move-object');
         setDragStartScreen(pos);
         setDragCurrentScreen(pos);
         setInitialObjectState(JSON.parse(JSON.stringify(obj)));
+        setInitialObjectsState(JSON.parse(JSON.stringify(targetObjects)));
       } else {
-        onSelectObject(null);
+        // Check if clicking inside current selectedBox when dragging
+        if (
+          selectedBox &&
+          pos.x >= selectedBox.x &&
+          pos.x <= selectedBox.x + selectedBox.width &&
+          pos.y >= selectedBox.y &&
+          pos.y <= selectedBox.y + selectedBox.height &&
+          selectedObject
+        ) {
+          setDragMode('move-object');
+          setDragStartScreen(pos);
+          setDragCurrentScreen(pos);
+          setInitialObjectState(JSON.parse(JSON.stringify(selectedObject)));
+          const targetIds = selectedObjectIds?.length ? selectedObjectIds : [selectedObject.id];
+          const targetObjects = activePage.objects.filter((o) => targetIds.includes(o.id));
+          setInitialObjectsState(JSON.parse(JSON.stringify(targetObjects)));
+        } else {
+          onSelectObject(null, false);
+        }
       }
       return;
     }
@@ -472,7 +470,7 @@ export function EditorCanvas({
         color: toolDefaults.textColor,
       });
       onAddObject(newText);
-      onSelectObject(newText.id);
+      onSelectObject(newText.id, false);
       onSwitchTool('select');
       return;
     }
@@ -543,6 +541,40 @@ export function EditorCanvas({
           width: Math.max(10, Math.round(pdfRect.width)),
           height: Math.max(10, Math.round(pdfRect.height)),
         });
+      } else if (initialObjectState.type === 'image' || initialObjectState.type === 'signature') {
+        const finalScreenBox = { ...updatedScreenBox };
+        const lockAspect = 'lockAspectRatio' in initialObjectState ? initialObjectState.lockAspectRatio : true;
+        const shouldLock = e.shiftKey ? !lockAspect : lockAspect;
+
+        if (shouldLock && initialScreenBox.width > 0 && initialScreenBox.height > 0) {
+          const origAspect = initialScreenBox.width / initialScreenBox.height;
+          if (activeHandle === 'e' || activeHandle === 'w') {
+            finalScreenBox.height = finalScreenBox.width / origAspect;
+          } else if (activeHandle === 'n' || activeHandle === 's') {
+            finalScreenBox.width = finalScreenBox.height * origAspect;
+          } else {
+            const currentAspect = finalScreenBox.width / Math.max(1, finalScreenBox.height);
+            if (currentAspect > origAspect) {
+              finalScreenBox.width = finalScreenBox.height * origAspect;
+            } else {
+              finalScreenBox.height = finalScreenBox.width / origAspect;
+            }
+            if (activeHandle.includes('w')) {
+              finalScreenBox.x = initialScreenBox.x + (initialScreenBox.width - finalScreenBox.width);
+            }
+            if (activeHandle.includes('n')) {
+              finalScreenBox.y = initialScreenBox.y + (initialScreenBox.height - finalScreenBox.height);
+            }
+          }
+        }
+
+        const pdfRect = screenRectToPdfRect(finalScreenBox, activePage, activePage.rotation, zoom);
+        onUpdateObject(initialObjectState.id, {
+          x: Math.round(pdfRect.x),
+          y: Math.round(pdfRect.y),
+          width: Math.max(10, Math.round(pdfRect.width)),
+          height: Math.max(10, Math.round(pdfRect.height)),
+        });
       } else if (initialObjectState.type === 'ellipse') {
         const pdfRect = screenRectToPdfRect(updatedScreenBox, activePage, activePage.rotation, zoom);
         const isRot = activePage.rotation === 90 || activePage.rotation === 270;
@@ -586,7 +618,7 @@ export function EditorCanvas({
       return;
     }
 
-    if (dragMode === 'move-object' && dragStartScreen && initialObjectState) {
+    if (dragMode === 'move-object' && dragStartScreen && initialObjectsState.length > 0) {
       // Calculate delta in screen pixels
       const deltaScreen = {
         x: pos.x - dragStartScreen.x,
@@ -618,36 +650,40 @@ export function EditorCanvas({
           break;
       }
 
-      // Live update object
-      if (initialObjectState.type === 'rectangle' || initialObjectState.type === 'highlight') {
-        onUpdateObject(initialObjectState.id, {
-          x: Math.round(initialObjectState.x + dxPdf),
-          y: Math.round(initialObjectState.y + dyPdf),
-        });
-      } else if (initialObjectState.type === 'ellipse' || initialObjectState.type === 'text') {
-        onUpdateObject(initialObjectState.id, {
-          x: Math.round(initialObjectState.x + dxPdf),
-          y: Math.round(initialObjectState.y + dyPdf),
-        });
-      } else if (initialObjectState.type === 'line' || initialObjectState.type === 'arrow') {
-        onUpdateObject(initialObjectState.id, {
-          start: {
-            x: Math.round(initialObjectState.start.x + dxPdf),
-            y: Math.round(initialObjectState.start.y + dyPdf),
-          },
-          end: {
-            x: Math.round(initialObjectState.end.x + dxPdf),
-            y: Math.round(initialObjectState.end.y + dyPdf),
-          },
-        });
-      } else if (initialObjectState.type === 'drawing') {
-        onUpdateObject(initialObjectState.id, {
-          points: initialObjectState.points.map((p) => ({
-            x: Math.round(p.x + dxPdf),
-            y: Math.round(p.y + dyPdf),
-          })),
-        });
-      }
+      // Live update all dragged objects
+      initialObjectsState.forEach((initObj) => {
+        if (
+          initObj.type === 'rectangle' ||
+          initObj.type === 'highlight' ||
+          initObj.type === 'ellipse' ||
+          initObj.type === 'text' ||
+          initObj.type === 'image' ||
+          initObj.type === 'signature'
+        ) {
+          onUpdateObject(initObj.id, {
+            x: Math.round(initObj.x + dxPdf),
+            y: Math.round(initObj.y + dyPdf),
+          });
+        } else if (initObj.type === 'line' || initObj.type === 'arrow') {
+          onUpdateObject(initObj.id, {
+            start: {
+              x: Math.round(initObj.start.x + dxPdf),
+              y: Math.round(initObj.start.y + dyPdf),
+            },
+            end: {
+              x: Math.round(initObj.end.x + dxPdf),
+              y: Math.round(initObj.end.y + dyPdf),
+            },
+          });
+        } else if (initObj.type === 'drawing') {
+          onUpdateObject(initObj.id, {
+            points: initObj.points.map((p) => ({
+              x: Math.round(p.x + dxPdf),
+              y: Math.round(p.y + dyPdf),
+            })),
+          });
+        }
+      });
     }
   };
 
@@ -668,7 +704,7 @@ export function EditorCanvas({
         opacity: toolDefaults.opacity,
       });
       onAddObject(newDrawing);
-      onSelectObject(newDrawing.id);
+      onSelectObject(newDrawing.id, false);
     } else if (dragMode === 'create-shape' && dragStartScreen && dragCurrentScreen) {
       const minX = Math.min(dragStartScreen.x, dragCurrentScreen.x);
       const maxX = Math.max(dragStartScreen.x, dragCurrentScreen.x);
@@ -696,7 +732,7 @@ export function EditorCanvas({
             fillColor: toolDefaults.hasFill ? toolDefaults.fillColor : undefined,
           });
           onAddObject(newRect);
-          onSelectObject(newRect.id);
+          onSelectObject(newRect.id, false);
         } else if (activeTool === 'highlight') {
           const pdfRect = screenRectToPdfRect(
             { x: minX, y: minY, width: w, height: h },
@@ -714,7 +750,7 @@ export function EditorCanvas({
             opacity: 0.35,
           });
           onAddObject(newHighlight);
-          onSelectObject(newHighlight.id);
+          onSelectObject(newHighlight.id, false);
         } else if (activeTool === 'ellipse') {
           const centerScreen = { x: minX + w / 2, y: minY + h / 2 };
           const centerPdf = screenPointToPdfPoint(centerScreen, activePage, activePage.rotation, zoom);
@@ -732,7 +768,7 @@ export function EditorCanvas({
             fillColor: toolDefaults.hasFill ? toolDefaults.fillColor : undefined,
           });
           onAddObject(newEllipse);
-          onSelectObject(newEllipse.id);
+          onSelectObject(newEllipse.id, false);
         } else if (activeTool === 'line') {
           const startPdf = screenPointToPdfPoint(dragStartScreen, activePage, activePage.rotation, zoom);
           const endPdf = screenPointToPdfPoint(dragCurrentScreen, activePage, activePage.rotation, zoom);
@@ -744,7 +780,7 @@ export function EditorCanvas({
             strokeColor: toolDefaults.strokeColor,
           });
           onAddObject(newLine);
-          onSelectObject(newLine.id);
+          onSelectObject(newLine.id, false);
         } else if (activeTool === 'arrow') {
           const startPdf = screenPointToPdfPoint(dragStartScreen, activePage, activePage.rotation, zoom);
           const endPdf = screenPointToPdfPoint(dragCurrentScreen, activePage, activePage.rotation, zoom);
@@ -756,7 +792,7 @@ export function EditorCanvas({
             strokeColor: toolDefaults.strokeColor,
           });
           onAddObject(newArrow);
-          onSelectObject(newArrow.id);
+          onSelectObject(newArrow.id, false);
         }
 
         onSwitchTool('select');
@@ -770,6 +806,7 @@ export function EditorCanvas({
     setDragCurrentScreen(null);
     setLiveDrawingPoints([]);
     setInitialObjectState(null);
+    setInitialObjectsState([]);
     setInitialScreenBox(null);
   };
 
@@ -827,6 +864,41 @@ export function EditorCanvas({
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox={`0 0 ${screenWidth} ${screenHeight}`}
         >
+          {/* Temporary Search Result Highlights (Phase 3C.5) */}
+          {searchMatches && searchMatches.length > 0 && (
+            <g className="search-highlights-layer" aria-label="Search highlights">
+              {searchMatches.map((match, idx) => {
+                if (match.pageIndex !== activePage.pageIndex) return null;
+                const sRect = pdfRectToScreenRect(
+                  match.rect,
+                  activePage,
+                  activePage.rotation,
+                  zoom
+                );
+                const isActive =
+                  activeSearchMatch &&
+                  activeSearchMatch.pageIndex === match.pageIndex &&
+                  Math.abs(activeSearchMatch.rect.x - match.rect.x) < 0.1 &&
+                  Math.abs(activeSearchMatch.rect.y - match.rect.y) < 0.1;
+
+                return (
+                  <rect
+                    key={`search-match-${match.pageIndex}-${idx}`}
+                    x={sRect.x - 2}
+                    y={sRect.y - 1}
+                    width={sRect.width + 4}
+                    height={sRect.height + 2}
+                    rx={2}
+                    fill={isActive ? 'rgba(249, 115, 22, 0.45)' : 'rgba(250, 204, 21, 0.35)'}
+                    stroke={isActive ? '#ea580c' : '#ca8a04'}
+                    strokeWidth={isActive ? 2 : 1}
+                    className="pointer-events-none transition-all"
+                  />
+                );
+              })}
+            </g>
+          )}
+
           {/* Render Committed Objects */}
           {activePage.objects.map((obj) => {
             switch (obj.type) {
@@ -837,6 +909,8 @@ export function EditorCanvas({
                   activePage.rotation,
                   zoom
                 );
+                const textAnchor =
+                  obj.align === 'center' ? 'middle' : obj.align === 'right' ? 'end' : 'start';
                 return (
                   <text
                     key={obj.id}
@@ -844,6 +918,10 @@ export function EditorCanvas({
                     y={pos.y}
                     fontFamily={obj.fontFamily}
                     fontSize={obj.fontSize * zoom}
+                    fontWeight={obj.bold ? 'bold' : 'normal'}
+                    fontStyle={obj.italic ? 'italic' : 'normal'}
+                    textDecoration={obj.underline ? 'underline' : undefined}
+                    textAnchor={textAnchor}
                     fill={rgbToHex(obj.color)}
                     fillOpacity={obj.opacity}
                     className="select-none"
@@ -854,6 +932,34 @@ export function EditorCanvas({
                   >
                     {obj.text}
                   </text>
+                );
+              }
+
+              case 'image':
+              case 'signature': {
+                const rect = pdfRectToScreenRect(
+                  { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+                  activePage,
+                  activePage.rotation,
+                  zoom
+                );
+                const cx = rect.x + rect.width / 2;
+                const cy = rect.y + rect.height / 2;
+                return (
+                  <image
+                    key={obj.id}
+                    href={obj.dataUrl}
+                    x={rect.x}
+                    y={rect.y}
+                    width={rect.width}
+                    height={rect.height}
+                    preserveAspectRatio={obj.lockAspectRatio ? 'xMidYMid meet' : 'none'}
+                    opacity={obj.opacity}
+                    style={{
+                      transformOrigin: `${cx}px ${cy}px`,
+                      transform: obj.rotation ? `rotate(${obj.rotation}deg)` : undefined,
+                    }}
+                  />
                 );
               }
 
@@ -1078,7 +1184,33 @@ export function EditorCanvas({
             </>
           )}
 
-          {/* Selection Box & Resize Handles */}
+          {/* Multi-selection outlines when more than 1 object is selected */}
+          {activeTool === 'select' && selectedObjectIds && selectedObjectIds.length > 1 && (
+            <g className="multi-selection-group">
+              {selectedObjectIds.map((id) => {
+                const obj = activePage.objects.find((o) => o.id === id);
+                if (!obj) return null;
+                const b = getObjectScreenBox(obj);
+                if (!b) return null;
+                return (
+                  <rect
+                    key={`multi-outline-${id}`}
+                    x={b.x}
+                    y={b.y}
+                    width={b.width}
+                    height={b.height}
+                    fill="none"
+                    stroke="#4F46E5"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    className="pointer-events-none"
+                  />
+                );
+              })}
+            </g>
+          )}
+
+          {/* Primary Selection Box & Resize Handles */}
           {selectedBox && activeTool === 'select' && (
             <g className="selection-overlay">
               {/* Bounding box outline */}

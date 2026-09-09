@@ -9,7 +9,24 @@ import {
 } from '@/lib/pdf/editor/types';
 import { EditorTool } from './ToolPalette';
 import { hexToRgb, rgbToHex } from '@/lib/pdf/editor/objects';
-import { Copy, Trash2, Info, Palette } from 'lucide-react';
+import {
+  Copy,
+  Trash2,
+  Info,
+  Palette,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpToLine,
+  ArrowDownToLine,
+  RotateCw,
+  Minus,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface ToolDefaults {
@@ -26,12 +43,21 @@ export interface ToolDefaults {
 
 interface EditorPropertiesPanelProps {
   selectedObject: EditorObject | null;
+  selectedObjects?: EditorObject[];
   activePage: EditorPage | undefined;
   activeTool: EditorTool;
   toolDefaults: ToolDefaults;
   onUpdateObject: (updates: Partial<EditorObject>) => void;
   onDeleteObject: () => void;
   onDuplicateObject: () => void;
+  onDeleteSelected?: () => void;
+  onDuplicateSelected?: () => void;
+  onAlignSelected?: (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
+  onDistributeSelected?: (direction: 'horizontal' | 'vertical') => void;
+  onBringForward?: () => void;
+  onSendBackward?: () => void;
+  onBringToFront?: () => void;
+  onSendToBack?: () => void;
   onUpdateToolDefaults: (updates: Partial<ToolDefaults>) => void;
   className?: string;
 }
@@ -57,15 +83,160 @@ const HIGHLIGHT_PRESETS = [
 
 export function EditorPropertiesPanel({
   selectedObject,
+  selectedObjects,
   activePage,
   activeTool,
   toolDefaults,
   onUpdateObject,
   onDeleteObject,
   onDuplicateObject,
+  onDeleteSelected,
+  onDuplicateSelected,
+  onAlignSelected,
+  onDistributeSelected,
+  onBringForward,
+  onSendBackward,
+  onBringToFront,
+  onSendToBack,
   onUpdateToolDefaults,
   className,
 }: EditorPropertiesPanelProps) {
+  // 1. Multi-Selection Inspector
+  if (selectedObjects && selectedObjects.length > 1) {
+    return (
+      <aside
+        aria-label="Multi-Selection Properties"
+        className={cn(
+          'w-72 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-4 flex flex-col gap-4 overflow-y-auto select-none text-xs',
+          className
+        )}
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+          <span className="font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 text-[11px]">
+            {selectedObjects.length} Objects Selected
+          </span>
+          <div className="flex items-center gap-1">
+            {onDuplicateSelected && (
+              <button
+                type="button"
+                onClick={onDuplicateSelected}
+                title="Duplicate Selected Objects"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {onDeleteSelected && (
+              <button
+                type="button"
+                onClick={onDeleteSelected}
+                title="Delete Selected Objects"
+                className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Alignment controls */}
+        {onAlignSelected && (
+          <div className="space-y-2">
+            <span className="block font-medium text-slate-700 dark:text-slate-300">Align</span>
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => onAlignSelected('left')}
+                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center gap-1 transition-colors"
+                title="Align Left"
+              >
+                <AlignLeft className="w-4 h-4" />
+                <span className="text-[10px]">Left</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onAlignSelected('center')}
+                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center gap-1 transition-colors"
+                title="Align Center (Horizontal)"
+              >
+                <AlignCenter className="w-4 h-4" />
+                <span className="text-[10px]">Center</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onAlignSelected('right')}
+                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center gap-1 transition-colors"
+                title="Align Right"
+              >
+                <AlignRight className="w-4 h-4" />
+                <span className="text-[10px]">Right</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onAlignSelected('top')}
+                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center gap-1 transition-colors"
+                title="Align Top"
+              >
+                <ArrowUpToLine className="w-4 h-4" />
+                <span className="text-[10px]">Top</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onAlignSelected('middle')}
+                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center gap-1 transition-colors"
+                title="Align Middle (Vertical)"
+              >
+                <Minus className="w-4 h-4" />
+                <span className="text-[10px]">Middle</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onAlignSelected('bottom')}
+                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center gap-1 transition-colors"
+                title="Align Bottom"
+              >
+                <ArrowDownToLine className="w-4 h-4" />
+                <span className="text-[10px]">Bottom</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Distribution controls */}
+        {onDistributeSelected && (
+          <div className="space-y-2">
+            <span className="block font-medium text-slate-700 dark:text-slate-300">Distribute</span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={selectedObjects.length < 3}
+                onClick={() => onDistributeSelected('horizontal')}
+                className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-1 transition-colors"
+                title={selectedObjects.length < 3 ? 'Requires 3 or more objects' : 'Distribute Horizontally'}
+              >
+                <span className="text-[11px] font-medium">Horizontal</span>
+              </button>
+              <button
+                type="button"
+                disabled={selectedObjects.length < 3}
+                onClick={() => onDistributeSelected('vertical')}
+                className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-1 transition-colors"
+                title={selectedObjects.length < 3 ? 'Requires 3 or more objects' : 'Distribute Vertically'}
+              >
+                <span className="text-[11px] font-medium">Vertical</span>
+              </button>
+            </div>
+            {selectedObjects.length < 3 && (
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                Select 3 or more objects to distribute spacing evenly.
+              </p>
+            )}
+          </div>
+        )}
+      </aside>
+    );
+  }
+
   if (selectedObject) {
     return (
       <aside
@@ -132,6 +303,98 @@ export function EditorPropertiesPanel({
                 <option value="TimesRoman">Times Roman (Serif)</option>
                 <option value="Courier">Courier (Monospace)</option>
               </select>
+            </div>
+
+            {/* Text Styling: Bold, Italic, Underline, Alignment */}
+            <div>
+              <span className="block font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Style & Alignment
+              </span>
+              <div className="flex items-center gap-1">
+                <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 p-0.5 bg-slate-50/50 dark:bg-slate-800/40">
+                  <button
+                    type="button"
+                    onClick={() => onUpdateObject({ bold: !selectedObject.bold })}
+                    title="Bold"
+                    className={cn(
+                      'p-1.5 rounded-lg transition-colors',
+                      selectedObject.bold
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    )}
+                  >
+                    <Bold className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateObject({ italic: !selectedObject.italic })}
+                    title="Italic"
+                    className={cn(
+                      'p-1.5 rounded-lg transition-colors',
+                      selectedObject.italic
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    )}
+                  >
+                    <Italic className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateObject({ underline: !selectedObject.underline })}
+                    title="Underline"
+                    className={cn(
+                      'p-1.5 rounded-lg transition-colors',
+                      selectedObject.underline
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    )}
+                  >
+                    <Underline className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 p-0.5 bg-slate-50/50 dark:bg-slate-800/40 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => onUpdateObject({ align: 'left' })}
+                    title="Align Left"
+                    className={cn(
+                      'p-1.5 rounded-lg transition-colors',
+                      selectedObject.align === 'left' || !selectedObject.align
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    )}
+                  >
+                    <AlignLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateObject({ align: 'center' })}
+                    title="Align Center"
+                    className={cn(
+                      'p-1.5 rounded-lg transition-colors',
+                      selectedObject.align === 'center'
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    )}
+                  >
+                    <AlignCenter className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateObject({ align: 'right' })}
+                    title="Align Right"
+                    className={cn(
+                      'p-1.5 rounded-lg transition-colors',
+                      selectedObject.align === 'right'
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    )}
+                  >
+                    <AlignRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -480,6 +743,234 @@ export function EditorPropertiesPanel({
                 />
               </div>
             )}
+          </div>
+        )}
+
+        {/* Image Object Properties */}
+        {selectedObject.type === 'image' && (
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium text-slate-700 dark:text-slate-300">Dimensions</span>
+                <span className="text-[11px] text-slate-400">
+                  {Math.round(selectedObject.width)} × {Math.round(selectedObject.height)} pt
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-slate-500">Width</label>
+                  <input
+                    type="number"
+                    min={10}
+                    max={2000}
+                    value={Math.round(selectedObject.width)}
+                    onChange={(e) => {
+                      const w = Math.max(10, parseInt(e.target.value, 10) || 10);
+                      if (selectedObject.lockAspectRatio) {
+                        const aspect = selectedObject.height / selectedObject.width;
+                        onUpdateObject({ width: w, height: Math.round(w * aspect) });
+                      } else {
+                        onUpdateObject({ width: w });
+                      }
+                    }}
+                    className="w-full text-xs p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500">Height</label>
+                  <input
+                    type="number"
+                    min={10}
+                    max={2000}
+                    value={Math.round(selectedObject.height)}
+                    onChange={(e) => {
+                      const h = Math.max(10, parseInt(e.target.value, 10) || 10);
+                      if (selectedObject.lockAspectRatio) {
+                        const aspect = selectedObject.width / selectedObject.height;
+                        onUpdateObject({ height: h, width: Math.round(h * aspect) });
+                      } else {
+                        onUpdateObject({ height: h });
+                      }
+                    }}
+                    className="w-full text-xs p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={selectedObject.lockAspectRatio ?? true}
+                  onChange={(e) => onUpdateObject({ lockAspectRatio: e.target.checked })}
+                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Lock aspect ratio</span>
+              </label>
+              <button
+                type="button"
+                onClick={() =>
+                  onUpdateObject({ rotation: ((selectedObject.rotation || 0) + 90) % 360 })
+                }
+                className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 text-slate-700 dark:text-slate-300"
+                title="Rotate 90 degrees"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+                <span>Rotate</span>
+              </button>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium text-slate-700 dark:text-slate-300">
+                  Opacity ({Math.round(selectedObject.opacity * 100)}%)
+                </span>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={100}
+                value={Math.round(selectedObject.opacity * 100)}
+                onChange={(e) =>
+                  onUpdateObject({ opacity: parseInt(e.target.value, 10) / 100 })
+                }
+                className="w-full accent-indigo-600"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Signature Object Properties */}
+        {selectedObject.type === 'signature' && (
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium text-slate-700 dark:text-slate-300">Dimensions</span>
+                <span className="text-[11px] text-slate-400">
+                  {Math.round(selectedObject.width)} × {Math.round(selectedObject.height)} pt
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-slate-500">Width</label>
+                  <input
+                    type="number"
+                    min={10}
+                    max={2000}
+                    value={Math.round(selectedObject.width)}
+                    onChange={(e) => {
+                      const w = Math.max(10, parseInt(e.target.value, 10) || 10);
+                      const aspect = selectedObject.height / selectedObject.width;
+                      onUpdateObject({ width: w, height: Math.round(w * aspect) });
+                    }}
+                    className="w-full text-xs p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500">Height</label>
+                  <input
+                    type="number"
+                    min={10}
+                    max={2000}
+                    value={Math.round(selectedObject.height)}
+                    onChange={(e) => {
+                      const h = Math.max(10, parseInt(e.target.value, 10) || 10);
+                      const aspect = selectedObject.width / selectedObject.height;
+                      onUpdateObject({ height: h, width: Math.round(h * aspect) });
+                    }}
+                    className="w-full text-xs p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() =>
+                  onUpdateObject({ rotation: ((selectedObject.rotation || 0) + 90) % 360 })
+                }
+                className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 text-slate-700 dark:text-slate-300"
+                title="Rotate 90 degrees"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+                <span>Rotate</span>
+              </button>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium text-slate-700 dark:text-slate-300">
+                  Opacity ({Math.round(selectedObject.opacity * 100)}%)
+                </span>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={100}
+                value={Math.round(selectedObject.opacity * 100)}
+                onChange={(e) =>
+                  onUpdateObject({ opacity: parseInt(e.target.value, 10) / 100 })
+                }
+                className="w-full accent-indigo-600"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Layer Order (Stacking / Z-Order) */}
+        {(onBringForward || onSendBackward || onBringToFront || onSendToBack) && (
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+            <span className="block font-medium text-slate-700 dark:text-slate-300">
+              Layer Stacking
+            </span>
+            <div className="grid grid-cols-4 gap-1">
+              {onBringToFront && (
+                <button
+                  type="button"
+                  onClick={onBringToFront}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center transition-colors text-slate-700 dark:text-slate-300"
+                  title="Bring to Front"
+                >
+                  <ArrowUpToLine className="w-3.5 h-3.5" />
+                  <span className="text-[9px] mt-0.5">Front</span>
+                </button>
+              )}
+              {onBringForward && (
+                <button
+                  type="button"
+                  onClick={onBringForward}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center transition-colors text-slate-700 dark:text-slate-300"
+                  title="Bring Forward"
+                >
+                  <ArrowUp className="w-3.5 h-3.5" />
+                  <span className="text-[9px] mt-0.5">Forward</span>
+                </button>
+              )}
+              {onSendBackward && (
+                <button
+                  type="button"
+                  onClick={onSendBackward}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center transition-colors text-slate-700 dark:text-slate-300"
+                  title="Send Backward"
+                >
+                  <ArrowDown className="w-3.5 h-3.5" />
+                  <span className="text-[9px] mt-0.5">Back</span>
+                </button>
+              )}
+              {onSendToBack && (
+                <button
+                  type="button"
+                  onClick={onSendToBack}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col items-center justify-center transition-colors text-slate-700 dark:text-slate-300"
+                  title="Send to Back"
+                >
+                  <ArrowDownToLine className="w-3.5 h-3.5" />
+                  <span className="text-[9px] mt-0.5">Bottom</span>
+                </button>
+              )}
+            </div>
           </div>
         )}
 

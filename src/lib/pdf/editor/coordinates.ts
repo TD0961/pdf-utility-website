@@ -9,7 +9,7 @@
  * Supports page rotations: 0°, 90°, 180°, 270° and arbitrary zoom scale factors.
  */
 
-import { Point, Rect } from './types';
+import { Point, Rect, EditorObject } from './types';
 
 export interface PageDimensions {
   width: number;
@@ -185,3 +185,106 @@ export function screenRectToPdfRect(
     height: maxY - minY,
   };
 }
+
+/**
+ * Computes the axis-aligned bounding box of any EditorObject in PDF coordinate space.
+ */
+export function getObjectBoundingBox(obj: EditorObject): Rect {
+  switch (obj.type) {
+    case 'rectangle':
+    case 'highlight':
+    case 'image':
+    case 'signature':
+      return {
+        x: obj.x,
+        y: obj.y,
+        width: Math.max(1, obj.width),
+        height: Math.max(1, obj.height),
+      };
+
+    case 'ellipse':
+      return {
+        x: obj.x,
+        y: obj.y,
+        width: Math.max(1, obj.width),
+        height: Math.max(1, obj.height),
+      };
+
+    case 'line':
+    case 'arrow': {
+      const minX = Math.min(obj.start.x, obj.end.x);
+      const maxX = Math.max(obj.start.x, obj.end.x);
+      const minY = Math.min(obj.start.y, obj.end.y);
+      const maxY = Math.max(obj.start.y, obj.end.y);
+      return {
+        x: minX,
+        y: minY,
+        width: Math.max(1, maxX - minX),
+        height: Math.max(1, maxY - minY),
+      };
+    }
+
+    case 'drawing': {
+      if (!obj.points || obj.points.length === 0) {
+        return { x: 0, y: 0, width: 10, height: 10 };
+      }
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const pt of obj.points) {
+        if (pt.x < minX) minX = pt.x;
+        if (pt.x > maxX) maxX = pt.x;
+        if (pt.y < minY) minY = pt.y;
+        if (pt.y > maxY) maxY = pt.y;
+      }
+      return {
+        x: minX,
+        y: minY,
+        width: Math.max(1, maxX - minX),
+        height: Math.max(1, maxY - minY),
+      };
+    }
+
+    case 'text': {
+      const charWidth = obj.fontSize * 0.55;
+      const textWidth = Math.max(12, (obj.text.length || 1) * charWidth);
+      const textHeight = Math.max(12, obj.fontSize);
+      let x = obj.x;
+      if (obj.align === 'center') {
+        x = obj.x - textWidth / 2;
+      } else if (obj.align === 'right') {
+        x = obj.x - textWidth;
+      }
+      return {
+        x,
+        y: obj.y,
+        width: textWidth,
+        height: textHeight,
+      };
+    }
+  }
+}
+
+/**
+ * Converts screen delta displacement (in points) to PDF space delta
+ * accounting for page rotation (0°, 90°, 180°, 270°).
+ *
+ * Screen: +screenDx is RIGHT, -screenDx is LEFT, +screenDy is DOWN, -screenDy is UP.
+ * PDF: +x is RIGHT, -x is LEFT, +y is UP, -y is DOWN.
+ */
+export function screenDeltaToPdfDelta(
+  screenDx: number,
+  screenDy: number,
+  rotation = 0
+): { dx: number; dy: number } {
+  const rot = normalizeRotation(rotation);
+  switch (rot) {
+    case 0:
+      return { dx: screenDx, dy: -screenDy };
+    case 90:
+      return { dx: -screenDy, dy: screenDx };
+    case 180:
+      return { dx: -screenDx, dy: screenDy };
+    case 270:
+      return { dx: screenDy, dy: -screenDx };
+  }
+}
+
