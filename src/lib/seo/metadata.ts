@@ -1,10 +1,7 @@
 import { Metadata } from 'next';
+import { siteConfig, SITE_NAME, SITE_URL, SITE_TAGLINE, SITE_DESCRIPTION } from '@/config/site';
 
-export const SITE_NAME = 'iLikePDF';
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ilikepdf.com';
-export const SITE_TAGLINE = 'Simple PDF tools. Private by design.';
-export const SITE_DESCRIPTION =
-  'Merge, split, convert, rotate, and manage PDF files directly in your browser. Zero backend file processing — 100% private and secure on your device.';
+export { siteConfig, SITE_NAME, SITE_URL, SITE_TAGLINE, SITE_DESCRIPTION };
 
 interface PageSeoProps {
   title?: string;
@@ -28,6 +25,27 @@ export function constructMetadata({
     metadataBase: new URL(SITE_URL),
     alternates: {
       canonical: canonicalUrl,
+    },
+    applicationName: SITE_NAME,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: SITE_NAME,
+    },
+    formatDetection: {
+      telephone: false,
+    },
+    manifest: '/manifest.webmanifest',
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/icon.svg', type: 'image/svg+xml' },
+        { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+      ],
+      apple: [
+        { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      ],
     },
     openGraph: {
       title: fullTitle,

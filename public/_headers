@@ -1,0 +1,39 @@
+# Cloudflare Pages / Netlify Headers Configuration for iLikePDF
+
+# 1. Global Security Headers for all paths
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';
+
+# 2. Service Worker must never be cached permanently
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Content-Type: application/javascript; charset=utf-8
+
+# 3. Web App Manifest
+/manifest.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: application/manifest+json; charset=utf-8
+
+/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: application/json; charset=utf-8
+
+# 4. Immutable Next.js static asset chunks
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 5. Immutable Mozilla PDF.js static worker
+/pdf.worker.min.mjs
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: text/javascript; charset=utf-8
+
+# 6. Icons and Favicon
+/icons/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/favicon.ico
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

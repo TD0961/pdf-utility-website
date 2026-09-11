@@ -1,4 +1,4 @@
-export type ToolCategory = 'organize' | 'convert' | 'enhance' | 'secure';
+export type ToolCategory = 'create-convert' | 'edit' | 'organize' | 'optimize' | 'secure';
 
 export type ToolStatus = 'available' | 'beta' | 'planned';
 

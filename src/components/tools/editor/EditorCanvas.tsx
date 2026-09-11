@@ -864,7 +864,7 @@ export function EditorCanvas({
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox={`0 0 ${screenWidth} ${screenHeight}`}
         >
-          {/* Temporary Search Result Highlights (Phase 3C.5) */}
+          {/* Temporary Search Result Highlights */}
           {searchMatches && searchMatches.length > 0 && (
             <g className="search-highlights-layer" aria-label="Search highlights">
               {searchMatches.map((match, idx) => {

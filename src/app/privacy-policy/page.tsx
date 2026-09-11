@@ -6,7 +6,7 @@ import { constructMetadata } from '@/lib/seo/metadata';
 import { ShieldCheck, ServerOff } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Privacy Policy — iLikePDF Zero-Backend Guarantee',
+  title: 'Privacy Policy — iLikePDF Zero-Backend Architecture',
   description:
     'Our comprehensive privacy policy detailing our zero-backend architecture, client-side PDF processing, and data protection practices.',
   path: '/privacy-policy',

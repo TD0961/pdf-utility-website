@@ -24,6 +24,16 @@ export async function getPdfJs() {
 }
 
 /**
+ * Loads a PDF document using PDF.js
+ */
+export async function getPdfDocument(data: ArrayBuffer | Uint8Array) {
+  const pdfjs = await getPdfJs();
+  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+  const loadingTask = pdfjs.getDocument({ data: bytes });
+  return loadingTask.promise;
+}
+
+/**
  * Retrieves the total page count of a PDF file
  */
 export async function getPdfPageCount(file: File | ArrayBuffer): Promise<number> {

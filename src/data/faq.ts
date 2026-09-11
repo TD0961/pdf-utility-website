@@ -7,21 +7,21 @@ export interface GlobalFaqItem {
 export const GLOBAL_FAQS: GlobalFaqItem[] = [
   {
     category: 'privacy',
-    question: 'How do you guarantee my PDF files are never uploaded to your server?',
+    question: 'Are my PDF files uploaded to a server?',
     answer:
-      'iLikePDF operates with a zero-backend architecture for document processing. All processing logic executes inside your browser using JavaScript and WebAssembly. Your files are loaded into your local computer’s memory and are never transmitted across the network to our servers or any third-party file processor.',
+      'No. Your PDF is processed locally in your browser. iLikePDF operates with a zero-backend architecture for document processing. All processing logic executes inside your browser using JavaScript and WebAssembly. Your files are loaded into your local computer’s memory and are not transmitted to our servers or external file processors.',
   },
   {
     category: 'privacy',
     question: 'Do you keep a copy or store my document data?',
     answer:
-      'No. We do not operate a file storage system, database, or server processing queue. When you close the browser tab or click Reset, all file data held in browser memory is permanently discarded.',
+      'No. We do not operate a file storage system, database, or server processing queue. When you close the browser tab or click Reset, all file data held in browser memory is released.',
   },
   {
     category: 'general',
     question: 'Is iLikePDF free to use?',
     answer:
-      'Yes, 100% free. There are no subscriptions, paywalls, or hidden charges. We support platform maintenance through unobtrusive, privacy-friendly advertising.',
+      'Yes, iLikePDF is free. There are no subscriptions, paywalls, or hidden charges. We support platform maintenance through unobtrusive advertising.',
   },
   {
     category: 'technical',
@@ -37,8 +37,8 @@ export const GLOBAL_FAQS: GlobalFaqItem[] = [
   },
   {
     category: 'security',
-    question: 'Are my passwords or confidential data safe?',
+    question: 'How are passwords and encrypted files handled?',
     answer:
-      'Yes. When you use tools like Protect PDF or Unlock PDF, the encryption algorithms run locally in your browser. Passwords and decrypted documents are never transmitted over the internet.',
+      'When you use tools like Protect PDF or Unlock PDF, encryption and decryption algorithms run locally in your browser. Passwords and decrypted documents are processed in volatile memory without server transmission.',
   },
 ];

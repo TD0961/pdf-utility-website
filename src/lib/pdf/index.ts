@@ -16,3 +16,19 @@ export * from './watermark';
 export * from './protect';
 export * from './unlock';
 export * from './editor';
+export * as conversion from './conversion';
+export * as extraction from './extraction/csv-extractor';
+export * from './flatten';
+export * from './metadata';
+export {
+  type PagePreset,
+  type PageOrientation,
+  type ResizeMode,
+  PRESET_DIMENSIONS,
+  type ResizeOptions,
+  type ResizeResult,
+  resizePdf,
+} from './resize';
+export * from './grayscale';
+export * from './header-footer';
+export * from './inspector';

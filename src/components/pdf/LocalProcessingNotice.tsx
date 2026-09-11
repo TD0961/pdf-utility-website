@@ -18,7 +18,7 @@ export function LocalProcessingNotice({ className, compact = false }: LocalProce
       >
         <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
         <span>
-          <strong>Your PDF is processed locally in your browser.</strong> Files are never uploaded to a remote server.
+          <strong>Your PDF is processed locally in your browser.</strong> No files are uploaded to our servers.
         </span>
       </div>
     );
@@ -39,7 +39,7 @@ export function LocalProcessingNotice({ className, compact = false }: LocalProce
           Your PDF is processed locally in your browser.
         </p>
         <p className="text-emerald-800/90 dark:text-emerald-300/80 text-xs mt-0.5">
-          iLikePDF uses client-side WebAssembly to process documents entirely on your device. Your file contents, text, and pages are never uploaded to our servers or any cloud service.
+          iLikePDF processes documents on your device using client-side WebAssembly and Web Workers. No document data is transmitted to our servers or external cloud services during processing.
         </p>
       </div>
     </div>

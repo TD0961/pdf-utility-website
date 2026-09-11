@@ -9,3 +9,4 @@ export * from './PdfToolbar';
 export * from './PdfWorkspace';
 export * from './DownloadButton';
 export * from './ResetButton';
+export * from './DocumentDiagnosticsBadge';

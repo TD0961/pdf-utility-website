@@ -142,7 +142,7 @@ export function UnlockWorkspace() {
             acceptsMultiple={false}
             acceptedTypes={['.pdf', 'application/pdf']}
             title="Select Password-Protected PDF"
-            subtitle="Remove password protection from your PDF files. Requires knowing the document password. 100% private in-browser."
+            subtitle="Remove password protection from your PDF files. Requires knowing the document password. Processed locally in your browser."
           />
           <LocalProcessingNotice />
         </div>

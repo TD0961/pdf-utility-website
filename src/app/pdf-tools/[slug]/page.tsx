@@ -22,10 +22,28 @@ import { WatermarkWorkspace } from '@/components/tools/watermark/WatermarkWorksp
 import { ProtectWorkspace } from '@/components/tools/protect/ProtectWorkspace';
 import { UnlockWorkspace } from '@/components/tools/unlock/UnlockWorkspace';
 import { PdfEditorWorkspace } from '@/components/tools/editor/PdfEditorWorkspace';
-import { TOOLS_REGISTRY, getToolBySlug, getRelatedTools } from '@/data/tools';
+import { PdfToWordWorkspace } from '@/components/tools/pdf-to-word/PdfToWordWorkspace';
+import { PdfToPptWorkspace } from '@/components/tools/pdf-to-ppt/PdfToPptWorkspace';
+import { PdfToExcelWorkspace } from '@/components/tools/pdf-to-excel/PdfToExcelWorkspace';
+import { CompressWorkspace } from '@/components/tools/compress/CompressWorkspace';
+import { OcrWorkspace } from '@/components/tools/ocr/OcrWorkspace';
+import { SignWorkspace } from '@/components/tools/sign/SignWorkspace';
+import { FillWorkspace } from '@/components/tools/fill/FillWorkspace';
+import { CropWorkspace } from '@/components/tools/crop/CropWorkspace';
+import { CompareWorkspace } from '@/components/tools/compare/CompareWorkspace';
+import { PdfToCsvWorkspace } from '@/components/tools/pdf-to-csv/PdfToCsvWorkspace';
+import { PdfToMarkdownWorkspace } from '@/components/tools/pdf-to-markdown/PdfToMarkdownWorkspace';
+import { ExtractImagesWorkspace } from '@/components/tools/extract-images/ExtractImagesWorkspace';
+import { FlattenWorkspace } from '@/components/tools/flatten/FlattenWorkspace';
+import { RemoveMetadataWorkspace } from '@/components/tools/remove-metadata/RemoveMetadataWorkspace';
+import { ResizeWorkspace } from '@/components/tools/resize/ResizeWorkspace';
+import { GrayscaleWorkspace } from '@/components/tools/grayscale/GrayscaleWorkspace';
+import { HeaderFooterWorkspace } from '@/components/tools/header-footer/HeaderFooterWorkspace';
+import { TOOLS_REGISTRY, getToolBySlug, getRelatedTools, getRelatedGuidesForTool } from '@/data/tools';
 import { GUIDES_REGISTRY } from '@/data/guides';
 import { constructMetadata, SITE_URL } from '@/lib/seo/metadata';
-import { getToolSoftwareSchema } from '@/lib/seo/jsonld';
+import { getToolSoftwareSchema, getFaqSchema } from '@/lib/seo/jsonld';
+import { AnchorAd } from '@/components/ads/AnchorAd';
 import {
   CheckCircle2,
   Lightbulb,
@@ -56,7 +74,7 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
   }
 
   return constructMetadata({
-    title: `${tool.name} — Free & 100% Private In-Browser`,
+    title: `${tool.name} — Free & Private In-Browser PDF Tool`,
     description: tool.metaDescription,
     path: `/pdf-tools/${tool.slug}`,
   });
@@ -71,19 +89,26 @@ export default async function ToolPage({ params }: ToolPageProps) {
   }
 
   const relatedTools = getRelatedTools(tool);
-  const relatedGuides = tool.relatedGuides
+  const relatedGuideSlugs = getRelatedGuidesForTool(tool);
+  const relatedGuides = relatedGuideSlugs
     .map((gSlug) => GUIDES_REGISTRY.find((g) => g.slug === gSlug))
     .filter((g): g is NonNullable<typeof g> => Boolean(g));
 
-  const jsonLdData = getToolSoftwareSchema({
+  const jsonLdToolData = getToolSoftwareSchema({
     name: tool.name,
     description: tool.metaDescription,
     url: `${SITE_URL}/pdf-tools/${tool.slug}`,
   });
 
+  const jsonLdFaqData = tool.faqs.length > 0 ? getFaqSchema(tool.faqs) : null;
+
+  const isEditor = tool.slug === 'pdf-editor';
+  const pageType = isEditor ? 'editor' : 'tool';
+
   return (
     <div className="pb-16 space-y-12">
-      <JsonLd data={jsonLdData} />
+      <JsonLd data={jsonLdToolData} />
+      {jsonLdFaqData && <JsonLd data={jsonLdFaqData} />}
 
       <Container className="pt-6 space-y-6">
         {/* 1. Breadcrumbs */}
@@ -131,6 +156,23 @@ export default async function ToolPage({ params }: ToolPageProps) {
           {tool.slug === 'protect-pdf' && <ProtectWorkspace />}
           {tool.slug === 'unlock-pdf' && <UnlockWorkspace />}
           {tool.slug === 'pdf-editor' && <PdfEditorWorkspace />}
+          {tool.slug === 'pdf-to-word' && <PdfToWordWorkspace />}
+          {tool.slug === 'pdf-to-ppt' && <PdfToPptWorkspace />}
+          {tool.slug === 'pdf-to-excel' && <PdfToExcelWorkspace />}
+          {tool.slug === 'compress-pdf' && <CompressWorkspace />}
+          {tool.slug === 'ocr-pdf' && <OcrWorkspace />}
+          {tool.slug === 'sign-pdf' && <SignWorkspace />}
+          {tool.slug === 'fill-pdf' && <FillWorkspace />}
+          {tool.slug === 'crop-pdf' && <CropWorkspace />}
+          {tool.slug === 'compare-pdf' && <CompareWorkspace />}
+          {tool.slug === 'pdf-to-csv' && <PdfToCsvWorkspace />}
+          {tool.slug === 'pdf-to-markdown' && <PdfToMarkdownWorkspace />}
+          {tool.slug === 'extract-images' && <ExtractImagesWorkspace />}
+          {tool.slug === 'flatten-pdf' && <FlattenWorkspace />}
+          {tool.slug === 'remove-pdf-metadata' && <RemoveMetadataWorkspace />}
+          {tool.slug === 'resize-pdf' && <ResizeWorkspace />}
+          {tool.slug === 'grayscale-pdf' && <GrayscaleWorkspace />}
+          {tool.slug === 'header-footer' && <HeaderFooterWorkspace />}
           {tool.slug !== 'merge-pdf' &&
             tool.slug !== 'organize-pdf' &&
             tool.slug !== 'split-pdf' &&
@@ -143,11 +185,33 @@ export default async function ToolPage({ params }: ToolPageProps) {
             tool.slug !== 'watermark-pdf' &&
             tool.slug !== 'protect-pdf' &&
             tool.slug !== 'unlock-pdf' &&
-            tool.slug !== 'pdf-editor' && <ToolClientWorkspace tool={tool} />}
+            tool.slug !== 'pdf-editor' &&
+            tool.slug !== 'pdf-to-word' &&
+            tool.slug !== 'pdf-to-ppt' &&
+            tool.slug !== 'pdf-to-excel' &&
+            tool.slug !== 'compress-pdf' &&
+            tool.slug !== 'ocr-pdf' &&
+            tool.slug !== 'sign-pdf' &&
+            tool.slug !== 'fill-pdf' &&
+            tool.slug !== 'crop-pdf' &&
+            tool.slug !== 'compare-pdf' &&
+            tool.slug !== 'pdf-to-csv' &&
+            tool.slug !== 'pdf-to-markdown' &&
+            tool.slug !== 'extract-images' &&
+            tool.slug !== 'flatten-pdf' &&
+            tool.slug !== 'remove-pdf-metadata' &&
+            tool.slug !== 'resize-pdf' &&
+            tool.slug !== 'grayscale-pdf' &&
+            tool.slug !== 'header-footer' && <ToolClientWorkspace tool={tool} />}
         </section>
 
-        {/* 4. Moderate, Isolated AdSlot */}
-        <AdSlot slotId={`tool-${tool.slug}-mid`} />
+        {/* 4. Strategic AdSlot (Policy-controlled, strictly excluded on PDF Editor) */}
+        <AdSlot
+          slotId={`tool-${tool.slug}-post-tool`}
+          pageType={pageType}
+          placement="post-tool"
+          format="horizontal"
+        />
 
         {/* 5. How The Tool Works */}
         <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm space-y-4">
@@ -274,6 +338,14 @@ export default async function ToolPage({ params }: ToolPageProps) {
           </section>
         )}
 
+        {/* Separated Content Bottom AdSlot */}
+        <AdSlot
+          slotId={`tool-${tool.slug}-end`}
+          pageType={pageType}
+          placement="end-content"
+          format="horizontal"
+        />
+
         {/* 10. Related Tools */}
         {relatedTools.length > 0 && (
           <section className="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
@@ -334,6 +406,9 @@ export default async function ToolPage({ params }: ToolPageProps) {
           </section>
         )}
       </Container>
+
+      {/* Viewport Bottom Anchor Ad (Automatically excluded on PDF Editor) */}
+      <AnchorAd pageType={pageType} slotId={`tool-${tool.slug}-anchor`} />
     </div>
   );
 }

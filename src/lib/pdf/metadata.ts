@@ -1,0 +1,136 @@
+/**
+ * iLikePDF — PDF Metadata Inspection & Removal Engine
+ * Inspects standard document metadata properties and securely strips
+ * them from the PDF document structure client-side.
+ */
+
+import { PDFDocument, PDFName } from 'pdf-lib';
+import { assertValidPdfOutput } from './output-validator';
+import { CancellationToken } from './conversion/types';
+
+export interface PdfMetadataInfo {
+  title: string;
+  author: string;
+  subject: string;
+  keywords: string;
+  creator: string;
+  producer: string;
+  creationDate?: string;
+  modificationDate?: string;
+}
+
+export interface MetadataRemovalOptions {
+  cancellationToken?: CancellationToken;
+  removeTitle?: boolean;
+  removeAuthor?: boolean;
+  removeSubject?: boolean;
+  removeKeywords?: boolean;
+  removeCreator?: boolean;
+  removeProducer?: boolean;
+}
+
+export interface MetadataRemovalResult {
+  cleanedBytes: Uint8Array;
+  originalMetadata: PdfMetadataInfo;
+  clearedFieldsCount: number;
+  pageCount: number;
+  durationMs: number;
+}
+
+/**
+ * Inspects all standard PDF metadata fields.
+ */
+export async function inspectPdfMetadata(buffer: ArrayBuffer): Promise<PdfMetadataInfo> {
+  const pdfDoc = await PDFDocument.load(buffer, { ignoreEncryption: true, updateMetadata: false });
+
+  const cDate = pdfDoc.getCreationDate();
+  const mDate = pdfDoc.getModificationDate();
+
+  return {
+    title: pdfDoc.getTitle() || '',
+    author: pdfDoc.getAuthor() || '',
+    subject: pdfDoc.getSubject() || '',
+    keywords: pdfDoc.getKeywords() || '',
+    creator: pdfDoc.getCreator() || '',
+    producer: pdfDoc.getProducer() || '',
+    creationDate: cDate ? cDate.toISOString() : undefined,
+    modificationDate: mDate ? mDate.toISOString() : undefined,
+  };
+}
+
+/**
+ * Strips supported document metadata fields from the PDF.
+ */
+export async function removePdfMetadata(
+  buffer: ArrayBuffer,
+  options: MetadataRemovalOptions = {}
+): Promise<MetadataRemovalResult> {
+  const startTime = Date.now();
+
+  if (options.cancellationToken?.isCancelled) {
+    throw new Error('Metadata removal cancelled by user.');
+  }
+
+  const pdfDoc = await PDFDocument.load(buffer, { ignoreEncryption: true, updateMetadata: false });
+  const pageCount = pdfDoc.getPageCount();
+  const originalMetadata = await inspectPdfMetadata(buffer);
+
+  let clearedFieldsCount = 0;
+
+  // By default, remove all fields unless specifically opted out
+  if (options.removeTitle !== false && originalMetadata.title) {
+    pdfDoc.setTitle('');
+    clearedFieldsCount++;
+  }
+
+  if (options.removeAuthor !== false && originalMetadata.author) {
+    pdfDoc.setAuthor('');
+    clearedFieldsCount++;
+  }
+
+  if (options.removeSubject !== false && originalMetadata.subject) {
+    pdfDoc.setSubject('');
+    clearedFieldsCount++;
+  }
+
+  if (options.removeKeywords !== false && originalMetadata.keywords) {
+    pdfDoc.setKeywords([]);
+    clearedFieldsCount++;
+  }
+
+  if (options.removeCreator !== false && originalMetadata.creator) {
+    pdfDoc.setCreator('');
+    clearedFieldsCount++;
+  }
+
+  if (options.removeProducer !== false && originalMetadata.producer) {
+    pdfDoc.setProducer('');
+    clearedFieldsCount++;
+  }
+
+  // Remove XML Metadata stream from document catalog if present
+  try {
+    const metadataKey = PDFName.of('Metadata');
+    if (pdfDoc.catalog.has(metadataKey)) {
+      pdfDoc.catalog.delete(metadataKey);
+      clearedFieldsCount++;
+    }
+  } catch {
+    // Graceful ignore if stream is not standard
+  }
+
+  const cleanedBytes = await pdfDoc.save();
+
+  // Validate output PDF integrity
+  await assertValidPdfOutput(cleanedBytes, {
+    expectedPages: pageCount,
+  });
+
+  return {
+    cleanedBytes,
+    originalMetadata,
+    clearedFieldsCount,
+    pageCount,
+    durationMs: Date.now() - startTime,
+  };
+}

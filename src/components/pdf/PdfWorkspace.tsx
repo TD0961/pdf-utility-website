@@ -12,6 +12,10 @@ import { ToolMetadata } from '@/types/tool';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { inspectPdfDocument, DocumentDiagnostics } from '@/lib/pdf/inspector';
+import { DocumentDiagnosticsBadge } from './DocumentDiagnosticsBadge';
+import { TOOL_RELATIONSHIPS } from '@/lib/tools/relationships';
+import { getToolBySlug } from '@/data/tools';
 
 export interface PdfWorkspaceProps {
   tool: ToolMetadata;
@@ -21,6 +25,7 @@ export interface PdfWorkspaceProps {
 
 export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspaceProps) {
   const [files, setFiles] = useState<File[]>([]);
+  const [diagnostics, setDiagnostics] = useState<DocumentDiagnostics | null>(null);
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [progressStage, setProgressStage] = useState('');
@@ -42,6 +47,15 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
     }
     setStatus('loaded');
     setErrorMessage(null);
+
+    // Run lightweight client document inspection
+    if (newFiles[0]?.name.toLowerCase().endsWith('.pdf')) {
+      newFiles[0]
+        .arrayBuffer()
+        .then((buf) => inspectPdfDocument(buf))
+        .then(setDiagnostics)
+        .catch(() => {});
+    }
   };
 
   const handleRemoveFile = (index: number) => {
@@ -49,6 +63,7 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
     setFiles(updated);
     if (updated.length === 0) {
       setStatus('idle');
+      setDiagnostics(null);
     }
   };
 
@@ -62,6 +77,7 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
   const handleReset = () => {
     memoryManager.clearAll();
     setFiles([]);
+    setDiagnostics(null);
     setResult(null);
     setStatus('idle');
     setProgress(0);
@@ -98,6 +114,15 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
     }
   };
 
+  const relatedSlugs = TOOL_RELATIONSHIPS[tool.slug]?.relatedTools || [];
+  const nextSteps = relatedSlugs
+    .map((s) => {
+      const t = getToolBySlug(s);
+      return t ? { slug: t.slug, name: t.name } : null;
+    })
+    .filter((t): t is { slug: string; name: string } => Boolean(t))
+    .slice(0, 3);
+
   return (
     <div className="w-full space-y-6">
       <LocalProcessingNotice />
@@ -123,6 +148,8 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
             acceptsMultiple={tool.acceptsMultiple}
           />
 
+          {diagnostics && <DocumentDiagnosticsBadge diagnostics={diagnostics} />}
+
           <PdfToolbar
             actionLabel={tool.name}
             fileCount={files.length}
@@ -142,7 +169,7 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
 
       {/* State: SUCCESS */}
       {status === 'success' && result && (
-        <PdfResult result={result} onReset={handleReset} />
+        <PdfResult result={result} onReset={handleReset} nextSteps={nextSteps} />
       )}
 
       {/* State: ERROR */}

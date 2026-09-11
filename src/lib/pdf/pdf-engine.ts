@@ -4,6 +4,7 @@
  */
 
 import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
+import { siteConfig } from '@/config/site';
 
 export interface MergeOptions {
   files: File[];
@@ -247,8 +248,8 @@ export async function sanitizePdfMetadata(file: File): Promise<Uint8Array> {
   doc.setAuthor('');
   doc.setSubject('');
   doc.setKeywords([]);
-  doc.setProducer('iLikePDF Client-Side Privacy Utility');
-  doc.setCreator('iLikePDF (https://ilikepdf.com)');
+  doc.setProducer(`${siteConfig.name} Client-Side Privacy Utility`);
+  doc.setCreator(`${siteConfig.name} (${siteConfig.url})`);
 
   return await doc.save();
 }

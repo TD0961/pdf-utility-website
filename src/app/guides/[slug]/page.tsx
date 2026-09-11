@@ -6,6 +6,7 @@ import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { Button } from '@/components/ui/Button';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { AnchorAd } from '@/components/ads/AnchorAd';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { GUIDES_REGISTRY, getGuideBySlug } from '@/data/guides';
 import { getToolBySlug } from '@/data/tools';
@@ -161,7 +162,11 @@ export default async function GuidePage({ params }: GuidePageProps) {
           </p>
         </div>
 
-        <AdSlot slotId={`guide-${guide.slug}-bottom`} />
+        <AdSlot
+          slotId={`guide-${guide.slug}-bottom`}
+          pageType="guide"
+          placement="end-content"
+        />
 
         {/* Related Guides Links */}
         {relatedGuides.length > 0 && (
@@ -188,6 +193,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
           </div>
         )}
       </Container>
+      <AnchorAd pageType="guide" />
     </article>
   );
 }

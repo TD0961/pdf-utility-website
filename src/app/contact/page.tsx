@@ -5,6 +5,7 @@ import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { Card } from '@/components/ui/Card';
 import { constructMetadata } from '@/lib/seo/metadata';
+import { siteConfig } from '@/config/site';
 import { Mail, ShieldCheck, HelpCircle } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
@@ -38,10 +39,10 @@ export default function ContactPage() {
             For general feedback, feature suggestions, or business questions:
           </p>
           <a
-            href="mailto:support@ilikepdf.com"
+            href={`mailto:${siteConfig.supportEmail}`}
             className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline block pt-2"
           >
-            support@ilikepdf.com
+            {siteConfig.supportEmail}
           </a>
         </Card>
 
@@ -54,10 +55,10 @@ export default function ContactPage() {
             For technical security disclosures or questions regarding our zero-backend model:
           </p>
           <a
-            href="mailto:privacy@ilikepdf.com"
+            href={`mailto:${siteConfig.privacyEmail}`}
             className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline block pt-2"
           >
-            privacy@ilikepdf.com
+            {siteConfig.privacyEmail}
           </a>
         </Card>
       </div>

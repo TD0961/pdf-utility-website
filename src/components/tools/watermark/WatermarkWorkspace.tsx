@@ -207,7 +207,7 @@ export function WatermarkWorkspace() {
             acceptsMultiple={false}
             acceptedTypes={['.pdf', 'application/pdf']}
             title="Select PDF to Watermark"
-            subtitle="Stamp custom text watermarks onto any PDF document. 100% private in-browser processing."
+            subtitle="Stamp custom text watermarks onto any PDF document. Processed locally in your browser."
           />
           <LocalProcessingNotice />
         </div>

@@ -404,3 +404,85 @@ export async function assertValidZipContainsJpgs(
   return report;
 }
 
+export interface XlsxValidationReport {
+  valid: boolean;
+  error?: string;
+  byteLength: number;
+  hasWorksheet: boolean;
+}
+
+/**
+ * Validates generated XLSX byte package integrity and OpenXML SpreadsheetML structure.
+ */
+export async function validateXlsxOutput(
+  blobOrBytes: Blob | ArrayBuffer | Uint8Array
+): Promise<XlsxValidationReport> {
+  let bytes: Uint8Array;
+  if (typeof Blob !== 'undefined' && blobOrBytes instanceof Blob) {
+    bytes = new Uint8Array(await blobOrBytes.arrayBuffer());
+  } else if (blobOrBytes instanceof ArrayBuffer) {
+    bytes = new Uint8Array(blobOrBytes);
+  } else {
+    bytes = blobOrBytes as Uint8Array;
+  }
+
+  if (!bytes || bytes.length < 100) {
+    return {
+      valid: false,
+      error: 'Generated Excel file is empty or suspiciously small.',
+      byteLength: bytes?.length || 0,
+      hasWorksheet: false,
+    };
+  }
+
+  // Check PK zip magic bytes
+  if (bytes[0] !== 0x50 || bytes[1] !== 0x4b || bytes[2] !== 0x03 || bytes[3] !== 0x04) {
+    return {
+      valid: false,
+      error: 'Generated file does not have valid ZIP/OpenXML header signature.',
+      byteLength: bytes.length,
+      hasWorksheet: false,
+    };
+  }
+
+  try {
+    const zip = await JSZip.loadAsync(bytes);
+    const hasContentTypes = Boolean(zip.file('[Content_Types].xml'));
+    const hasWorkbook = Boolean(zip.file('xl/workbook.xml'));
+    const hasWorksheet = Boolean(zip.file('xl/worksheets/sheet1.xml'));
+
+    if (!hasContentTypes || !hasWorkbook || !hasWorksheet) {
+      return {
+        valid: false,
+        error: 'Generated XLSX package is missing essential OpenXML parts ([Content_Types], workbook, or worksheet).',
+        byteLength: bytes.length,
+        hasWorksheet,
+      };
+    }
+
+    return {
+      valid: true,
+      byteLength: bytes.length,
+      hasWorksheet: true,
+    };
+  } catch (err) {
+    return {
+      valid: false,
+      error: `Failed to inspect OpenXML spreadsheet package: ${err instanceof Error ? err.message : String(err)}`,
+      byteLength: bytes.length,
+      hasWorksheet: false,
+    };
+  }
+}
+
+export async function assertValidXlsxOutput(
+  blobOrBytes: Blob | ArrayBuffer | Uint8Array
+): Promise<XlsxValidationReport> {
+  const report = await validateXlsxOutput(blobOrBytes);
+  if (!report.valid) {
+    throw new Error(`XLSX validation failed: ${report.error}`);
+  }
+  return report;
+}
+
+

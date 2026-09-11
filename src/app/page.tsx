@@ -17,6 +17,7 @@ import {
   FileText,
   BookOpen,
 } from 'lucide-react';
+import { BrandMark } from '@/components/ui/BrandLogo';
 
 export default function HomePage() {
   const popularTools = TOOLS_REGISTRY.filter((t) => t.badge === 'Popular');
@@ -29,9 +30,11 @@ export default function HomePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-indigo-500/10 via-violet-500/10 to-emerald-500/10 blur-3xl pointer-events-none -z-10 rounded-full" />
 
         <Container className="text-center space-y-6">
+          <BrandMark size={56} className="mx-auto shadow-lg shadow-indigo-500/25 hover:scale-105 transition-transform duration-300" />
+
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-xs">
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>100% Client-Side Processing • Zero Server Uploads</span>
+            <span>Client-Side In-Browser Processing • Zero Server Uploads</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-3xl mx-auto">
@@ -95,7 +98,7 @@ export default function HomePage() {
                 <Lock className="w-4 h-4" />
               </div>
               <div className="text-xs">
-                <p className="font-semibold text-slate-900 dark:text-slate-100">100% Free</p>
+                <p className="font-semibold text-slate-900 dark:text-slate-100">Free to Use</p>
                 <p className="text-slate-500">No sign-up required</p>
               </div>
             </div>
@@ -158,7 +161,7 @@ export default function HomePage() {
 
       {/* Non-intrusive AdSlot */}
       <Container>
-        <AdSlot slotId="home-leaderboard" />
+        <AdSlot slotId="home-leaderboard" pageType="home" placement="in-content" />
       </Container>
 
       {/* How It Works Section */}
@@ -169,7 +172,7 @@ export default function HomePage() {
               How iLikePDF Works
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Three simple steps with 100% client-side privacy.
+              Three simple steps with local browser processing.
             </p>
           </div>
 
@@ -219,7 +222,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {TOOL_CATEGORIES.map((category) => {
               const tools = TOOLS_REGISTRY.filter((t) => t.category === category.id);
 

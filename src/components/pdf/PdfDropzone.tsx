@@ -134,7 +134,7 @@ export function PdfDropzone({
         </Button>
 
         <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-4 block">
-          No file size limit imposed by server • 100% processed locally on your device
+          No file size limit imposed by server • Processed locally in your browser
         </span>
       </div>
 
