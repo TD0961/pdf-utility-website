@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Client-Side OpenXML DOCX Document Builder
+ * PDFSimplify — Client-Side OpenXML DOCX Document Builder
  * Generates standards-compliant Microsoft Word (.docx) documents in-browser using JSZip.
  * Reconstructs headings, paragraphs, runs, styles, and page breaks without server APIs.
  */
@@ -122,8 +122,8 @@ export async function buildDocxFromLayout(
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/">
   <dc:title>${escapeXml(layout.fileName || 'Document')}</dc:title>
-  <dc:creator>iLikePDF Client-Side Engine</dc:creator>
-  <cp:lastModifiedBy>iLikePDF</cp:lastModifiedBy>
+  <dc:creator>PDFSimplify Client-Side Engine</dc:creator>
+  <cp:lastModifiedBy>PDFSimplify</cp:lastModifiedBy>
   <dcterms:created>${dateIso}</dcterms:created>
   <dcterms:modified>${dateIso}</dcterms:modified>
 </cp:coreProperties>`
@@ -133,7 +133,7 @@ export async function buildDocxFromLayout(
     'docProps/app.xml',
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
-  <Application>iLikePDF.com Local Converter</Application>
+  <Application>pdfsimplify.com Local Converter</Application>
   <DocSecurity>0</DocSecurity>
   <ScaleCrop>false</ScaleCrop>
   <Pages>${layout.totalPages}</Pages>

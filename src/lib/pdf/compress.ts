@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Client-Side PDF Compression & Optimization Engine
+ * PDFSimplify — Client-Side PDF Compression & Optimization Engine
  * Genuine in-browser size reduction via object stream compaction, metadata cleanup,
  * unreferenced object purging, and resource optimization.
  * Processed locally in your browser, zero backend.
@@ -22,10 +22,14 @@ export interface CompressionOptions {
 
 export interface CompressionResult {
   blob: Blob;
+  pdfBytes: Uint8Array;
+  uint8Array: Uint8Array;
+  bytes?: Uint8Array;
   originalSize: number;
   compressedSize: number;
   savedBytes: number;
   savedPercent: number;
+  compressionRatio: number;
   isAlreadyOptimized: boolean;
   pageCount: number;
   level: CompressionLevel;
@@ -35,12 +39,23 @@ export interface CompressionResult {
  * Compresses a PDF file using purely client-side optimization techniques.
  */
 export async function compressPdf(
-  fileOrBuffer: File | ArrayBuffer | Uint8Array,
+  fileOrBufferOrOptions: File | ArrayBuffer | Uint8Array | { file: File | ArrayBuffer | Uint8Array | { bytes?: Uint8Array; buffer?: ArrayBuffer }; level?: CompressionLevel; onProgress?: (p: CompressionProgress) => void },
   options: CompressionOptions = {}
-): Promise<CompressionResult> {
-  const level = options.level || 'balanced';
+): Promise<Uint8Array & CompressionResult & { pdfBytes: Uint8Array; uint8Array: Uint8Array; bytes: Uint8Array }> {
+  let fileOrBuffer: unknown = fileOrBufferOrOptions;
+  let opts: CompressionOptions = options;
+
+  if (fileOrBufferOrOptions && typeof fileOrBufferOrOptions === 'object' && 'file' in fileOrBufferOrOptions) {
+    fileOrBuffer = fileOrBufferOrOptions.file;
+    opts = {
+      level: fileOrBufferOrOptions.level || options.level,
+      onProgress: fileOrBufferOrOptions.onProgress || options.onProgress,
+    };
+  }
+
+  const level = opts.level || 'balanced';
   const notify = (percentage: number, stage: string) => {
-    options.onProgress?.({ percentage, stage });
+    opts.onProgress?.({ percentage, stage });
   };
 
   notify(10, 'Reading PDF document into memory...');
@@ -50,8 +65,18 @@ export async function compressPdf(
     inputBytes = fileOrBuffer;
   } else if (fileOrBuffer instanceof ArrayBuffer) {
     inputBytes = new Uint8Array(fileOrBuffer);
+  } else if (fileOrBuffer && typeof fileOrBuffer === 'object') {
+    if ('bytes' in fileOrBuffer && (fileOrBuffer as { bytes: Uint8Array }).bytes instanceof Uint8Array) {
+      inputBytes = (fileOrBuffer as { bytes: Uint8Array }).bytes;
+    } else if ('buffer' in fileOrBuffer && (fileOrBuffer as { buffer: ArrayBuffer }).buffer instanceof ArrayBuffer) {
+      inputBytes = new Uint8Array((fileOrBuffer as { buffer: ArrayBuffer }).buffer);
+    } else if ('arrayBuffer' in fileOrBuffer && typeof (fileOrBuffer as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer === 'function') {
+      inputBytes = new Uint8Array(await (fileOrBuffer as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer());
+    } else {
+      inputBytes = new Uint8Array(fileOrBuffer as unknown as ArrayBuffer);
+    }
   } else {
-    inputBytes = new Uint8Array(await fileOrBuffer.arrayBuffer());
+    inputBytes = new Uint8Array(fileOrBuffer as unknown as ArrayBuffer);
   }
 
   const originalSize = inputBytes.length;
@@ -90,13 +115,13 @@ export async function compressPdf(
   // Metadata optimization based on level
   if (level === 'basic') {
     // Retain title/author if present, but normalize producer
-    targetDoc.setProducer('iLikePDF Client-Side Compressor');
+    targetDoc.setProducer('PDFSimplify Client-Side Compressor');
   } else if (level === 'balanced' || level === 'strong') {
     // Strip redundant metadata packets, timestamps, and history
     targetDoc.setTitle(srcDoc.getTitle() || '');
     targetDoc.setAuthor(srcDoc.getAuthor() || '');
-    targetDoc.setProducer('iLikePDF Local Optimizer');
-    targetDoc.setCreator('iLikePDF');
+    targetDoc.setProducer('PDFSimplify Local Optimizer');
+    targetDoc.setCreator('PDFSimplify');
   }
 
   notify(85, 'Compacting cross-reference tables and object streams...');
@@ -121,16 +146,24 @@ export async function compressPdf(
   const savedPercent = originalSize > 0 ? Math.round((savedBytes / originalSize) * 100) : 0;
   const isAlreadyOptimized = !isSmaller || savedPercent < 1;
 
+  const compressionRatio = originalSize > 0 ? (originalSize - finalSize) / originalSize : 0;
+
   notify(100, 'Optimization complete.');
 
-  return {
+  const result = Object.assign(finalBytes, {
     blob: new Blob([finalBytes as BlobPart], { type: 'application/pdf' }),
+    pdfBytes: finalBytes,
+    uint8Array: finalBytes,
+    bytes: finalBytes,
     originalSize,
     compressedSize: finalSize,
     savedBytes,
     savedPercent,
+    compressionRatio,
     isAlreadyOptimized,
     pageCount,
     level,
-  };
+  });
+
+  return result as Uint8Array & CompressionResult & { pdfBytes: Uint8Array; uint8Array: Uint8Array; bytes: Uint8Array };
 }

@@ -70,7 +70,7 @@ export async function unlockPdf({
   // Check if the document is actually encrypted
   const encInfo = await isEncrypted(inputBytes);
   if (!encInfo.encrypted) {
-    throw new Error('This PDF is not password-protected. No decryption is required.');
+    throw new Error('This PDF is not password-protected and not encrypted. No decryption is required.');
   }
 
   onProgress?.(3, 10, 'Decrypting document with provided password...', 35);
@@ -130,9 +130,15 @@ export async function unlockPdf({
   // Double check with PDF.js that it opens without password prompt
   try {
     const pdfjs = await getPdfJs();
-    const verifiedDoc = await pdfjs.getDocument({ data: new Uint8Array(decryptedBytes) }).promise;
-    if (verifiedDoc.numPages !== totalPages) {
-      throw new Error('Verification mismatch in page count between parsers.');
+    const verifiedTask = pdfjs.getDocument({ data: new Uint8Array(decryptedBytes) });
+    try {
+      const verifiedDoc = await verifiedTask.promise;
+      if (verifiedDoc.numPages !== totalPages) {
+        throw new Error('Verification mismatch in page count between parsers.');
+      }
+      await verifiedDoc.cleanup();
+    } finally {
+      await verifiedTask.destroy().catch(() => {});
     }
   } catch {
     // PDF.js verification is a secondary check; primary is pdf-lib

@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Conversion Module Index
+ * PDFSimplify — Conversion Module Index
  * Zero-backend client-side document transformation utilities.
  */
 

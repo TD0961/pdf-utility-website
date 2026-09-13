@@ -1,4 +1,4 @@
-# iLikePDF.com — Privacy-Focused In-Browser PDF Platform
+# PDFSimplify — Privacy-Focused In-Browser PDF Platform
 
 > **Simple PDF tools. Private by design.**
 > Powerful browser-based document utilities running 100% client-side with zero server uploads.
@@ -89,4 +89,4 @@ npx serve out -p 3000
 
 ## License
 
-Proprietary © iLikePDF.com. All rights reserved.
+Proprietary © PDFSimplify. All rights reserved.

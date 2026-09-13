@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Grayscale PDF Conversion Engine
+ * PDFSimplify — Grayscale PDF Conversion Engine
  * Converts PDF pages into high-resolution grayscale raster pages directly in the browser.
  * Protects memory with sequential page rendering and immediate canvas disposal.
  */
@@ -12,23 +12,46 @@ import { CancellationToken, ConversionProgress } from './conversion/types';
 export interface GrayscaleOptions {
   dpiScale?: number; // default 2.0
   jpegQuality?: number; // default 0.85
+  quality?: number; // alias
+  outputFileName?: string;
   onProgress?: (progress: ConversionProgress) => void;
   cancellationToken?: CancellationToken;
 }
 
 export interface GrayscaleResult {
   grayscaleBytes: Uint8Array;
+  pdfBytes: Uint8Array;
+  uint8Array: Uint8Array;
   totalPages: number;
   durationMs: number;
 }
 
 export async function convertPdfToGrayscale(
-  buffer: ArrayBuffer,
+  buffer: ArrayBuffer | Uint8Array | { bytes?: Uint8Array; resizedBytes?: Uint8Array; uint8Array?: Uint8Array; pdfBytes?: Uint8Array; buffer?: ArrayBuffer },
   options: GrayscaleOptions = {}
 ): Promise<GrayscaleResult> {
   const startTime = Date.now();
   const scale = options.dpiScale || 2.0;
-  const quality = options.jpegQuality || 0.85;
+  const quality = options.jpegQuality || options.quality || 0.85;
+
+  let rawBuffer: ArrayBuffer;
+  if (buffer instanceof ArrayBuffer) {
+    rawBuffer = buffer;
+  } else if (buffer instanceof Uint8Array) {
+    rawBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+  } else if (buffer && typeof buffer === 'object') {
+    const obj = buffer as Record<string, unknown>;
+    const b = obj.bytes || obj.resizedBytes || obj.pdfBytes || obj.uint8Array || obj.buffer;
+    if (b instanceof Uint8Array) {
+      rawBuffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
+    } else if (b instanceof ArrayBuffer) {
+      rawBuffer = b;
+    } else {
+      rawBuffer = buffer as unknown as ArrayBuffer;
+    }
+  } else {
+    rawBuffer = buffer as unknown as ArrayBuffer;
+  }
 
   const notifyProgress = (progress: ConversionProgress) => {
     options.onProgress?.(progress);
@@ -43,7 +66,7 @@ export async function convertPdfToGrayscale(
   });
 
   const pdfjs = await getPdfJs();
-  const dataCopy = buffer.slice(0);
+  const dataCopy = rawBuffer.slice(0);
   const loadingTask = pdfjs.getDocument({ data: new Uint8Array(dataCopy) });
   const doc = await loadingTask.promise;
   const totalPages = doc.numPages;
@@ -131,7 +154,7 @@ export async function convertPdfToGrayscale(
         });
       } else {
         // Fallback for non-DOM test environments: duplicate page geometry into targetDoc
-        const sourceDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
+        const sourceDoc = await PDFDocument.load(rawBuffer, { ignoreEncryption: true });
         const [copied] = await targetDoc.copyPages(sourceDoc, [i - 1]);
         targetDoc.addPage(copied);
       }
@@ -165,6 +188,8 @@ export async function convertPdfToGrayscale(
 
   return {
     grayscaleBytes,
+    pdfBytes: grayscaleBytes,
+    uint8Array: grayscaleBytes,
     totalPages,
     durationMs: Date.now() - startTime,
   };

@@ -1,7 +1,7 @@
 /**
  * Privacy-Preserving Analytics Contract
  *
- * iLikePDF guarantees zero backend and zero document custody.
+ * PDFSimplify guarantees zero backend and zero document custody.
  * Analytics strictly tracking high-level usage metrics (e.g. tool visits, performance duration).
  *
  * INVARIANT: No document bytes, file contents, filenames, passwords,

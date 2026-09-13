@@ -146,10 +146,11 @@ export async function protectPdf({
     const pdfjs = await getPdfJs();
     // Test that opening without password triggers a password challenge
     let challengeTriggered = false;
+    const lockedTask = pdfjs.getDocument({ data: new Uint8Array(encryptedBytes) });
     try {
-      const lockedDoc = await pdfjs.getDocument({ data: new Uint8Array(encryptedBytes) }).promise;
-      // If we could open it with no password, it's not actually locked
+      const lockedDoc = await lockedTask.promise;
       await lockedDoc.getPage(1);
+      await lockedDoc.cleanup();
     } catch (openErr: unknown) {
       const msg = openErr instanceof Error ? openErr.message.toLowerCase() : String(openErr).toLowerCase();
       if (
@@ -160,6 +161,8 @@ export async function protectPdf({
       ) {
         challengeTriggered = true;
       }
+    } finally {
+      await lockedTask.destroy().catch(() => {});
     }
 
     if (!challengeTriggered) {
@@ -167,15 +170,20 @@ export async function protectPdf({
     }
 
     // Verify opening WITH the correct password succeeds and matches page count
-    const authenticatedDoc = await pdfjs.getDocument({
+    const authTask = pdfjs.getDocument({
       data: new Uint8Array(encryptedBytes),
       password: userPassword,
-    }).promise;
-
-    if (authenticatedDoc.numPages !== totalPages) {
-      throw new Error(
-        `Verification failed: expected ${totalPages} pages after encryption, but found ${authenticatedDoc.numPages}.`
-      );
+    });
+    try {
+      const authenticatedDoc = await authTask.promise;
+      if (authenticatedDoc.numPages !== totalPages) {
+        throw new Error(
+          `Verification failed: expected ${totalPages} pages after encryption, but found ${authenticatedDoc.numPages}.`
+        );
+      }
+      await authenticatedDoc.cleanup();
+    } finally {
+      await authTask.destroy().catch(() => {});
     }
   } catch (verifyErr: unknown) {
     // If PDF.js is unavailable in test environment, make sure we don't block if bytes are clearly encrypted

@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Markdown Builder
+ * PDFSimplify — Markdown Builder
  * Transforms structured document layout into GitHub Flavored Markdown.
  * Preserves headings, bold/italic styles, bullet/numbered lists, and page breaks.
  */

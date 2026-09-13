@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Zero-Backend PDF to CSV Extractor
+ * PDFSimplify — Zero-Backend PDF to CSV Extractor
  * Extracts tables and structured tabular data from PDF pages into standard CSV.
  */
 
@@ -17,10 +17,12 @@ export interface CsvExtractorOptions extends CsvBuilderOptions {
 
 export interface CsvExtractionResult {
   csvText: string;
+  csvContent: string;
   outputBlob: Blob;
   outputFileName: string;
   rowCount: number;
   columnCount: number;
+  tablesFound: number;
   totalPages: number;
   durationMs: number;
 }
@@ -60,12 +62,26 @@ function parsePageRange(rangeStr: string | undefined, totalPages: number): numbe
 }
 
 export async function convertPdfToCsv(
-  fileOrData: File | { name: string; buffer: ArrayBuffer },
+  fileOrData: File | { name?: string; buffer: ArrayBuffer } | Uint8Array | ArrayBuffer,
   options: CsvExtractorOptions = {}
 ): Promise<CsvExtractionResult> {
   const startTime = Date.now();
-  const fileName = fileOrData instanceof File ? fileOrData.name : fileOrData.name;
-  const buffer = fileOrData instanceof File ? await fileOrData.arrayBuffer() : fileOrData.buffer;
+  let fileName = 'document.pdf';
+  let buffer: ArrayBuffer;
+
+  if (fileOrData instanceof File) {
+    fileName = fileOrData.name;
+    buffer = await fileOrData.arrayBuffer();
+  } else if (fileOrData instanceof Uint8Array) {
+    buffer = fileOrData.buffer.slice(fileOrData.byteOffset, fileOrData.byteOffset + fileOrData.byteLength) as ArrayBuffer;
+  } else if (fileOrData instanceof ArrayBuffer) {
+    buffer = fileOrData;
+  } else if (fileOrData && typeof fileOrData === 'object' && 'buffer' in fileOrData) {
+    fileName = fileOrData.name || 'document.pdf';
+    buffer = fileOrData.buffer;
+  } else {
+    buffer = fileOrData as unknown as ArrayBuffer;
+  }
 
   const notifyProgress = (progress: ConversionProgress) => {
     options.onProgress?.(progress);
@@ -90,52 +106,56 @@ export async function convertPdfToCsv(
   const allGridRows: string[][] = [];
   let maxCols = 0;
 
-  for (let idx = 0; idx < targetPages.length; idx++) {
-    const pageNum = targetPages[idx];
-    if (options.cancellationToken?.isCancelled) {
-      throw new Error('Conversion cancelled by user.');
-    }
-
-    notifyProgress({
-      stage: 'analyzing',
-      stageDescription: `Analyzing table structure on page ${pageNum}/${totalPages}...`,
-      currentPage: pageNum,
-      totalPages,
-      percentage: Math.round(10 + ((idx + 1) / targetPages.length) * 75),
-    });
-
-    const page = await pdfDoc.getPage(pageNum);
-    const textContent = await page.getTextContent();
-    const viewport = page.getViewport({ scale: 1.0 });
-
-    const rawItems: RawTextItem[] = [];
-
-    for (const item of textContent.items) {
-      if ('str' in item && typeof item.str === 'string' && item.str.trim().length > 0) {
-        const x = item.transform[4];
-        const y = viewport.height - item.transform[5];
-        rawItems.push({
-          str: item.str,
-          x,
-          y,
-          width: item.width || item.str.length * 6,
-          height: item.height || 12,
-        });
+  try {
+    for (let idx = 0; idx < targetPages.length; idx++) {
+      const pageNum = targetPages[idx];
+      if (options.cancellationToken?.isCancelled) {
+        throw new Error('Conversion cancelled by user.');
       }
-    }
 
-    if (rawItems.length > 0) {
-      const rows = clusterIntoRows(rawItems);
-      const colAnchors = detectColumnAnchors(rows);
-      const pageGrid = alignRowsToColumns(rows, colAnchors);
+      notifyProgress({
+        stage: 'analyzing',
+        stageDescription: `Analyzing table structure on page ${pageNum}/${totalPages}...`,
+        currentPage: pageNum,
+        totalPages,
+        percentage: Math.round(10 + ((idx + 1) / targetPages.length) * 75),
+      });
 
-      for (const row of pageGrid) {
-        allGridRows.push(row);
-        if (row.length > maxCols) {
-          maxCols = row.length;
+      const page = await pdfDoc.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const viewport = page.getViewport({ scale: 1.0 });
+
+      const rawItems: RawTextItem[] = [];
+
+      for (const item of textContent.items) {
+        if ('str' in item && typeof item.str === 'string' && item.str.trim().length > 0) {
+          const x = item.transform[4];
+          const y = viewport.height - item.transform[5];
+          rawItems.push({
+            str: item.str,
+            x,
+            y,
+            width: item.width || item.str.length * 6,
+            height: item.height || 12,
+          });
+        }
+      }
+
+      if (rawItems.length > 0) {
+        const rows = clusterIntoRows(rawItems);
+        const colAnchors = detectColumnAnchors(rows);
+        const pageGrid = alignRowsToColumns(rows, colAnchors);
+
+        for (const row of pageGrid) {
+          allGridRows.push(row);
+          if (row.length > maxCols) {
+            maxCols = row.length;
+          }
         }
       }
     }
+  } finally {
+    await pdfDoc.cleanup();
   }
 
   notifyProgress({
@@ -170,10 +190,12 @@ export async function convertPdfToCsv(
 
   return {
     csvText,
+    csvContent: csvText,
     outputBlob,
     outputFileName,
     rowCount: finalGrid.length,
     columnCount: maxCols || 1,
+    tablesFound: allGridRows.length > 0 ? 1 : 0,
     totalPages,
     durationMs: Date.now() - startTime,
   };

@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Client-Side Visual PDF Signature Engine
+ * PDFSimplify — Client-Side Visual PDF Signature Engine
  * 100% in-browser visual signature placement using pdf-lib.
  * Adds visual signatures to selected pages without remote servers or cloud storage.
  * Mandatory notice: Visual signature only (not a cryptographic digital certificate).
@@ -18,13 +18,19 @@ export interface SignaturePlacement {
 
 export interface ApplySignatureOptions {
   signatureDataUrl: string;
-  placement: SignaturePlacement;
+  placement?: SignaturePlacement;
+  pageNumber?: number;
+  pageIndex?: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
 }
 
 export async function applyVisualSignature(
   pdfBytes: Uint8Array,
   options: ApplySignatureOptions
-): Promise<{ bytes: Uint8Array; blob: Blob }> {
+): Promise<Uint8Array & { bytes: Uint8Array; pdfBytes: Uint8Array; uint8Array: Uint8Array; blob: Blob }> {
   if (!pdfBytes || pdfBytes.length === 0) {
     throw new Error('PDF file data is empty.');
   }
@@ -32,7 +38,15 @@ export async function applyVisualSignature(
   const pdfDoc = await PDFDocument.load(pdfBytes);
   const totalPages = pdfDoc.getPageCount();
 
-  const { pageIndex, x, y, width, height } = options.placement;
+  const placement: SignaturePlacement = options.placement || {
+    pageIndex: options.pageIndex !== undefined ? options.pageIndex : (options.pageNumber ? options.pageNumber - 1 : 0),
+    x: options.x ?? 50,
+    y: options.y ?? 50,
+    width: options.width ?? 100,
+    height: options.height ?? 40,
+  };
+
+  const { pageIndex, x, y, width, height } = placement;
 
   if (pageIndex < 0 || pageIndex >= totalPages) {
     throw new Error(`Target page index ${pageIndex} is out of bounds (document has ${totalPages} pages).`);
@@ -77,5 +91,12 @@ export async function applyVisualSignature(
   await assertValidPdfOutput(outputBytes, { expectedPages: totalPages });
 
   const blob = new Blob([outputBytes as BlobPart], { type: 'application/pdf' });
-  return { bytes: outputBytes, blob };
+  const result = Object.assign(outputBytes, {
+    bytes: outputBytes,
+    pdfBytes: outputBytes,
+    uint8Array: outputBytes,
+    blob,
+  });
+
+  return result as Uint8Array & { bytes: Uint8Array; pdfBytes: Uint8Array; uint8Array: Uint8Array; blob: Blob };
 }

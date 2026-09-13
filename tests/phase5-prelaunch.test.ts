@@ -12,12 +12,12 @@ import { GUIDES_REGISTRY } from '../src/data/guides';
 describe('Phase 5.2: Pre-Launch Domain, Search & Monetization Readiness', () => {
   describe('Centralized Site Configuration', () => {
     it('defines canonical site configuration with expected values', () => {
-      assert.equal(siteConfig.name, 'iLikePDF');
-      assert.equal(siteConfig.domain, 'ilikepdf.com');
+      assert.equal(siteConfig.name, 'PDFSimplify');
+      assert.equal(siteConfig.domain, 'pdfsimplify.com');
       assert.equal(siteConfig.tagline, 'Simple PDF tools. Private by design.');
       assert.ok(siteConfig.url.startsWith('https://'));
-      assert.equal(siteConfig.supportEmail, 'support@ilikepdf.com');
-      assert.equal(siteConfig.privacyEmail, 'privacy@ilikepdf.com');
+      assert.equal(siteConfig.supportEmail, 'support@pdfsimplify.com');
+      assert.equal(siteConfig.privacyEmail, 'privacy@pdfsimplify.com');
     });
 
     it('exports backwards-compatible constants matching siteConfig', () => {

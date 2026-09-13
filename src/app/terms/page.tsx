@@ -5,8 +5,8 @@ import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { constructMetadata } from '@/lib/seo/metadata';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Terms of Service — iLikePDF',
-  description: 'Terms and conditions governing the use of iLikePDF client-side tools and website.',
+  title: 'Terms of Service — PDFSimplify',
+  description: 'Terms and conditions governing the use of PDFSimplify client-side tools and website.',
   path: '/terms',
 });
 
@@ -26,14 +26,14 @@ export default function TermsPage() {
         <section className="space-y-2">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">1. Acceptance of Terms</h2>
           <p>
-            By accessing or using iLikePDF.com and its associated browser-based document utilities, you agree to be bound by these Terms of Service. If you do not agree, please do not use the website.
+            By accessing or using pdfsimplify.com and its associated browser-based document utilities, you agree to be bound by these Terms of Service. If you do not agree, please do not use the website.
           </p>
         </section>
 
         <section className="space-y-2">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">2. Nature of Service</h2>
           <p>
-            iLikePDF provides free, client-side browser tools for managing and converting PDF files. All processing occurs locally on your own computer or device. We do not store, copy, or retain your documents.
+            PDFSimplify provides free, client-side browser tools for managing and converting PDF files. All processing occurs locally on your own computer or device. We do not store, copy, or retain your documents.
           </p>
         </section>
 

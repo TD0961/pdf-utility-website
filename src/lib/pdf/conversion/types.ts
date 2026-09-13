@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Conversion Architecture Foundation Types
+ * PDFSimplify — Conversion Architecture Foundation Types
  * Strictly zero-backend, client-side OpenXML document conversion data models.
  */
 
@@ -101,6 +101,10 @@ export interface ConversionOptions {
 export interface ConversionResult {
   blob: Blob;
   fileName: string;
+  outputFileName?: string;
+  outputBytes?: Uint8Array;
+  bytes?: Uint8Array;
+  uint8Array?: Uint8Array;
   totalPages: number;
   fileSizeBytes: number;
   durationMs: number;

@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Vector Header & Footer Stamping Engine
+ * PDFSimplify — Vector Header & Footer Stamping Engine
  * Adds customizable vector headers and footers to PDF pages using pdf-lib.
  * Supports dynamic tokens ({page}, {total}, {date}), alignment, and page ranges.
  */
@@ -13,8 +13,10 @@ export type HeaderFooterAlignment = 'left' | 'center' | 'right';
 export interface HeaderFooterOptions {
   headerText?: string;
   headerAlignment?: HeaderFooterAlignment;
+  headerPosition?: HeaderFooterAlignment;
   footerText?: string;
   footerAlignment?: HeaderFooterAlignment;
+  footerPosition?: HeaderFooterAlignment;
   fontSize?: number; // default 10
   margin?: number; // default 36 pt (0.5 inch)
   startPageNumber?: number; // default 1
@@ -25,6 +27,9 @@ export interface HeaderFooterOptions {
 
 export interface HeaderFooterResult {
   stampedBytes: Uint8Array;
+  bytes?: Uint8Array;
+  pdfBytes?: Uint8Array;
+  uint8Array?: Uint8Array;
   totalPages: number;
   pagesModifiedCount: number;
   durationMs: number;
@@ -73,16 +78,28 @@ function formatTokens(
 }
 
 export async function addHeaderFooterToPdf(
-  buffer: ArrayBuffer,
+  buffer: ArrayBuffer | Uint8Array | { buffer?: ArrayBuffer; bytes?: Uint8Array; uint8Array?: Uint8Array },
   options: HeaderFooterOptions = {}
-): Promise<HeaderFooterResult> {
+): Promise<Uint8Array & HeaderFooterResult & { bytes: Uint8Array; pdfBytes: Uint8Array; uint8Array: Uint8Array }> {
   const startTime = Date.now();
 
   if (options.cancellationToken?.isCancelled) {
     throw new Error('Header/footer stamping cancelled by user.');
   }
 
-  const pdfDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
+  let rawBuffer: ArrayBuffer | Uint8Array;
+  if (buffer instanceof Uint8Array || buffer instanceof ArrayBuffer) {
+    rawBuffer = buffer;
+  } else if (buffer && typeof buffer === 'object') {
+    rawBuffer = (buffer as { bytes?: Uint8Array; uint8Array?: Uint8Array; buffer?: ArrayBuffer }).bytes ||
+                (buffer as { bytes?: Uint8Array; uint8Array?: Uint8Array; buffer?: ArrayBuffer }).uint8Array ||
+                (buffer as { bytes?: Uint8Array; uint8Array?: Uint8Array; buffer?: ArrayBuffer }).buffer ||
+                (buffer as unknown as ArrayBuffer);
+  } else {
+    rawBuffer = buffer as unknown as ArrayBuffer;
+  }
+
+  const pdfDoc = await PDFDocument.load(rawBuffer, { ignoreEncryption: true });
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const totalPages = pdfDoc.getPageCount();
 
@@ -119,7 +136,7 @@ export async function addHeaderFooterToPdf(
     if (options.headerText && options.headerText.trim().length > 0) {
       const resolvedHeader = formatTokens(options.headerText, dynamicPageNum, totalPages, today);
       const textWidth = font.widthOfTextAtSize(resolvedHeader, fontSize);
-      const align = options.headerAlignment || 'center';
+      const align = options.headerAlignment || options.headerPosition || 'center';
 
       let x = margin;
       if (align === 'center') {
@@ -143,7 +160,7 @@ export async function addHeaderFooterToPdf(
     if (options.footerText && options.footerText.trim().length > 0) {
       const resolvedFooter = formatTokens(options.footerText, dynamicPageNum, totalPages, today);
       const textWidth = font.widthOfTextAtSize(resolvedFooter, fontSize);
-      const align = options.footerAlignment || 'center';
+      const align = options.footerAlignment || options.footerPosition || 'center';
 
       let x = margin;
       if (align === 'center') {
@@ -172,10 +189,15 @@ export async function addHeaderFooterToPdf(
     expectedPages: totalPages,
   });
 
-  return {
+  const result = Object.assign(stampedBytes, {
     stampedBytes,
+    bytes: stampedBytes,
+    pdfBytes: stampedBytes,
+    uint8Array: stampedBytes,
     totalPages,
     pagesModifiedCount,
     durationMs: Date.now() - startTime,
-  };
+  });
+
+  return result as Uint8Array & HeaderFooterResult & { bytes: Uint8Array; pdfBytes: Uint8Array; uint8Array: Uint8Array };
 }

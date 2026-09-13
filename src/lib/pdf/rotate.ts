@@ -136,3 +136,5 @@ export async function rotatePdfDocument({
     fileName: finalName,
   };
 }
+
+export const rotatePdf = rotatePdfDocument;

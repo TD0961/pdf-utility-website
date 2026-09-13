@@ -52,7 +52,7 @@ export function PwaInstallButton({ className = '', variant = 'nav' }: PwaInstall
 
     const handleAppInstalled = () => {
       setInstallPrompt(null);
-      console.log('[PWA] iLikePDF was successfully installed!');
+      console.log('[PWA] PDFSimplify was successfully installed!');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
@@ -87,7 +87,7 @@ export function PwaInstallButton({ className = '', variant = 'nav' }: PwaInstall
       <button
         onClick={handleInstallClick}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors shadow-sm ${className}`}
-        aria-label="Install iLikePDF application"
+        aria-label="Install PDFSimplify application"
       >
         <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
         <span>Install App</span>
@@ -99,7 +99,7 @@ export function PwaInstallButton({ className = '', variant = 'nav' }: PwaInstall
     <button
       onClick={handleInstallClick}
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${className}`}
-      aria-label="Install iLikePDF application"
+      aria-label="Install PDFSimplify application"
     >
       <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
       <span>Install App</span>

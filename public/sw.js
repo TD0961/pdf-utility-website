@@ -1,14 +1,14 @@
 /**
- * iLikePDF — Zero-Backend Service Worker
- * Version: 1.1.0
+ * PDFSimplify — Zero-Backend Service Worker
+ * Version: 1.2.0
  * Provides resilient offline functionality, static asset caching, and network fallbacks.
  * After required application assets have been cached, supported tools can continue working offline.
  * Documents and user data are strictly processed in volatile client memory and are NEVER cached.
  */
 
-const CACHE_VERSION = 'v1.1.0';
-const STATIC_CACHE = `ilikepdf-static-${CACHE_VERSION}`;
-const RUNTIME_CACHE = `ilikepdf-runtime-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v1.2.0';
+const STATIC_CACHE = `pdfsimplify-static-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `pdfsimplify-runtime-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
   '/',
@@ -89,7 +89,12 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter((name) => name.startsWith('ilikepdf-') && name !== STATIC_CACHE && name !== RUNTIME_CACHE)
+            .filter(
+              (name) =>
+                (name.startsWith('ilikepdf-') || name.startsWith('pdfsimplify-')) &&
+                name !== STATIC_CACHE &&
+                name !== RUNTIME_CACHE
+            )
             .map((name) => {
               console.log(`[SW] Pruning old cache: ${name}`);
               return caches.delete(name);

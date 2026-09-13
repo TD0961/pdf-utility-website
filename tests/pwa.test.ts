@@ -8,8 +8,8 @@ describe('PWA & Manifest Configuration', () => {
   it('generates a valid W3C Web App Manifest matching PWA specifications', () => {
     const manifest = manifestGenerator();
 
-    assert.equal(manifest.name, 'iLikePDF — Free & Private In-Browser PDF Suite');
-    assert.equal(manifest.short_name, 'iLikePDF');
+    assert.equal(manifest.name, 'PDFSimplify — Free & Private In-Browser PDF Suite');
+    assert.equal(manifest.short_name, 'PDFSimplify');
     assert.equal(manifest.start_url, '/');
     assert.equal(manifest.scope, '/');
     assert.equal(manifest.display, 'standalone');
@@ -40,7 +40,7 @@ describe('PWA & Manifest Configuration', () => {
     assert.ok(existsSync(jsonPath), 'public/manifest.json must exist');
 
     const content = JSON.parse(readFileSync(jsonPath, 'utf-8'));
-    assert.equal(content.short_name, 'iLikePDF');
+    assert.equal(content.short_name, 'PDFSimplify');
     assert.equal(content.display, 'standalone');
     assert.equal(content.theme_color, '#4f46e5');
   });
@@ -54,8 +54,8 @@ describe('Service Worker & Offline Engine', () => {
     const swContent = readFileSync(swPath, 'utf-8');
 
     // Check Cache Names and Versioning
-    assert.match(swContent, /ilikepdf-static-/);
-    assert.match(swContent, /ilikepdf-runtime-/);
+    assert.match(swContent, /pdfsimplify-static-/);
+    assert.match(swContent, /pdfsimplify-runtime-/);
 
     // Check Pre-cached Assets
     assert.match(swContent, /\/pdf\.worker\.min\.mjs/, 'Critical Mozilla PDF worker must be pre-cached');

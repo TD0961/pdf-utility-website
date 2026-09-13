@@ -8,7 +8,7 @@ import { constructMetadata } from '@/lib/seo/metadata';
 import { ShieldCheck, Cpu, HardDrive, ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Resources & Technical Architecture — iLikePDF',
+  title: 'Resources & Technical Architecture — PDFSimplify',
   description:
     'Explore technical specifications, WebAssembly documentation, and developer architecture for client-side PDF processing.',
   path: '/resources',

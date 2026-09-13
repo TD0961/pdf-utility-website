@@ -1,6 +1,6 @@
 {
-  "name": "iLikePDF — Free & Private In-Browser PDF Suite",
-  "short_name": "iLikePDF",
+  "name": "PDFSimplify — Free & Private In-Browser PDF Suite",
+  "short_name": "PDFSimplify",
   "description": "Simple PDF tools. Private by design. 100% client-side PDF utilities with zero server uploads.",
   "start_url": "/",
   "scope": "/",

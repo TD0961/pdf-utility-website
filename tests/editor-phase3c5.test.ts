@@ -308,7 +308,7 @@ describe('Phase 3C.5: Document Metadata Inspector & Export', () => {
 
     engine.updateMetadata({
       title: 'Exported Verification PDF',
-      author: 'iLikePDF Engine',
+      author: 'PDFSimplify Engine',
       subject: 'Metadata Verification Test',
       keywords: ['verified', 'export', 'phase3c5'],
     });
@@ -319,7 +319,7 @@ describe('Phase 3C.5: Document Metadata Inspector & Export', () => {
     // Reopen exported PDF with pdf-lib to verify metadata serialization
     const reopenedDoc = await PDFDocument.load(exportResult.uint8Array);
     assert.equal(reopenedDoc.getTitle(), 'Exported Verification PDF');
-    assert.equal(reopenedDoc.getAuthor(), 'iLikePDF Engine');
+    assert.equal(reopenedDoc.getAuthor(), 'PDFSimplify Engine');
     assert.equal(reopenedDoc.getSubject(), 'Metadata Verification Test');
     assert.ok(reopenedDoc.getKeywords()?.includes('verified'));
   });

@@ -169,7 +169,7 @@ export async function extractTextFromPdfDocument({
   let doc: PdfJsTextDoc | null = null;
 
   try {
-    loadingTask = pdfjs.getDocument({ data: new Uint8Array(arrayBuffer) });
+    loadingTask = pdfjs.getDocument({ data: new Uint8Array(arrayBuffer.slice(0)) });
     doc = await loadingTask.promise;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
@@ -265,3 +265,5 @@ export async function extractTextFromPdfDocument({
     scannedWarning,
   };
 }
+
+export const pdfToText = extractTextFromPdfDocument;

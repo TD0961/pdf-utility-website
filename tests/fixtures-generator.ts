@@ -187,12 +187,12 @@ export async function createMetadataFixture(): Promise<GeneratedFixture> {
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
 
-  doc.setTitle('iLikePDF Test Fixture');
-  doc.setAuthor('iLikePDF Architecture Team');
+  doc.setTitle('PDFSimplify Test Fixture');
+  doc.setAuthor('PDFSimplify Architecture Team');
   doc.setSubject('Automated Compatibility Verification');
   doc.setKeywords(['client-side', 'pdf-tools', 'zero-backend', 'privacy']);
-  doc.setProducer('iLikePDF Engine');
-  doc.setCreator('iLikePDF Studio');
+  doc.setProducer('PDFSimplify Engine');
+  doc.setCreator('PDFSimplify Studio');
 
   const page = doc.addPage([500, 500]);
   page.drawText('Metadata Test Document', { x: 50, y: 400, size: 18, font });

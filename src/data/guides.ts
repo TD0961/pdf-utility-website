@@ -29,7 +29,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
           heading: '2. The Client-Side Paradigm: HTML5, WebAssembly, and Memory Arrays',
           body: [
             'Modern browsers are sophisticated execution environments capable of running low-level compilation targets.',
-            'When you drop a file into iLikePDF, your browser reads the raw bytes into an ArrayBuffer in local RAM. Using pure JavaScript and WebAssembly libraries like pdf-lib and PDF.js, we parse the PDF object tree, rewrite xref tables, and draw canvas previews directly on your hardware.',
+            'When you drop a file into PDFSimplify, your browser reads the raw bytes into an ArrayBuffer in local RAM. Using pure JavaScript and WebAssembly libraries like pdf-lib and PDF.js, we parse the PDF object tree, rewrite xref tables, and draw canvas previews directly on your hardware.',
             'Your PDF is processed locally in your browser. No network payload containing your document data ever leaves your device. Once you close the tab, the memory is cleared.',
           ],
           callout: {
@@ -77,7 +77,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
         {
           heading: 'Step-by-Step Instructions',
           body: [
-            '1. Open the iLikePDF Merge tool.',
+            '1. Open the PDFSimplify Merge tool.',
             '2. Drag and drop your target PDF files into the upload area, or browse your local file system.',
             '3. Reorder the files into your intended reading sequence by dragging file cards.',
             '4. Click "Merge PDF" to produce the combined file.',
@@ -118,7 +118,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
           ],
         },
         {
-          heading: 'How to Split Using iLikePDF',
+          heading: 'How to Split Using PDFSimplify',
           body: [
             '1. Upload your multi-page PDF into the Split tool.',
             '2. Define your desired range intervals.',
@@ -248,7 +248,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
         },
       ],
       summary:
-        'Using iLikePDF Rotate updates the authentic PDF dictionary entries, ensuring all recipients see the pages oriented properly across every device.',
+        'Using PDFSimplify Rotate updates the authentic PDF dictionary entries, ensuring all recipients see the pages oriented properly across every device.',
     },
   },
   {
@@ -348,7 +348,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
           ],
           callout: {
             type: 'tip',
-            text: 'For multi-page files, iLikePDF bundles all rendered JPEG images into a single zero-padded ZIP archive (e.g. page-001.jpg) for easy extraction.',
+            text: 'For multi-page files, PDFSimplify bundles all rendered JPEG images into a single zero-padded ZIP archive (e.g. page-001.jpg) for easy extraction.',
           },
         },
         {
@@ -494,7 +494,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
           ],
           callout: {
             type: 'warning',
-            text: 'Always save your encryption password in a secure password manager. Because iLikePDF does not store passwords or document copies, lost passwords cannot be recovered.',
+            text: 'Always save your encryption password in a secure password manager. Because PDFSimplify does not store passwords or document copies, lost passwords cannot be recovered.',
           },
         },
         {
@@ -528,14 +528,14 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
         {
           heading: 'Authentic Decryption vs. Password Cracking',
           body: [
-            'iLikePDF does not crack passwords or bypass security. You provide the authentic password, the browser uses Web Crypto to decrypt the object streams, and the encryption dictionary is stripped from the document catalog.',
+            'PDFSimplify does not crack passwords or bypass security. You provide the authentic password, the browser uses Web Crypto to decrypt the object streams, and the encryption dictionary is stripped from the document catalog.',
             'The output file can then be opened in any PDF viewer without password prompts.',
           ],
         },
         {
           heading: 'Zero Server Exposure for Passwords',
           body: [
-            'Unlike traditional online unlockers where your document and password are sent across the web, iLikePDF unlocks documents entirely inside your browser memory.',
+            'Unlike traditional online unlockers where your document and password are sent across the web, PDFSimplify unlocks documents entirely inside your browser memory.',
             'Neither your original document, decrypted contents, nor entered passwords ever leave your computer or touch an external server.',
           ],
         },
@@ -564,7 +564,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
         {
           heading: 'Interactive Canvas Annotations',
           body: [
-            'iLikePDF provides a full-featured visual editor running on HTML5 Canvas. You can type text anywhere on the page, customize font size and color, draw vector shapes (rectangles, ellipses, arrows, lines), and apply semi-transparent highlights.',
+            'PDFSimplify provides a full-featured visual editor running on HTML5 Canvas. You can type text anywhere on the page, customize font size and color, draw vector shapes (rectangles, ellipses, arrows, lines), and apply semi-transparent highlights.',
             'All edits exist as vector objects that you can select, move, resize, align, or reorder at any time.',
           ],
         },
@@ -824,7 +824,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
         {
           heading: 'How Local Stripping Works',
           body: [
-            'iLikePDF reads the PDF dictionary and catalog streams directly in your browser. It clears standard info strings and deletes root XMP metadata streams without changing a single character of visible document text.',
+            'PDFSimplify reads the PDF dictionary and catalog streams directly in your browser. It clears standard info strings and deletes root XMP metadata streams without changing a single character of visible document text.',
           ],
         },
       ],

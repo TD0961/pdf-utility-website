@@ -6,7 +6,7 @@ import { constructMetadata } from '@/lib/seo/metadata';
 import { ShieldCheck, ServerOff } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Privacy Policy — iLikePDF Zero-Backend Architecture',
+  title: 'Privacy Policy — PDFSimplify Zero-Backend Architecture',
   description:
     'Our comprehensive privacy policy detailing our zero-backend architecture, client-side PDF processing, and data protection practices.',
   path: '/privacy-policy',
@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
           Privacy Policy
         </h1>
         <p className="text-base text-slate-600 dark:text-slate-300">
-          At iLikePDF, your privacy is protected by technical architecture, not merely promises.
+          At PDFSimplify, your privacy is protected by technical architecture, not merely promises.
         </p>
       </header>
 
@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
         <ul className="space-y-2 text-xs sm:text-sm text-emerald-900/90 dark:text-emerald-200/90">
           <li className="flex items-start gap-2">
             <span className="font-bold">•</span>
-            <span><strong>Your PDF is processed locally in your browser:</strong> Files selected for processing are loaded into your device’s local memory and are never uploaded to an iLikePDF processing server.</span>
+            <span><strong>Your PDF is processed locally in your browser:</strong> Files selected for processing are loaded into your device’s local memory and are never uploaded to a PDFSimplify processing server.</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-bold">•</span>
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">1. Information We Do Not Collect</h2>
           <p>
-            Because iLikePDF tools operate 100% client-side:
+            Because PDFSimplify tools operate 100% client-side:
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-slate-600 dark:text-slate-400">
             <li>We do NOT collect, inspect, or store your PDF files.</li>
@@ -69,7 +69,7 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">2. Technical Execution in Browser Memory</h2>
           <p>
-            When you interact with a PDF tool on iLikePDF.com, your browser creates a local ArrayBuffer in your device’s RAM. WebAssembly and JavaScript libraries (such as Mozilla PDF.js and pdf-lib) parse the document tree locally. Once you refresh the browser, navigate away, or click Reset, the browser revokes memory references and discards all data.
+            When you interact with a PDF tool on pdfsimplify.com, your browser creates a local ArrayBuffer in your device’s RAM. WebAssembly and JavaScript libraries (such as Mozilla PDF.js and pdf-lib) parse the document tree locally. Once you refresh the browser, navigate away, or click Reset, the browser revokes memory references and discards all data.
           </p>
         </section>
 
@@ -87,8 +87,8 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">4. Contact Us Regarding Privacy</h2>
           <p>
             If you have questions, architectural audit inquiries, or privacy concerns, please contact our data protection team at{' '}
-            <a href="mailto:privacy@ilikepdf.com" className="text-indigo-600 dark:text-indigo-400 underline font-semibold">
-              privacy@ilikepdf.com
+            <a href="mailto:privacy@pdfsimplify.com" className="text-indigo-600 dark:text-indigo-400 underline font-semibold">
+              privacy@pdfsimplify.com
             </a>.
           </p>
         </section>

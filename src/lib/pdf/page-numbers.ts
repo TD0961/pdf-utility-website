@@ -310,3 +310,5 @@ export async function addPageNumbersToPdf({
     fileName: finalName,
   };
 }
+
+export const addPageNumbers = addPageNumbersToPdf;

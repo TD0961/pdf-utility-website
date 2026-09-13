@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Coordinate-Aware Page Layout & Text Flow Analyzer
+ * PDFSimplify — Coordinate-Aware Page Layout & Text Flow Analyzer
  * Extracts positional text stream data using Mozilla PDF.js.
  * Reconstructs reading order, lines, paragraphs, and headings client-side.
  */
@@ -55,6 +55,102 @@ function isRawTextItem(item: unknown): item is RawTextItem {
 /**
  * Reconstructs page layout from PDF text streams
  */
+function groupItemsIntoColumns(items: RawItem[]): RawItem[] {
+  if (items.length <= 4) return items;
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  for (const it of items) {
+    if (it.box.x < minX) minX = it.box.x;
+    if (it.box.x + it.box.width > maxX) maxX = it.box.x + it.box.width;
+  }
+
+  const contentWidth = maxX - minX;
+  if (contentWidth < 250) {
+    return items;
+  }
+
+  const GUTTER_SEARCH_START = minX + contentWidth * 0.35;
+  const GUTTER_SEARCH_END = minX + contentWidth * 0.65;
+
+  let bestSplitX = -1;
+  let maxGutter = 0;
+
+  for (let splitCandidate = GUTTER_SEARCH_START; splitCandidate <= GUTTER_SEARCH_END; splitCandidate += 8) {
+    const leftItems = items.filter((it) => it.box.x + it.box.width <= splitCandidate + 4);
+    const rightItems = items.filter((it) => it.box.x >= splitCandidate - 4);
+    const spanningItems = items.filter(
+      (it) => it.box.x < splitCandidate - 4 && it.box.x + it.box.width > splitCandidate + 4
+    );
+
+    if (
+      leftItems.length >= 2 &&
+      rightItems.length >= 2 &&
+      spanningItems.length <= (leftItems.length + rightItems.length) * 0.25
+    ) {
+      const maxLeftX = Math.max(...leftItems.map((it) => it.box.x + it.box.width));
+      const minRightX = Math.min(...rightItems.map((it) => it.box.x));
+      const gutter = minRightX - maxLeftX;
+      if (gutter > 10 && gutter > maxGutter) {
+        maxGutter = gutter;
+        bestSplitX = (maxLeftX + minRightX) / 2;
+      }
+    }
+  }
+
+  if (bestSplitX > 0 && maxGutter >= 10) {
+    const topItems: RawItem[] = [];
+    const leftColumnItems: RawItem[] = [];
+    const rightColumnItems: RawItem[] = [];
+    const bottomItems: RawItem[] = [];
+
+    const nonSpanningLeft = items.filter((it) => it.box.x + it.box.width <= bestSplitX);
+    const nonSpanningRight = items.filter((it) => it.box.x >= bestSplitX);
+
+    const leftYs = nonSpanningLeft.map((it) => it.box.y);
+    const rightYs = nonSpanningRight.map((it) => it.box.y);
+    const allYs = [...leftYs, ...rightYs];
+    const colMinY = allYs.length > 0 ? Math.min(...allYs) : 0;
+
+    for (const it of items) {
+      const itMidY = it.box.y + it.box.height / 2;
+      if (it.box.x < bestSplitX - 4 && it.box.x + it.box.width > bestSplitX + 4) {
+        if (itMidY < colMinY + 10) {
+          topItems.push(it);
+        } else {
+          bottomItems.push(it);
+        }
+      } else if (it.box.x + it.box.width / 2 < bestSplitX) {
+        leftColumnItems.push(it);
+      } else {
+        rightColumnItems.push(it);
+      }
+    }
+
+    const sortY = (a: RawItem, b: RawItem) => {
+      if (Math.abs(a.box.y - b.box.y) <= 4.0) return a.box.x - b.box.x;
+      return a.box.y - b.box.y;
+    };
+
+    topItems.sort(sortY);
+    leftColumnItems.sort(sortY);
+    rightColumnItems.sort(sortY);
+    bottomItems.sort(sortY);
+
+    return [...topItems, ...leftColumnItems, ...rightColumnItems, ...bottomItems];
+  }
+
+  return items;
+}
+
+const Y_TOLERANCE = 4.0;
+
+type RawItem = {
+  str: string;
+  box: BoundingBox;
+  font: FontDescriptor;
+};
+
 export async function analyzePageLayout(
   pdfDoc: PDFDocumentProxy,
   pageNumber: number,
@@ -77,7 +173,7 @@ export async function analyzePageLayout(
     textContent = { items: [] };
   }
 
-  const rawItems = (textContent.items || [])
+  let rawItems: RawItem[] = (textContent.items || [])
     .filter(isRawTextItem)
     .map((item) => {
       const transform = item.transform || [1, 0, 0, 1, 0, 0];
@@ -112,14 +208,8 @@ export async function analyzePageLayout(
     };
   }
 
-  // 1. Sort items top-to-bottom, left-to-right (with a vertical tolerance band)
-  const Y_TOLERANCE = 4.0;
-  rawItems.sort((a, b) => {
-    if (Math.abs(a.box.y - b.box.y) <= Y_TOLERANCE) {
-      return a.box.x - b.box.x;
-    }
-    return a.box.y - b.box.y;
-  });
+  // 1. Column detection and reading order segmentation
+  rawItems = groupItemsIntoColumns(rawItems);
 
   // 2. Group items into lines
   const lines: TextLine[] = [];
@@ -242,7 +332,7 @@ export async function analyzePdfDocument(
 ): Promise<ConversionDocumentLayout> {
   const pdfjs = await getPdfJs();
   const data = fileData instanceof Uint8Array ? fileData : new Uint8Array(fileData);
-  const loadingTask = pdfjs.getDocument({ data });
+  const loadingTask = pdfjs.getDocument({ data: data.slice(0) });
   const doc = await loadingTask.promise;
   const totalPages = doc.numPages;
 

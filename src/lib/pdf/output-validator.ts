@@ -27,6 +27,7 @@ export interface PageDimensionInfo {
 
 export interface PdfValidationReport {
   valid: boolean;
+  isValid?: boolean;
   error?: string;
   pageCount: number;
   fileSize: number;
@@ -148,6 +149,7 @@ export async function validatePdfOutput(
 
   return {
     valid: true,
+    isValid: true,
     pageCount,
     fileSize: bytes.length,
     dimensions,

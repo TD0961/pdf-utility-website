@@ -169,7 +169,7 @@ export default function HomePage() {
         <Container className="space-y-12">
           <div className="text-center max-w-xl mx-auto space-y-2">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              How iLikePDF Works
+              How PDFSimplify Works
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Three simple steps with local browser processing.

@@ -1,5 +1,5 @@
 /**
- * iLikePDF — PDF Metadata Inspection & Removal Engine
+ * PDFSimplify — PDF Metadata Inspection & Removal Engine
  * Inspects standard document metadata properties and securely strips
  * them from the PDF document structure client-side.
  */
@@ -9,14 +9,15 @@ import { assertValidPdfOutput } from './output-validator';
 import { CancellationToken } from './conversion/types';
 
 export interface PdfMetadataInfo {
-  title: string;
-  author: string;
-  subject: string;
-  keywords: string;
-  creator: string;
-  producer: string;
+  title?: string;
+  author?: string;
+  subject?: string;
+  keywords?: string;
+  creator?: string;
+  producer?: string;
   creationDate?: string;
   modificationDate?: string;
+  hasMetadata?: boolean;
 }
 
 export interface MetadataRemovalOptions {
@@ -40,21 +41,37 @@ export interface MetadataRemovalResult {
 /**
  * Inspects all standard PDF metadata fields.
  */
-export async function inspectPdfMetadata(buffer: ArrayBuffer): Promise<PdfMetadataInfo> {
+export async function inspectPdfMetadata(buffer: ArrayBuffer | Uint8Array): Promise<PdfMetadataInfo> {
   const pdfDoc = await PDFDocument.load(buffer, { ignoreEncryption: true, updateMetadata: false });
 
   const cDate = pdfDoc.getCreationDate();
   const mDate = pdfDoc.getModificationDate();
+  const title = pdfDoc.getTitle() || '';
+  const author = pdfDoc.getAuthor() || '';
+  const subject = pdfDoc.getSubject() || '';
+  const keywords = pdfDoc.getKeywords() || '';
+  const creator = pdfDoc.getCreator() || '';
+  const producer = pdfDoc.getProducer() || '';
+
+  const hasMetadata = Boolean(
+    title.trim() ||
+    author.trim() ||
+    subject.trim() ||
+    keywords.trim() ||
+    creator.trim() ||
+    producer.trim()
+  );
 
   return {
-    title: pdfDoc.getTitle() || '',
-    author: pdfDoc.getAuthor() || '',
-    subject: pdfDoc.getSubject() || '',
-    keywords: pdfDoc.getKeywords() || '',
-    creator: pdfDoc.getCreator() || '',
-    producer: pdfDoc.getProducer() || '',
+    title,
+    author,
+    subject,
+    keywords,
+    creator,
+    producer,
     creationDate: cDate ? cDate.toISOString() : undefined,
     modificationDate: mDate ? mDate.toISOString() : undefined,
+    hasMetadata,
   };
 }
 
@@ -62,7 +79,7 @@ export async function inspectPdfMetadata(buffer: ArrayBuffer): Promise<PdfMetada
  * Strips supported document metadata fields from the PDF.
  */
 export async function removePdfMetadata(
-  buffer: ArrayBuffer,
+  buffer: ArrayBuffer | Uint8Array,
   options: MetadataRemovalOptions = {}
 ): Promise<MetadataRemovalResult> {
   const startTime = Date.now();

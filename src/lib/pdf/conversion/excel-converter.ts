@@ -1,10 +1,10 @@
 /**
- * iLikePDF — Zero-Backend PDF to Excel (.xlsx) Converter
+ * PDFSimplify — Zero-Backend PDF to Excel (.xlsx) Converter
  * Analyzes PDF coordinate geometry, clusters text into rows and columns,
  * and generates standards-compliant Excel spreadsheets directly in the browser.
  */
 
-import { getPdfDocument } from '../pdf-renderer';
+import { getPdfJs } from '../pdf-renderer';
 import { buildXlsxFromSheets, XlsxSheetData, XlsxRow } from './xlsx-builder';
 import { validateOpenXmlPackage, deriveOutputFilename } from './converter';
 import {
@@ -45,10 +45,14 @@ export async function convertPdfToExcel(
     percentage: 5,
   });
 
-  const pdfDoc = await getPdfDocument(buffer);
+  const pdfjs = await getPdfJs();
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(buffer.slice(0)) });
+  const pdfDoc = await loadingTask.promise;
   const totalPages = pdfDoc.numPages;
 
   if (totalPages === 0) {
+    await pdfDoc.cleanup();
+    await loadingTask.destroy();
     throw new Error('The selected PDF contains zero pages.');
   }
 
@@ -57,7 +61,8 @@ export async function convertPdfToExcel(
   let totalExtractedCells = 0;
   let totalTableRows = 0;
 
-  for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+  try {
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
     if (options.cancellationToken?.isCancelled) {
       throw new Error('Conversion cancelled by user.');
     }
@@ -115,14 +120,18 @@ export async function convertPdfToExcel(
       }
     }
 
-    if (options.oneSheetPerPage) {
-      sheets.push({
-        name: `Page ${pageNum}`,
-        rows: pageRows.length > 0 ? pageRows : [{ cells: ['(No text on page)'] }],
-      });
-    } else {
-      consolidatedRows = consolidatedRows.concat(pageRows);
+      if (options.oneSheetPerPage) {
+        sheets.push({
+          name: `Page ${pageNum}`,
+          rows: pageRows.length > 0 ? pageRows : [{ cells: ['(No text on page)'] }],
+        });
+      } else {
+        consolidatedRows = consolidatedRows.concat(pageRows);
+      }
     }
+  } finally {
+    await pdfDoc.cleanup();
+    await loadingTask.destroy();
   }
 
   if (!options.oneSheetPerPage) {
@@ -173,6 +182,10 @@ export async function convertPdfToExcel(
   return {
     blob,
     fileName: outFileName,
+    outputFileName: outFileName,
+    outputBytes: xlsxBytes,
+    bytes: xlsxBytes,
+    uint8Array: xlsxBytes,
     totalPages,
     fileSizeBytes: xlsxBytes.length,
     durationMs: Date.now() - startTime,

@@ -77,7 +77,7 @@ export function Footer() {
         </div>
 
         <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-4">
-          <p>© {new Date().getFullYear()} iLikePDF. Simple PDF tools. Private by design.</p>
+          <p>© {new Date().getFullYear()} PDFSimplify. Simple PDF tools. Private by design.</p>
           <div className="flex items-center gap-4">
             <Link href="/about" className="hover:underline">About</Link>
             <Link href="/guides" className="hover:underline">Guides</Link>

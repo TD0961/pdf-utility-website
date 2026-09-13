@@ -1,8 +1,8 @@
-# iLikePDF.com — Architecture Documentation
+# PDFSimplify — Architecture Documentation
 
 ## 1. Executive Summary & Core Architectural Rule
 
-**iLikePDF.com** is a privacy-focused browser-based document utility platform engineered with a strict requirement:
+**PDFSimplify** is a privacy-focused browser-based document utility platform engineered with a strict requirement:
 
 > **ZERO BACKEND — 100% CLIENT-SIDE PDF PROCESSING**
 

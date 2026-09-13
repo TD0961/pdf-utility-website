@@ -11,7 +11,7 @@ import { validatePdfMagicBytes, sanitizeDownloadFilename } from '@/lib/validatio
 import { parsePageRanges, ParsedRangeGroup } from './range-parser';
 import { assertValidPdfOutput, assertValidZipOutput } from './output-validator';
 
-export type SplitMode = 'extract' | 'every-page' | 'ranges';
+export type SplitMode = 'extract' | 'every-page' | 'ranges' | 'all';
 
 export interface SplitProgressCallback {
   (current: number, total: number, stage: string, percentage: number): void;
@@ -20,8 +20,9 @@ export interface SplitProgressCallback {
 export interface SplitPdfOptions {
   file: File | { name: string; buffer: ArrayBuffer };
   mode: SplitMode;
-  selectedPages?: number[]; // 0-based indices for 'extract' mode (preserves order)
+  selectedPages?: number[]; // 0-based or 1-based indices for 'extract' mode (preserves order)
   rangeExpression?: string; // e.g. "1-5, 8, 11-14" for 'ranges' mode
+  rangeString?: string;
   onProgress?: SplitProgressCallback;
 }
 
@@ -38,19 +39,18 @@ export interface SplitPdfResult {
   fileCount: number;
   totalOriginalPages: number;
   outputFiles: SplitOutputFile[];
+  pdfBytes?: Uint8Array;
+  zipBlob?: Blob;
 }
 
 /**
  * Executes PDF splitting according to the selected mode.
  * Enforces output validation before returning any result.
  */
-export async function splitPdfDocument({
-  file,
-  mode,
-  selectedPages = [],
-  rangeExpression = '',
-  onProgress,
-}: SplitPdfOptions): Promise<SplitPdfResult> {
+export async function splitPdfDocument(options: SplitPdfOptions): Promise<SplitPdfResult> {
+  const { file, selectedPages = [], onProgress } = options;
+  const mode: SplitMode = options.mode === 'all' ? 'every-page' : options.mode;
+  const rangeExpression = options.rangeExpression || options.rangeString || '';
   let arrayBuffer: ArrayBuffer;
   let baseFileName = 'document';
 
@@ -98,7 +98,10 @@ export async function splitPdfDocument({
     onProgress?.(1, 1, 'Extracting selected pages...', 50);
 
     const newDoc = await PDFDocument.create();
-    const validIndices = selectedPages.filter((idx) => idx >= 0 && idx < totalPages);
+    // Detect if indices are 1-based (e.g. [1, 3, 5] for a 5-page doc)
+    const isOneBased = selectedPages.every((p) => p >= 1 && p <= totalPages) && selectedPages.some((p) => p === totalPages);
+    const resolvedIndices = isOneBased ? selectedPages.map((p) => p - 1) : selectedPages;
+    const validIndices = resolvedIndices.filter((idx) => idx >= 0 && idx < totalPages);
 
     if (validIndices.length === 0) {
       throw new Error('Selected pages are out of range for this document.');
@@ -129,6 +132,7 @@ export async function splitPdfDocument({
       fileCount: 1,
       totalOriginalPages: totalPages,
       outputFiles: [{ name: outputName, bytes, pageCount: validIndices.length }],
+      pdfBytes: bytes,
     };
   }
 
@@ -177,6 +181,7 @@ export async function splitPdfDocument({
 
     return {
       blob: zipBlob,
+      zipBlob,
       fileName: zipFileName,
       isZip: true,
       fileCount: totalPages,
@@ -262,6 +267,7 @@ export async function splitPdfDocument({
 
     return {
       blob: zipBlob,
+      zipBlob,
       fileName: zipFileName,
       isZip: true,
       fileCount: outputFiles.length,
@@ -272,3 +278,6 @@ export async function splitPdfDocument({
 
   throw new Error(`Unsupported split mode: "${mode}"`);
 }
+
+export const splitPdf = splitPdfDocument;
+

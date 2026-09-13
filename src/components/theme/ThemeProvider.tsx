@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useSyncExternalStore } from 'react';
+import React, { createContext, useContext, useEffect, useCallback, useSyncExternalStore } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
@@ -13,7 +13,8 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'ilikepdf_theme';
+const STORAGE_KEY = 'pdfsimplify_theme';
+const LEGACY_STORAGE_KEY = 'ilikepdf_theme';
 
 function subscribeToSystemTheme(callback: () => void) {
   if (typeof window === 'undefined') return () => {};
@@ -36,12 +37,42 @@ function getSystemServerSnapshot(): ResolvedTheme {
 
 const emptySubscribe = () => () => {};
 
-function useIsMounted(): boolean {
+export function useIsMounted(): boolean {
   return useSyncExternalStore(
     emptySubscribe,
     () => true,
     () => false
   );
+}
+
+let memoryTheme: Theme = 'system';
+
+function subscribeToTheme(callback: () => void) {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener('storage', callback);
+  window.addEventListener('pdfsimplify-theme-change', callback);
+  return () => {
+    window.removeEventListener('storage', callback);
+    window.removeEventListener('pdfsimplify-theme-change', callback);
+  };
+}
+
+function getStoredThemeSnapshot(): Theme {
+  if (typeof window === 'undefined') return 'system';
+  try {
+    const stored = (localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY)) as Theme | null;
+    if (stored === 'light' || stored === 'dark' || stored === 'system') {
+      memoryTheme = stored;
+      return stored;
+    }
+  } catch {
+    // Ignore storage errors in restricted iframe/browser modes
+  }
+  return memoryTheme;
+}
+
+function getStoredThemeServerSnapshot(): Theme {
+  return 'system';
 }
 
 function updateDomTheme(resolved: ResolvedTheme) {
@@ -67,15 +98,11 @@ function updateDomTheme(resolved: ResolvedTheme) {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const isMounted = useIsMounted();
 
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'system';
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-      return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
-    } catch {
-      return 'system';
-    }
-  });
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    getStoredThemeSnapshot,
+    getStoredThemeServerSnapshot
+  );
 
   const systemTheme = useSyncExternalStore(
     subscribeToSystemTheme,
@@ -92,11 +119,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [resolvedTheme]);
 
   const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
+    memoryTheme = newTheme;
     try {
       localStorage.setItem(STORAGE_KEY, newTheme);
     } catch {
       // Ignore storage errors in restricted iframe/browser modes
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('pdfsimplify-theme-change'));
     }
   }, []);
 

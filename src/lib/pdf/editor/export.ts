@@ -6,7 +6,7 @@
  */
 
 import { PDFDocument, StandardFonts, rgb, degrees, PDFFont, PDFImage } from 'pdf-lib';
-import { ColorRgb, EditorDocumentState, EditorExportResult, SupportedFontFamily } from './types';
+import { ColorRgb, EditorDocumentState, EditorExportResult, SupportedFontFamily, EditorObject } from './types';
 import { assertValidPdfOutput } from '../output-validator';
 import { sanitizeDownloadFilename } from '@/lib/validation/file-validator';
 import { hexToRgb, COLORS } from './objects';
@@ -171,8 +171,9 @@ export async function exportEditedPdf(
 
   // 4. Reconstruct pages in current visual order
   for (const pageState of state.pages) {
-    const [copiedPage] = await outDoc.copyPages(sourceDoc, [pageState.originalPageIndex]);
-    copiedPage.setRotation(degrees(pageState.rotation));
+    const srcIndex = pageState.originalPageIndex ?? pageState.pageIndex ?? 0;
+    const [copiedPage] = await outDoc.copyPages(sourceDoc, [srcIndex]);
+    copiedPage.setRotation(degrees(pageState.rotation || 0));
     outDoc.addPage(copiedPage);
 
     // 5. Draw all page annotations onto copied page
@@ -407,4 +408,139 @@ export async function exportEditedPdf(
     fileName: finalName,
   };
 }
+
+export interface ExportAnnotatedPdfOptions {
+  file: File | { name: string; bytes?: Uint8Array; buffer?: ArrayBuffer };
+  annotations?: Array<{
+    id?: string;
+    pageIndex?: number;
+    type: 'text' | 'rectangle' | 'drawing' | 'highlight' | 'image';
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    text?: string;
+    fontSize?: number;
+    fontFamily?: string;
+    color?: string | ColorRgb;
+    strokeColor?: string | ColorRgb;
+    strokeWidth?: number;
+    fillColor?: string | ColorRgb;
+    fillOpacity?: number;
+    opacity?: number;
+    [key: string]: unknown;
+  }>;
+  outputFileName?: string;
+}
+
+/**
+ * Programmatic convenience wrapper that applies annotations to a PDF and exports valid bytes.
+ */
+export async function exportAnnotatedPdf(
+  options: ExportAnnotatedPdfOptions
+): Promise<EditorExportResult & { pdfBytes: Uint8Array }> {
+  const { file, annotations = [], outputFileName } = options;
+
+  let sourceBytes: Uint8Array;
+  let fileName = 'document.pdf';
+
+  if (file instanceof File) {
+    fileName = file.name;
+    sourceBytes = new Uint8Array(await file.arrayBuffer());
+  } else if ('bytes' in file && file.bytes) {
+    fileName = file.name;
+    sourceBytes = file.bytes;
+  } else if ('buffer' in file && file.buffer) {
+    fileName = file.name;
+    sourceBytes = new Uint8Array(file.buffer);
+  } else {
+    throw new Error('Invalid file provided to exportAnnotatedPdf.');
+  }
+
+  const pdfDoc = await PDFDocument.load(sourceBytes, { ignoreEncryption: true });
+  const totalPages = pdfDoc.getPageCount();
+
+  const pages = Array.from({ length: totalPages }, (_, index) => {
+    const page = pdfDoc.getPage(index);
+    const { width, height } = page.getSize();
+    return {
+      pageIndex: index,
+      originalPageIndex: index,
+      width,
+      height,
+      rotation: page.getRotation().angle,
+      viewportScale: 1.0,
+      objects: [] as EditorObject[],
+    };
+  });
+
+  for (let idx = 0; idx < annotations.length; idx++) {
+    const ann = annotations[idx];
+    const pageIdx = ann.pageIndex ?? 0;
+    if (pageIdx < 0 || pageIdx >= totalPages) continue;
+
+    const targetPage = pages[pageIdx];
+    const id = ann.id || `ann-${idx + 1}`;
+    const opacity = ann.opacity ?? 1.0;
+
+    if (ann.type === 'text') {
+      const colorVal = typeof ann.color === 'string' ? hexToRgb(ann.color) : (ann.color || { r: 0, g: 0, b: 0 });
+      targetPage.objects.push({
+        id,
+        pageIndex: pageIdx,
+        type: 'text',
+        x: ann.x ?? 50,
+        y: ann.y ?? 50,
+        text: ann.text || '',
+        fontSize: ann.fontSize || 14,
+        fontFamily: (ann.fontFamily as SupportedFontFamily) || 'Helvetica',
+        color: colorVal,
+        opacity,
+      });
+    } else if (ann.type === 'rectangle') {
+      const strokeColor = typeof ann.strokeColor === 'string' ? hexToRgb(ann.strokeColor) : (ann.strokeColor || { r: 0, g: 0, b: 0 });
+      const fillColor = typeof ann.fillColor === 'string' ? hexToRgb(ann.fillColor) : ann.fillColor;
+      targetPage.objects.push({
+        id,
+        pageIndex: pageIdx,
+        type: 'rectangle',
+        x: ann.x ?? 50,
+        y: ann.y ?? 50,
+        width: ann.width ?? 100,
+        height: ann.height ?? 50,
+        strokeColor,
+        strokeWidth: ann.strokeWidth ?? 1,
+        fillColor,
+        opacity,
+      });
+    }
+  }
+
+  const state: EditorDocumentState = {
+    sourceBytes,
+    fileName,
+    pages,
+    activePageIndex: 0,
+    selectedObjectId: null,
+    selectedObjectIds: [],
+    zoom: 1.0,
+    isModified: annotations.length > 0,
+    saveState: 'saved',
+    metadata: { title: '', author: '', subject: '', keywords: [], creator: '', producer: '' },
+    formSummary: {
+      hasAcroForm: false,
+      totalFields: 0,
+      counts: { text: 0, checkbox: 0, radio: 0, dropdown: 0, optionList: 0, signature: 0, other: 0 },
+      fields: [],
+    },
+    documentGeneration: 1,
+  };
+
+  const exportResult = await exportEditedPdf(state, { outputFileName });
+  return {
+    ...exportResult,
+    pdfBytes: exportResult.uint8Array,
+  };
+}
+
 

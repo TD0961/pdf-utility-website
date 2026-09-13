@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Standard CSV Builder
+ * PDFSimplify — Standard CSV Builder
  * Formats 2D string matrix into RFC 4180 compliant CSV text.
  */
 

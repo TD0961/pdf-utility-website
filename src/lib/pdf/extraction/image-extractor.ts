@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Embedded Image Extractor
+ * PDFSimplify — Embedded Image Extractor
  * Extracts embedded raster images (JPEG / PNG) from PDF files directly in the browser.
  * Packages images into downloadable individual files or a consolidated ZIP archive.
  */
@@ -29,7 +29,9 @@ export interface ImageExtractionOptions {
 export interface ImageExtractionResult {
   images: ExtractedImage[];
   zipBlob: Blob;
+  zipArchive: Uint8Array;
   totalImages: number;
+  imagesCount: number;
   totalBytes: number;
   durationMs: number;
   cleanup: () => void;
@@ -39,11 +41,30 @@ export interface ImageExtractionResult {
  * Extracts embedded images using pure pdf-lib stream inspection and PDF.js fallback.
  */
 export async function extractImagesFromPdf(
-  fileOrData: File | { name: string; buffer: ArrayBuffer },
+  fileOrData: File | ArrayBuffer | Uint8Array | { name?: string; buffer?: ArrayBuffer; bytes?: Uint8Array },
   options: ImageExtractionOptions = {}
 ): Promise<ImageExtractionResult> {
   const startTime = Date.now();
-  const buffer = fileOrData instanceof File ? await fileOrData.arrayBuffer() : fileOrData.buffer;
+
+  let buffer: ArrayBuffer;
+  if (fileOrData instanceof File) {
+    buffer = await fileOrData.arrayBuffer();
+  } else if (fileOrData instanceof Uint8Array) {
+    buffer = fileOrData.buffer.slice(fileOrData.byteOffset, fileOrData.byteOffset + fileOrData.byteLength) as ArrayBuffer;
+  } else if (fileOrData instanceof ArrayBuffer) {
+    buffer = fileOrData;
+  } else if (fileOrData && typeof fileOrData === 'object') {
+    if ('bytes' in fileOrData && (fileOrData as { bytes?: Uint8Array }).bytes instanceof Uint8Array) {
+      const b = (fileOrData as { bytes: Uint8Array }).bytes;
+      buffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
+    } else if ('buffer' in fileOrData && (fileOrData as { buffer?: ArrayBuffer }).buffer instanceof ArrayBuffer) {
+      buffer = (fileOrData as { buffer: ArrayBuffer }).buffer;
+    } else {
+      buffer = fileOrData as unknown as ArrayBuffer;
+    }
+  } else {
+    buffer = fileOrData as unknown as ArrayBuffer;
+  }
 
   const notifyProgress = (progress: ConversionProgress) => {
     options.onProgress?.(progress);
@@ -128,20 +149,26 @@ export async function extractImagesFromPdf(
     percentage: 85,
   });
 
-  // Package all extracted images into a ZIP archive using JSZip
-  const zip = new JSZip();
-  let totalBytes = 0;
+  const totalBytes = extracted.reduce((acc, img) => acc + img.sizeBytes, 0);
+  let zipArchive: Uint8Array;
+  let zipBlob: Blob;
 
-  for (const img of extracted) {
-    zip.file(img.name, img.data);
-    totalBytes += img.sizeBytes;
+  if (extracted.length === 0) {
+    zipArchive = new Uint8Array(0);
+    zipBlob = new Blob([], { type: 'application/zip' });
+  } else {
+    // Package all extracted images into a ZIP archive using JSZip
+    const zip = new JSZip();
+    for (const img of extracted) {
+      zip.file(img.name, img.data);
+    }
+    zipArchive = await zip.generateAsync({
+      type: 'uint8array',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 },
+    });
+    zipBlob = new Blob([zipArchive as BlobPart], { type: 'application/zip' });
   }
-
-  const zipBlob = await zip.generateAsync({
-    type: 'blob',
-    compression: 'DEFLATE',
-    compressionOptions: { level: 6 },
-  });
 
   notifyProgress({
     stage: 'completed',
@@ -154,7 +181,9 @@ export async function extractImagesFromPdf(
   return {
     images: extracted,
     zipBlob,
+    zipArchive,
     totalImages: extracted.length,
+    imagesCount: extracted.length,
     totalBytes,
     durationMs: Date.now() - startTime,
     cleanup: () => {

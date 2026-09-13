@@ -5,7 +5,13 @@ export * from './range-parser';
 export * from './output-validator';
 export * from './merge';
 export * from './organize';
-export * from './split';
+export {
+  splitPdf,
+  splitPdfDocument,
+  type SplitPdfOptions,
+  type SplitPdfResult,
+  type SplitMode,
+} from './split';
 export * from './jpg-to-pdf';
 export * from './pdf-to-jpg';
 export * from './pdf-to-text';

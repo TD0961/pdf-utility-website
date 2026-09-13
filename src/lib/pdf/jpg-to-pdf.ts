@@ -9,7 +9,7 @@ import { PDFDocument } from 'pdf-lib';
 import { detectImageType, sanitizeDownloadFilename } from '@/lib/validation/file-validator';
 import { assertValidPdfOutput } from './output-validator';
 
-export type PageSizeOption = 'auto' | 'a4' | 'letter' | 'legal';
+export type PageSizeOption = 'auto' | 'fit' | 'a4' | 'letter' | 'legal';
 export type OrientationOption = 'auto' | 'portrait' | 'landscape';
 export type MarginOption = 'none' | 'small' | 'medium';
 export type ImageFitOption = 'fit' | 'fill';
@@ -27,7 +27,7 @@ export interface JpgToPdfProgressCallback {
 
 export interface JpgToPdfOptions {
   images: (File | JpgToPdfImageItem)[];
-  pageSize?: PageSizeOption;
+  pageSize?: PageSizeOption | string;
   orientation?: OrientationOption;
   margin?: MarginOption;
   fit?: ImageFitOption;
@@ -38,13 +38,15 @@ export interface JpgToPdfOptions {
 export interface JpgToPdfResult {
   blob: Blob;
   uint8Array: Uint8Array;
+  bytes?: Uint8Array;
+  pdfBytes?: Uint8Array;
   totalPages: number;
   fileSize: number;
   fileName: string;
 }
 
 // Standard page dimensions in PostScript points (72 points = 1 inch)
-export const PAGE_DIMENSIONS: Record<Exclude<PageSizeOption, 'auto'>, [number, number]> = {
+export const PAGE_DIMENSIONS: Record<string, [number, number]> = {
   a4: [595.28, 841.89],
   letter: [612, 792],
   legal: [612, 1008],
@@ -139,7 +141,7 @@ export async function convertJpgToPdf({
     let targetPageWidth: number;
     let targetPageHeight: number;
 
-    if (pageSize === 'auto') {
+    if (pageSize === 'auto' || pageSize === 'fit' || !(pageSize in PAGE_DIMENSIONS)) {
       targetPageWidth = imgWidth + marginPt * 2;
       targetPageHeight = imgHeight + marginPt * 2;
 
@@ -235,11 +237,17 @@ export async function convertJpgToPdf({
 
   onProgress?.(totalImages, totalImages, 'Complete!', 100);
 
-  return {
+  const result = Object.assign(pdfBytes, {
     blob,
     uint8Array: pdfBytes,
+    pdfBytes,
+    bytes: pdfBytes,
     totalPages: totalImages,
     fileSize: blob.size,
     fileName: sanitizedName,
-  };
+  });
+
+  return result as Uint8Array & JpgToPdfResult & { bytes: Uint8Array; pdfBytes: Uint8Array };
 }
+
+export const jpgToPdf = convertJpgToPdf;

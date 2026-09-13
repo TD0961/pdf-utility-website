@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Zero-Backend Document Conversion Engine
+ * PDFSimplify — Zero-Backend Document Conversion Engine
  * High-level orchestration for client-side PDF to Word (.docx) and PDF to PowerPoint (.pptx).
  * Handles coordinate analysis, OpenXML packaging, progress reporting, cancellation, and validation.
  */
@@ -174,6 +174,10 @@ export async function convertPdfToWord(
   return {
     blob,
     fileName: outputName,
+    outputFileName: outputName,
+    outputBytes: docxBytes,
+    bytes: docxBytes,
+    uint8Array: docxBytes,
     totalPages: layout.totalPages,
     fileSizeBytes: blob.size,
     durationMs: Date.now() - startTime,
@@ -291,6 +295,10 @@ export async function convertPdfToPpt(
   return {
     blob,
     fileName: outputName,
+    outputFileName: outputName,
+    outputBytes: pptxBytes,
+    bytes: pptxBytes,
+    uint8Array: pptxBytes,
     totalPages: layout.totalPages,
     fileSizeBytes: blob.size,
     durationMs: Date.now() - startTime,
@@ -302,3 +310,5 @@ export async function convertPdfToPpt(
     },
   };
 }
+
+export const convertPdfToPowerPoint = convertPdfToPpt;

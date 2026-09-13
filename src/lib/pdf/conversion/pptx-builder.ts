@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Client-Side OpenXML PPTX Presentation Builder
+ * PDFSimplify — Client-Side OpenXML PPTX Presentation Builder
  * Reconstructs PowerPoint (.pptx) presentations directly from PDF page layouts in-browser.
  * Each PDF page becomes an individual slide with positioned vector text shapes and formatting.
  */
@@ -99,8 +99,8 @@ export async function buildPptxFromLayout(layout: ConversionDocumentLayout): Pro
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/">
   <dc:title>${escapeXml(layout.fileName || 'Presentation')}</dc:title>
-  <dc:creator>iLikePDF Client-Side Engine</dc:creator>
-  <cp:lastModifiedBy>iLikePDF</cp:lastModifiedBy>
+  <dc:creator>PDFSimplify Client-Side Engine</dc:creator>
+  <cp:lastModifiedBy>PDFSimplify</cp:lastModifiedBy>
   <dcterms:created>${dateIso}</dcterms:created>
   <dcterms:modified>${dateIso}</dcterms:modified>
 </cp:coreProperties>`

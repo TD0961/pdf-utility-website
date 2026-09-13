@@ -10,7 +10,7 @@ import { ShieldCheck, Zap, ArrowRight } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: 'About Us — Simple PDF Tools, Private by Design',
   description:
-    'Learn about the mission, values, and technology behind iLikePDF. Discover why our zero-backend architecture protects your privacy.',
+    'Learn about the mission, values, and technology behind PDFSimplify. Discover why our zero-backend architecture protects your privacy.',
   path: '/about',
 });
 
@@ -21,10 +21,10 @@ export default function AboutPage() {
 
       <header className="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-8">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          About iLikePDF
+          About PDFSimplify
         </h1>
         <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-          We built iLikePDF around a simple conviction: you should never have to upload your confidential files to an unknown server just to merge two pages.
+          We built PDFSimplify around a simple conviction: you should never have to upload your confidential files to an unknown server just to merge two pages.
         </p>
       </header>
 
@@ -39,7 +39,7 @@ export default function AboutPage() {
           Today, personal computers and smartphones have extraordinary computing power. Modern browser technologies like WebAssembly, HTML5 Canvas, and Web Workers allow complex document parsing and vector manipulation to run directly on the user’s device.
         </p>
         <p>
-          iLikePDF was engineered from the ground up as a <strong>100% client-side platform</strong>. When you use our utilities, our servers only deliver the static web application code. Once loaded, every single document operation executes completely within your browser’s local sandbox.
+          PDFSimplify was engineered from the ground up as a <strong>100% client-side platform</strong>. When you use our utilities, our servers only deliver the static web application code. Once loaded, every single document operation executes completely within your browser’s local sandbox.
         </p>
       </section>
 

@@ -9,7 +9,7 @@ export const GLOBAL_FAQS: GlobalFaqItem[] = [
     category: 'privacy',
     question: 'Are my PDF files uploaded to a server?',
     answer:
-      'No. Your PDF is processed locally in your browser. iLikePDF operates with a zero-backend architecture for document processing. All processing logic executes inside your browser using JavaScript and WebAssembly. Your files are loaded into your local computer’s memory and are not transmitted to our servers or external file processors.',
+      'No. Your PDF is processed locally in your browser. PDFSimplify operates with a zero-backend architecture for document processing. All processing logic executes inside your browser using JavaScript and WebAssembly. Your files are loaded into your local computer’s memory and are not transmitted to our servers or external file processors.',
   },
   {
     category: 'privacy',
@@ -19,9 +19,9 @@ export const GLOBAL_FAQS: GlobalFaqItem[] = [
   },
   {
     category: 'general',
-    question: 'Is iLikePDF free to use?',
+    question: 'Is PDFSimplify free to use?',
     answer:
-      'Yes, iLikePDF is free. There are no subscriptions, paywalls, or hidden charges. We support platform maintenance through unobtrusive advertising.',
+      'Yes, PDFSimplify is free. There are no subscriptions, paywalls, or hidden charges. We support platform maintenance through unobtrusive advertising.',
   },
   {
     category: 'technical',
@@ -33,7 +33,7 @@ export const GLOBAL_FAQS: GlobalFaqItem[] = [
     category: 'technical',
     question: 'Which browsers are supported?',
     answer:
-      'iLikePDF supports all modern standards-compliant web browsers including Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge, and modern mobile browsers on iOS and Android.',
+      'PDFSimplify supports all modern standards-compliant web browsers including Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge, and modern mobile browsers on iOS and Android.',
   },
   {
     category: 'security',

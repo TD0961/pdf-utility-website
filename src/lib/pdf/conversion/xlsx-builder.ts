@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Client-Side OpenXML XLSX Spreadsheet Builder
+ * PDFSimplify — Client-Side OpenXML XLSX Spreadsheet Builder
  * Generates valid Microsoft Excel (.xlsx) workbooks directly in the browser using JSZip.
  * Reconstructs extracted rows, columns, numbers, and text cells without server APIs.
  */
@@ -15,9 +15,11 @@ export interface XlsxRow {
   cells: (XlsxCell | string | number | null | undefined)[];
 }
 
+export type XlsxRowType = XlsxRow | (XlsxCell | string | number | null | undefined)[];
+
 export interface XlsxSheetData {
   name: string;
-  rows: XlsxRow[];
+  rows: XlsxRowType[];
 }
 
 export interface BuildXlsxOptions {
@@ -52,7 +54,7 @@ export async function buildXlsxFromSheets(
   options: BuildXlsxOptions = {}
 ): Promise<Uint8Array> {
   const zip = new JSZip();
-  const creator = options.creator || 'iLikePDF Client-Side Converter';
+  const creator = options.creator || 'PDFSimplify Client-Side Converter';
   const title = options.title || 'Extracted Table';
   const now = new Date().toISOString();
 
@@ -165,27 +167,35 @@ export async function buildXlsxFromSheets(
       const rowNum = rIdx + 1;
       const cellsXmlParts: string[] = [];
 
-      row.cells.forEach((cell, cIdx) => {
+      const cells = Array.isArray(row)
+        ? row
+        : row && Array.isArray((row as unknown as { cells: unknown[] }).cells)
+        ? (row as unknown as { cells: unknown[] }).cells
+        : [];
+
+      cells.forEach((cell: unknown, cIdx: number) => {
         if (cell === null || cell === undefined) return;
 
         const colLetter = colIndexToName(cIdx);
         const cellRef = `${colLetter}${rowNum}`;
 
-        let rawVal: string | number;
+        let rawVal: string | number = '';
         let isNum = false;
 
-        if (typeof cell === 'object' && 'value' in cell) {
-          rawVal = cell.value;
-          isNum = Boolean(cell.isNumeric);
-        } else {
+        if (typeof cell === 'object' && cell !== null && 'value' in cell) {
+          rawVal = (cell as XlsxCell).value;
+          isNum = Boolean((cell as XlsxCell).isNumeric);
+        } else if (typeof cell === 'number') {
           rawVal = cell;
-          if (typeof cell === 'number') {
-            isNum = true;
-          } else if (typeof cell === 'string' && /^-?\d+(\.\d+)?$/.test(cell.trim()) && cell.trim().length <= 15) {
-            // Confident numeric check
+          isNum = true;
+        } else if (typeof cell === 'string') {
+          rawVal = cell;
+          if (/^-?\d+(\.\d+)?$/.test(cell.trim()) && cell.trim().length <= 15) {
             isNum = true;
             rawVal = parseFloat(cell.trim());
           }
+        } else {
+          rawVal = String(cell);
         }
 
         if (isNum && !isNaN(Number(rawVal))) {
@@ -230,12 +240,12 @@ export async function buildXlsxFromSheets(
     'docProps/app.xml',
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
-  <Application>iLikePDF Client-Side Converter</Application>
+  <Application>PDFSimplify Client-Side Converter</Application>
   <DocSecurity>0</DocSecurity>
   <ScaleCrop>false</ScaleCrop>
   <HeadingPairs><vt:vector size="2" baseType="variant"><vt:variant><vt:lpstr>Worksheets</vt:lpstr></vt:variant><vt:variant><vt:i4>${safeSheets.length}</vt:i4></vt:variant></vt:vector></HeadingPairs>
   <TitlesOfParts><vt:vector size="${safeSheets.length}" baseType="lpstr">${safeSheets.map((s) => `<vt:lpstr>${escapeXml(s.name)}</vt:lpstr>`).join('')}</vt:vector></TitlesOfParts>
-  <Company>iLikePDF</Company>
+  <Company>PDFSimplify</Company>
 </Properties>`
   );
 

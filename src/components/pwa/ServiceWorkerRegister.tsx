@@ -8,6 +8,16 @@ export function ServiceWorkerRegister() {
       return;
     }
 
+    // In development mode, ensure service workers do not cache hot-reloaded dev chunks or cause hydration collisions
+    if (process.env.NODE_ENV !== 'production') {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      });
+      return;
+    }
+
     // Register service worker after window load to not compete for initial page resources
     const register = async () => {
       try {
@@ -22,7 +32,7 @@ export function ServiceWorkerRegister() {
 
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[SW] New version of iLikePDF is ready.');
+              console.log('[SW] New version of PDFSimplify is ready.');
             }
           });
         });

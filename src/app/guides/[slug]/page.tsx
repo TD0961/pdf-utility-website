@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
   }
 
   return constructMetadata({
-    title: `${guide.title} — iLikePDF Guides`,
+    title: `${guide.title} — PDFSimplify Guides`,
     description: guide.metaDescription,
     path: `/guides/${guide.slug}`,
   });

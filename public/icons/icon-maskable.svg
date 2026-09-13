@@ -6,15 +6,11 @@
       <stop offset="100%" stop-color="#7c3aed" />
     </linearGradient>
     <linearGradient id="mFoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
-      <stop offset="100%" stop-color="#e0e7ff" stop-opacity="0.75" />
-    </linearGradient>
-    <linearGradient id="mBadgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#059669" />
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#818cf8" />
     </linearGradient>
     <filter id="mDocShadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#1e1b4b" flood-opacity="0.2" />
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#1e1b4b" flood-opacity="0.3" />
     </filter>
   </defs>
 
@@ -22,24 +18,31 @@
   <rect width="512" height="512" fill="url(#mBgGrad)" />
 
   <!-- Safe Zone Elements (contained well within 410px circle / 80% safe zone) -->
-  <g transform="translate(256, 256) scale(0.82) translate(-256, -256)">
-    <!-- Document Sheet -->
-    <g filter="url(#mDocShadow)">
-      <path d="M148 112 H296 L364 180 V376 C364 389.255 353.255 400 340 400 H148 C134.745 400 124 389.255 124 376 V136 C124 122.745 134.745 112 148 112 Z" fill="#ffffff" />
-      <!-- Folded Corner -->
-      <path d="M296 112 V164 C296 172.837 303.163 180 312 180 H364 Z" fill="url(#mFoldGrad)" />
-    </g>
-
-    <!-- Document Content Preview Lines -->
-    <rect x="168" y="220" width="176" height="18" rx="9" fill="#e2e8f0" />
-    <rect x="168" y="254" width="140" height="16" rx="8" fill="#cbd5e1" />
-    <rect x="168" y="284" width="160" height="16" rx="8" fill="#cbd5e1" />
-
-    <!-- Privacy Shield Badge -->
-    <g transform="translate(256, 276)">
-      <circle cx="68" cy="68" r="54" fill="#ffffff" filter="url(#mDocShadow)" />
-      <path d="M68 34 C88 34 104 42 104 42 V74 C104 96 88 112 68 118 C48 112 32 96 32 74 V42 C32 42 48 34 68 34 Z" fill="url(#mBadgeGrad)" />
-      <path d="M52 74 L64 86 L84 58" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
-    </g>
+  <g transform="translate(256, 256) scale(0.78) translate(-256, -256)" filter="url(#mDocShadow)">
+    <!-- Contour Document Frame -->
+    <path
+      d="M128 71 H327 L441 185 V384 C441 415.5 415.5 441 384 441 H128 C96.5 441 71 415.5 71 384 V128 C71 96.5 96.5 71 128 71 Z"
+      stroke="#ffffff"
+      stroke-width="28"
+      stroke-linejoin="round"
+      fill="rgba(255,255,255,0.06)"
+    />
+    <!-- Folded Corner Flap -->
+    <path
+      d="M327 71 V170 C327 178 333 185 341 185 H441 L327 71 Z"
+      fill="url(#mFoldGrad)"
+    />
+    <!-- Centered, Symmetrical S Contour Line -->
+    <path
+      d="M320 220 H220 C187 220 164 244 164 273 C164 301 187 320 220 320 H292 C325 320 348 339 348 367 C348 396 325 420 292 420 H192"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="36"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <!-- Dynamic Flow Terminal Dots -->
+    <circle cx="320" cy="220" r="18" fill="#38bdf8" />
+    <circle cx="192" cy="420" r="18" fill="#a5b4fc" />
   </g>
 </svg>

@@ -5,8 +5,8 @@ import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { constructMetadata } from '@/lib/seo/metadata';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Cookie Policy — iLikePDF',
-  description: 'Detailed explanation of cookie usage and local browser storage on iLikePDF.',
+  title: 'Cookie Policy — PDFSimplify',
+  description: 'Detailed explanation of cookie usage and local browser storage on PDFSimplify.',
   path: '/cookie-policy',
 });
 
@@ -31,9 +31,9 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">2. How iLikePDF Uses Cookies</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">2. How PDFSimplify Uses Cookies</h2>
           <p>
-            iLikePDF itself does not use tracking cookies to identify individual users or document contents. Our core PDF tools operate without requiring cookies, accounts, or persistent session tokens.
+            PDFSimplify itself does not use tracking cookies to identify individual users or document contents. Our core PDF tools operate without requiring cookies, accounts, or persistent session tokens.
           </p>
         </section>
 

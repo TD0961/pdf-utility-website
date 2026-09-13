@@ -273,7 +273,7 @@ export function ProtectWorkspace() {
                     Keep your password safe
                   </p>
                   <p className="text-[11px] leading-relaxed">
-                    Because iLikePDF processes documents locally without accounts or servers, forgotten passwords cannot be recovered.
+                    Because PDFSimplify processes documents locally without accounts or servers, forgotten passwords cannot be recovered.
                   </p>
                 </div>
               </div>

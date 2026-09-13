@@ -10,9 +10,10 @@ import { validatePdfMagicBytes, sanitizeDownloadFilename } from '@/lib/validatio
 import { assertValidPdfOutput } from './output-validator';
 
 export interface OrganizePageInstruction {
-  id: string;
+  id?: string;
   originalIndex: number; // 0-based index in the source PDF
-  rotation: number; // Additional user-requested rotation in degrees (0, 90, 180, 270)
+  rotation?: number; // Additional user-requested rotation in degrees (0, 90, 180, 270)
+  rotationDelta?: number; // Alias
   displayPageNumber?: number;
 }
 
@@ -111,7 +112,7 @@ export async function organizePdfDocument({
 
     // Read existing page rotation and apply requested delta
     const existingRotation = copiedPage.getRotation().angle;
-    const requestedDelta = instruction.rotation || 0;
+    const requestedDelta = (instruction.rotation !== undefined ? instruction.rotation : (instruction as { rotationDelta?: number }).rotationDelta) || 0;
     const effectiveRotation = ((existingRotation + requestedDelta) % 360 + 360) % 360;
 
     copiedPage.setRotation(degrees(effectiveRotation));
@@ -143,3 +144,5 @@ export async function organizePdfDocument({
     fileName: sanitizedName,
   };
 }
+
+export const organizePdf = organizePdfDocument;

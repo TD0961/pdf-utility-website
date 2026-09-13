@@ -1,7 +1,7 @@
-# iLikePDF — Production Launch & Domain Activation Checklist
+# PDFSimplify — Production Launch & Domain Activation Checklist
 
 **Document**: Production Launch Manual & Pre-Flight Runbook  
-**Domain**: `ilikepdf.com` (Pending Purchase)  
+**Domain**: `pdfsimplify.com` (Pending Purchase)  
 **Architecture**: 100% Client-Side In-Browser Execution, Zero Backend, Next.js Static Export (`output: 'export'`)  
 **Status Key**:
 * **[VERIFIED NOW]**: Empirically audited and verified via automated test suites, Chrome DevTools Protocol (CDP), and Lighthouse static testing.
@@ -46,7 +46,7 @@ graph LR
 ### Category B: [PREPARED] (Code & Config Ready for Activation)
 - [ ] **Cloudflare Pages Headers**: `out/_headers` prepared with CSP, HSTS, X-Frame-Options, MIME protection, and SW cache control.
 - [ ] **Sitemap Generator**: `sitemap.xml` prepared with 40 canonical indexable URLs.
-- [ ] **Robots.txt Directive**: `robots.txt` prepared pointing directly to `https://ilikepdf.com/sitemap.xml`.
+- [ ] **Robots.txt Directive**: `robots.txt` prepared pointing directly to `https://pdfsimplify.com/sitemap.xml`.
 - [ ] **Centralized Origin Swapping**: `NEXT_PUBLIC_SITE_URL` wired into all metadata, JSON-LD, and canonical tags.
 - [ ] **AdSense Integration Harness**: `NEXT_PUBLIC_ADSENSE_CLIENT_ID` and `NEXT_PUBLIC_ADSENSE_ENABLED` wired into `AdSlot` and `AnchorAd`.
 - [ ] **Clean 404 Routing**: Custom `404.html` and `_not-found.html` exported in `out/` for static host fallback.
@@ -55,7 +55,7 @@ graph LR
 ---
 
 ### Category C: [NOT YET VERIFIED] (Pending External Domain & Services)
-- [ ] **Domain Registration**: Purchase `ilikepdf.com` on registrar (Cloudflare Registrar, Namecheap, Porkbun, etc.).
+- [ ] **Domain Registration**: Purchase `pdfsimplify.com` on registrar (Ashewa Cloud, Cloudflare Registrar, etc.).
 - [ ] **Live DNS Resolution**: Configure A/AAAA/CNAME records pointing to Cloudflare Pages edge.
 - [ ] **Public SSL/TLS Handshake**: Edge certificate provisioning and HTTP $\to$ HTTPS 301 redirect.
 - [ ] **Google Search Console**: Domain property ownership verification via DNS TXT record.
@@ -68,10 +68,10 @@ graph LR
 
 ## 3. Step-by-Step Post-Domain Activation Runbook
 
-Execute these steps in strict chronological order once `ilikepdf.com` is acquired.
+Execute these steps in strict chronological order once `pdfsimplify.com` is acquired.
 
 ### Step 1: Domain Purchase & DNS Delegation
-1. Acquire `ilikepdf.com` through your preferred domain registrar.
+1. Acquire `pdfsimplify.com` through Ashewa Cloud or your preferred domain registrar.
 2. If using Cloudflare Pages, assign domain nameservers to Cloudflare:
    ```
    ns1.cloudflare.com
@@ -89,38 +89,38 @@ Execute these steps in strict chronological order once `ilikepdf.com` is acquire
    - **Node.js Version**: `20` or `22` (Set environment variable `NODE_VERSION=22`)
 4. Click **Save and Deploy**.
 5. Once build completes, navigate to **Custom Domains** $\to$ **Set up a custom domain**.
-6. Enter `ilikepdf.com` and `www.ilikepdf.com`. Cloudflare automatically provisions edge SSL/TLS.
+6. Enter `pdfsimplify.com` and `www.pdfsimplify.com`. Cloudflare automatically provisions edge SSL/TLS.
 
 ### Step 3: Production DNS & HTTPS Sanity Check
 Run the following curl commands against the live domain:
 
 ```bash
 # 1. Verify HTTP -> HTTPS 301 redirect
-curl -I http://ilikepdf.com
+curl -I http://pdfsimplify.com
 
 # 2. Verify HTTPS response, HSTS, and Security Headers
-curl -I https://ilikepdf.com
+curl -I https://pdfsimplify.com
 
 # 3. Verify Service Worker header (must NOT be cached)
-curl -I https://ilikepdf.com/sw.js
+curl -I https://pdfsimplify.com/sw.js
 # Expected: Cache-Control: no-cache, no-store, must-revalidate
 
 # 4. Verify static worker caching
-curl -I https://ilikepdf.com/pdf.worker.min.mjs
+curl -I https://pdfsimplify.com/pdf.worker.min.mjs
 # Expected: Cache-Control: public, max-age=31536000, immutable
 
 # 5. Verify sitemap accessibility
-curl -s -o /dev/null -w "%{http_code}\n" https://ilikepdf.com/sitemap.xml
+curl -s -o /dev/null -w "%{http_code}\n" https://pdfsimplify.com/sitemap.xml
 # Expected: 200
 ```
 
 ### Step 4: Google Search Console Verification
 1. Navigate to [Google Search Console](https://search.google.com/search-console).
-2. Choose **Domain Property** and enter `ilikepdf.com`.
+2. Choose **Domain Property** and enter `pdfsimplify.com`.
 3. Copy the provided `google-site-verification` TXT record value.
 4. Add the TXT record in Cloudflare DNS:
    - **Type**: `TXT`
-   - **Name**: `@` (or `ilikepdf.com`)
+   - **Name**: `@` (or `pdfsimplify.com`)
    - **Content**: `google-site-verification=...`
    - **TTL**: Auto
 5. Click **Verify** in Google Search Console.
@@ -129,7 +129,7 @@ curl -s -o /dev/null -w "%{http_code}\n" https://ilikepdf.com/sitemap.xml
    - Verify that all 40 indexable URLs are discovered.
 
 ### Step 5: Real-World In-Browser Smoke Test (Live Domain)
-1. Open Chrome Incognito $\to$ `https://ilikepdf.com`.
+1. Open Chrome Incognito $\to$ `https://pdfsimplify.com`.
 2. Test `/pdf-tools/merge-pdf`:
    - Drop 2 test PDFs.
    - Click **Merge PDF**.
@@ -148,7 +148,7 @@ curl -s -o /dev/null -w "%{http_code}\n" https://ilikepdf.com/sitemap.xml
 > Do NOT create or publish `ads.txt` with placeholder credentials. Only perform this step after you have an active AdSense account.
 
 1. Once the site is live with organic traffic and indexed pages, apply for Google AdSense via [google.com/adsense](https://www.google.com/adsense/).
-2. Submit `https://ilikepdf.com` for review.
+2. Submit `https://pdfsimplify.com` for review.
 3. Upon approval, locate your Publisher ID: `pub-YYYYYYYYYYYYYYYY`.
 4. Create `public/ads.txt`:
    ```txt
@@ -167,12 +167,12 @@ curl -s -o /dev/null -w "%{http_code}\n" https://ilikepdf.com/sitemap.xml
    ```
 7. Verify live `ads.txt`:
    ```bash
-   curl -I https://ilikepdf.com/ads.txt
+   curl -I https://pdfsimplify.com/ads.txt
    # Expected: HTTP 200 with text/plain
    ```
 
 ### Step 7: Real-Device Mobile & Performance Verification
-1. Run PageSpeed Insights against `https://ilikepdf.com`:
+1. Run PageSpeed Insights against `https://pdfsimplify.com`:
    - Record Desktop Performance (target $\ge 95$).
    - Record Mobile Performance.
 2. Test on physical iOS Safari and Android Chrome devices:

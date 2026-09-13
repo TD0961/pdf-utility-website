@@ -12,11 +12,11 @@ import { parsePageRanges } from './range-parser';
 import { assertValidPdfOutput } from './output-validator';
 
 export type WatermarkPosition =
-  | 'center'
   | 'top-left'
   | 'top-center'
   | 'top-right'
   | 'middle-left'
+  | 'center'
   | 'middle-right'
   | 'bottom-left'
   | 'bottom-center'
@@ -32,7 +32,7 @@ export interface WatermarkProgressCallback {
 export interface WatermarkPdfOptions {
   file: File | { name: string; buffer: ArrayBuffer };
   text: string;
-  position?: WatermarkPosition;
+  position?: WatermarkPosition | 'tile';
   rotation?: number; // visual angle in degrees, default 45 for center, 0 for top/bottom
   opacity?: number; // 0.05 to 1.0, default 0.3
   fontSize?: number; // in points, 12 to 120, default 48
@@ -46,6 +46,7 @@ export interface WatermarkPdfOptions {
 export interface WatermarkPdfResult {
   blob: Blob;
   uint8Array: Uint8Array;
+  pdfBytes: Uint8Array;
   totalPages: number;
   fileSize: number;
   fileName: string;
@@ -197,6 +198,8 @@ export async function watermarkPdf({
     throw new Error('Please provide watermark text.');
   }
 
+  const normalizedPosition: WatermarkPosition = position === 'tile' ? 'tiled' : position;
+
   let arrayBuffer: ArrayBuffer;
   let baseFileName = 'document';
 
@@ -281,7 +284,7 @@ export async function watermarkPdf({
       const visualWidth = isTransposed ? pageHeight : pageWidth;
       const visualHeight = isTransposed ? pageWidth : pageHeight;
 
-      const centers = getVisualCenters(position, visualWidth, visualHeight, textWidth, textHeight, margin);
+      const centers = getVisualCenters(normalizedPosition, visualWidth, visualHeight, textWidth, textHeight, margin);
 
       for (const center of centers) {
         const coords = computeWatermarkCoords(
@@ -324,6 +327,7 @@ export async function watermarkPdf({
   return {
     blob,
     uint8Array: savedBytes,
+    pdfBytes: savedBytes,
     totalPages,
     fileSize: savedBytes.byteLength,
     fileName: finalName,

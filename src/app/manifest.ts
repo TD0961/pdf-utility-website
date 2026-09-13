@@ -4,8 +4,8 @@ export const dynamic = 'force-static';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'iLikePDF — Free & Private In-Browser PDF Suite',
-    short_name: 'iLikePDF',
+    name: 'PDFSimplify — Free & Private In-Browser PDF Suite',
+    short_name: 'PDFSimplify',
     description:
       'Simple PDF tools. Private by design. In-browser PDF utilities with zero server uploads.',
     start_url: '/',

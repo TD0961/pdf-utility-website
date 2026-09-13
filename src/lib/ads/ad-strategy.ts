@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Centralized Ad Strategy & Policy Configuration
+ * PDFSimplify — Centralized Ad Strategy & Policy Configuration
  *
  * Governs where and how advertisements can be placed across the platform.
  * Enforces strict safety rules for the PDF Editor workspace and legal documents.

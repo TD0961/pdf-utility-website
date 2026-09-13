@@ -18,8 +18,8 @@ describe('Phase 5: Launch Readiness & Zero-Backend Invariants', () => {
     }
   });
 
-  it('uses canonical production domain https://ilikepdf.com', () => {
-    assert.equal(SITE_URL, 'https://ilikepdf.com');
+  it('uses canonical production domain https://pdfsimplify.com', () => {
+    assert.equal(SITE_URL, 'https://pdfsimplify.com');
   });
 
   it('verifies next.config.ts enforces static export', () => {

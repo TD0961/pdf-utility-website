@@ -1,6 +1,6 @@
-# iLikePDF — Production Launch Checklist
+# PDFSimplify — Production Launch Checklist
 
-**Domain:** `https://ilikepdf.com`  
+**Domain:** `https://pdfsimplify.com`  
 **Architecture:** Next.js 16 + React 19 + TypeScript 5 + Tailwind CSS v4  
 **Hosting Model:** Static HTML Export (`output: 'export'`) on Cloudflare Pages  
 **Backend:** ZERO BACKEND (100% Client-Side Local Browser Processing)  
@@ -26,9 +26,9 @@
 
 ### 1.2 SEO & Educational Content
 - [x] **24 In-Depth Technical Guides**: Authoritative, step-by-step editorial articles matching all primary use cases.
-- [x] **Metadata Architecture**: Unique canonical tags, OpenGraph tags, and Twitter Cards across all 70 static routes.
+- [x] **Metadata Architecture**: Unique canonical tags, OpenGraph tags, and Twitter Cards across all 70 static routes under `https://pdfsimplify.com`.
 - [x] **Schema.org Structured Data**: Complete `WebApplication`, `FAQPage`, `HowTo`, `Article`, and `BreadcrumbList` JSON-LD schemas.
-- [x] **Sitemap & Robots**: Static XML sitemap (`/sitemap.xml`) indexing 70 routes; robots.txt (`/robots.txt`) with sitemap pointer.
+- [x] **Sitemap & Robots**: Static XML sitemap (`/sitemap.xml`) indexing 70 routes; robots.txt (`/robots.txt`) with sitemap pointer to `https://pdfsimplify.com/sitemap.xml`.
 
 ### 1.3 Privacy & Legal Compliance
 - [x] **Truth-in-Advertising Copy**: Absolute superlatives ("100% private", "unhackable") replaced with evidence-based phrasing: *"Your PDF is processed locally in your browser. No files are uploaded to our servers."*
@@ -41,9 +41,9 @@
 - [x] **ARIA Semantics**: Accessible names, live region progress announcements, and role definitions.
 
 ### 1.5 PWA & Offline Readiness
-- [x] **W3C Web App Manifest**: [`public/manifest.json`](file:///home/tensae/Desktop/projects/Apps/pdf-utility-website/public/manifest.json) with maskable icons, shortcuts, and standalone display mode.
+- [x] **W3C Web App Manifest**: [`public/manifest.json`](file:///home/tensae/Desktop/projects/Apps/pdf-utility-website/public/manifest.json) with maskable icons, shortcuts, and standalone display mode for PDFSimplify.
 - [x] **Service Worker**: [`public/sw.js`](file:///home/tensae/Desktop/projects/Apps/pdf-utility-website/public/sw.js) pre-caching all 30 tool shells and assets; strictly forbids caching user documents.
-- [x] **Physical Assets**: Valid 192px, 512px, maskable icons, apple-touch-icon, and favicon.
+- [x] **Physical Assets**: Valid 192px, 512px, maskable icons, apple-touch-icon, and favicon with custom PDFSimplify vector geometry.
 
 ### 1.6 Production Hardening & Cloudflare Pages Configuration
 - [x] **Static Export (`output: 'export'`)**: Next.js compiles cleanly to static directory (`out`).
@@ -57,11 +57,11 @@
 > [!IMPORTANT]
 > The following operational tasks must be performed manually by the site owner/operator after committing the frozen codebase. None of these are performed automatically.
 
-### 2.1 Domain & DNS
-- [ ] **Purchase Domain**: Register `ilikepdf.com` (or your target domain) with your preferred registrar if not already owned.
+### 2.1 Domain & DNS (Ashewa Cloud & Cloudflare)
+- [ ] **Purchase/Register Domain**: Register `pdfsimplify.com` through Ashewa Cloud if not already owned.
 - [ ] **Configure Cloudflare DNS**:
-  - Add domain to Cloudflare dashboard.
-  - Update registrar nameservers to Cloudflare authoritative nameservers.
+  - Add `pdfsimplify.com` to Cloudflare dashboard.
+  - Update Ashewa Cloud nameservers to Cloudflare authoritative nameservers.
   - Verify DNS propagation.
 
 ### 2.2 Cloudflare Pages Deployment
@@ -70,27 +70,27 @@
   - Build command: `npm run build`
   - Output directory: `out`
   - Environment variable: `NODE_VERSION = 20.18.0`
-  - Environment variable: `NEXT_PUBLIC_SITE_URL = https://ilikepdf.com`
+  - Environment variable: `NEXT_PUBLIC_SITE_URL = https://pdfsimplify.com`
 - [ ] **Trigger Production Build**: Initiate the first live production build and confirm green deployment status.
-- [ ] **Connect Custom Domain**: Add `ilikepdf.com` and `www.ilikepdf.com` in Cloudflare Pages Custom Domains tab.
+- [ ] **Connect Custom Domain**: Add `pdfsimplify.com` and `www.pdfsimplify.com` in Cloudflare Pages Custom Domains tab.
 - [ ] **Verify SSL/TLS Certificate**: Confirm Cloudflare Edge Certificate is active with Automatic HTTPS Rewrites enabled.
 
 ### 2.3 Live Production Smoke Testing
-- [ ] **Test Live Site on Desktop**: Test 3 core workflows (Merge PDF, Compress PDF, PDF Editor) at `https://ilikepdf.com`.
+- [ ] **Test Live Site on Desktop**: Test 3 core workflows (Merge PDF, Compress PDF, PDF Editor) at `https://pdfsimplify.com`.
 - [ ] **Test Live Site on Mobile**: Test responsive navigation, file picker, and download on mobile iOS and Android browsers.
 - [ ] **Verify Zero Network Exfiltration**: Confirm DevTools Network tab shows 0 document POST requests during processing.
 - [ ] **Verify Offline PWA**: Install PWA on desktop/mobile and confirm offline tool operation.
 
 ### 2.4 Search Engines & Webmaster Tools
 - [ ] **Google Search Console**:
-  - Add domain property `https://ilikepdf.com`.
+  - Add domain property `https://pdfsimplify.com`.
   - Verify ownership via Cloudflare DNS TXT record.
-  - Submit sitemap: `https://ilikepdf.com/sitemap.xml`.
+  - Submit sitemap: `https://pdfsimplify.com/sitemap.xml`.
 - [ ] **Bing Webmaster Tools**:
   - Import property from Google Search Console.
-  - Submit sitemap: `https://ilikepdf.com/sitemap.xml`.
+  - Submit sitemap: `https://pdfsimplify.com/sitemap.xml`.
 
 ### 2.5 Monetization (AdSense Application)
-- [ ] **Apply for Google AdSense**: Submit `https://ilikepdf.com` for review after initial organic traffic indexation.
+- [ ] **Apply for Google AdSense**: Submit `https://pdfsimplify.com` for review after initial organic traffic indexation.
 - [ ] **Add `ads.txt`**: Once publisher ID is assigned by Google, create `public/ads.txt` with your verified publisher ID.
 - [ ] **Enable Ad Slots**: Configure verified publisher credentials in `src/config/ads.ts`.

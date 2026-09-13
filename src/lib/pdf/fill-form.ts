@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Client-Side AcroForm Form Filling Engine
+ * PDFSimplify — Client-Side AcroForm Form Filling Engine
  * Detects interactive form fields (Text, Checkbox, Radio, Dropdown)
  * and updates them natively using pdf-lib in the browser. Zero backend.
  */
@@ -25,8 +25,11 @@ export interface InteractiveFormField {
 
 export interface FormInspectionResult {
   hasAcroForm: boolean;
+  hasXfa: boolean;
+  isXfaOnly: boolean;
   totalFields: number;
   fields: InteractiveFormField[];
+  notice?: string;
 }
 
 /**
@@ -34,25 +37,55 @@ export interface FormInspectionResult {
  */
 export async function inspectInteractiveForm(
   pdfBytes: Uint8Array
-): Promise<FormInspectionResult> {
+): Promise<InteractiveFormField[] & FormInspectionResult> {
   if (!pdfBytes || pdfBytes.length === 0) {
     throw new Error('PDF file is empty.');
   }
 
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
 
+  let hasXfa = false;
+  try {
+    const rawStr = Buffer.from(pdfBytes).toString('latin1');
+    if (/\/XFA\b/i.test(rawStr)) {
+      hasXfa = true;
+    }
+  } catch {
+    hasXfa = false;
+  }
+
   let form;
   try {
     form = pdfDoc.getForm();
   } catch {
-    return { hasAcroForm: false, totalFields: 0, fields: [] };
+    const isXfaOnly = hasXfa;
+    return Object.assign([] as InteractiveFormField[], {
+      hasAcroForm: false,
+      hasXfa,
+      isXfaOnly,
+      totalFields: 0,
+      fields: [],
+      notice: isXfaOnly
+        ? 'This document contains dynamic XML Forms Architecture (XFA). Only standard static AcroForms are supported for in-browser editing.'
+        : undefined,
+    }) as InteractiveFormField[] & FormInspectionResult;
   }
 
   let fields;
   try {
     fields = form.getFields();
   } catch {
-    return { hasAcroForm: false, totalFields: 0, fields: [] };
+    const isXfaOnly = hasXfa;
+    return Object.assign([] as InteractiveFormField[], {
+      hasAcroForm: false,
+      hasXfa,
+      isXfaOnly,
+      totalFields: 0,
+      fields: [],
+      notice: isXfaOnly
+        ? 'This document contains dynamic XML Forms Architecture (XFA). Only standard static AcroForms are supported for in-browser editing.'
+        : undefined,
+    }) as InteractiveFormField[] & FormInspectionResult;
   }
 
   const interactiveFields: InteractiveFormField[] = [];
@@ -99,15 +132,25 @@ export async function inspectInteractiveForm(
     }
   }
 
-  return {
+  const isXfaOnly = hasXfa && interactiveFields.length === 0;
+  const result = Object.assign(interactiveFields, {
     hasAcroForm: interactiveFields.length > 0,
+    hasXfa,
+    isXfaOnly,
     totalFields: interactiveFields.length,
     fields: interactiveFields,
-  };
+    notice: isXfaOnly
+      ? 'This document contains dynamic XML Forms Architecture (XFA). Only standard static AcroForms are supported for in-browser editing.'
+      : undefined,
+  });
+
+  return result as InteractiveFormField[] & FormInspectionResult;
 }
 
+export type FillFormFieldInput = { name: string; type?: string; value: string | boolean };
+
 export interface FillFormOptions {
-  values: Record<string, string | boolean>;
+  values?: Record<string, string | boolean>;
   flatten?: boolean;
 }
 
@@ -116,21 +159,59 @@ export interface FillFormOptions {
  */
 export async function fillPdfForm(
   pdfBytes: Uint8Array,
-  options: FillFormOptions
-): Promise<{ bytes: Uint8Array; blob: Blob }> {
+  options: FillFormOptions | FillFormFieldInput[]
+): Promise<Uint8Array & { bytes: Uint8Array; pdfBytes: Uint8Array; uint8Array: Uint8Array; blob: Blob }> {
   if (!pdfBytes || pdfBytes.length === 0) {
     throw new Error('PDF file is empty.');
   }
 
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
-  const form = pdfDoc.getForm();
+
+  let form;
+  try {
+    form = pdfDoc.getForm();
+  } catch {
+    throw new Error('This PDF contains no interactive form fields to fill.');
+  }
+
   const fields = form.getFields();
+  if (fields.length === 0) {
+    try {
+      const rawStr = Buffer.from(pdfBytes).toString('latin1');
+      if (/\/XFA\b/i.test(rawStr)) {
+        throw new Error(
+          'This document uses dynamic Adobe XML Forms Architecture (XFA). PDFSimplify supports standard static AcroForms.'
+        );
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message.includes('XML Forms Architecture')) {
+        throw err;
+      }
+    }
+    throw new Error('This PDF contains no interactive form fields to fill.');
+  }
+
+  const valuesMap: Record<string, string | boolean> = {};
+  let shouldFlatten = false;
+
+  if (Array.isArray(options)) {
+    for (const item of options) {
+      if (item && item.name) {
+        valuesMap[item.name] = item.value;
+      }
+    }
+  } else if (options && typeof options === 'object') {
+    if (options.values) {
+      Object.assign(valuesMap, options.values);
+    }
+    shouldFlatten = !!options.flatten;
+  }
 
   for (const field of fields) {
     const name = field.getName();
-    if (!(name in options.values)) continue;
+    if (!(name in valuesMap)) continue;
 
-    const val = options.values[name];
+    const val = valuesMap[name];
 
     try {
       if (field instanceof PDFTextField && typeof val === 'string') {
@@ -151,7 +232,7 @@ export async function fillPdfForm(
     }
   }
 
-  if (options.flatten) {
+  if (shouldFlatten) {
     try {
       form.flatten();
     } catch (err) {
@@ -162,8 +243,13 @@ export async function fillPdfForm(
   const outBytes = await pdfDoc.save({ useObjectStreams: true });
   await assertValidPdfOutput(outBytes);
 
-  return {
+  const blob = new Blob([outBytes as BlobPart], { type: 'application/pdf' });
+  const result = Object.assign(outBytes, {
     bytes: outBytes,
-    blob: new Blob([outBytes as BlobPart], { type: 'application/pdf' }),
-  };
+    pdfBytes: outBytes,
+    uint8Array: outBytes,
+    blob,
+  });
+
+  return result as Uint8Array & { bytes: Uint8Array; pdfBytes: Uint8Array; uint8Array: Uint8Array; blob: Blob };
 }

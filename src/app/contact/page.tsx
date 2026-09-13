@@ -9,9 +9,9 @@ import { siteConfig } from '@/config/site';
 import { Mail, ShieldCheck, HelpCircle } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Contact Us — iLikePDF',
+  title: 'Contact Us — PDFSimplify',
   description:
-    'Have feedback, feature requests, or questions regarding iLikePDF? Get in touch with our engineering team.',
+    'Have feedback, feature requests, or questions regarding PDFSimplify? Get in touch with our engineering team.',
   path: '/contact',
 });
 
@@ -22,7 +22,7 @@ export default function ContactPage() {
 
       <header className="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Contact iLikePDF
+          Contact PDFSimplify
         </h1>
         <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
           We welcome bug reports, suggestions, browser compatibility feedback, and privacy inquiries.

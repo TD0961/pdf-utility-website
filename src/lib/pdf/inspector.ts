@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Document Inspection & Diagnostics Engine
+ * PDFSimplify — Document Inspection & Diagnostics Engine
  * Lightweight, non-intrusive client-side document inspection to detect page geometry,
  * selectable text presence, scanned page conditions, interactive AcroForm fields,
  * and large document memory advisories.

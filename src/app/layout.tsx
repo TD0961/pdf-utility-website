@@ -36,7 +36,7 @@ export const metadata: Metadata = constructMetadata();
 
 const themeScript = `(function() {
   try {
-    var stored = localStorage.getItem('ilikepdf_theme');
+    var stored = localStorage.getItem('pdfsimplify_theme') || localStorage.getItem('ilikepdf_theme');
     var theme = stored || 'system';
     var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     if (isDark) {

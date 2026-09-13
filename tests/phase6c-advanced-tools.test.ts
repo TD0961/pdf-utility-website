@@ -61,7 +61,7 @@ async function createPdfWithMetadata(): Promise<Uint8Array> {
   doc.setSubject('Q3 Quarterly Review');
   doc.setKeywords(['finance', 'quarterly', 'audit']);
   doc.setCreator('InDesign Desktop Suite');
-  doc.setProducer('iLikePDF Internal');
+  doc.setProducer('PDFSimplify Internal');
   return doc.save();
 }
 
@@ -300,7 +300,7 @@ describe('Phase 6C: Advanced PDF Utilities, Extraction & SEO Expansion', () => {
     });
 
     it('extracts Markdown from synthetic PDF and counts words', async () => {
-      const pdfBytes = await createSyntheticPdf(1, 'Introduction to iLikePDF');
+      const pdfBytes = await createSyntheticPdf(1, 'Introduction to PDFSimplify');
       const result = await convertPdfToMarkdown({
         name: 'intro.pdf',
         buffer: pdfBytes.buffer as ArrayBuffer,
@@ -372,9 +372,9 @@ describe('Phase 6C: Advanced PDF Utilities, Extraction & SEO Expansion', () => {
       assert.equal(metadata.title, 'Confidential Financial Report');
       assert.equal(metadata.author, 'John Doe');
       assert.equal(metadata.subject, 'Q3 Quarterly Review');
-      assert.ok(metadata.keywords.includes('finance'));
+      assert.ok(metadata.keywords?.includes('finance'));
       assert.equal(metadata.creator, 'InDesign Desktop Suite');
-      assert.equal(metadata.producer, 'iLikePDF Internal');
+      assert.equal(metadata.producer, 'PDFSimplify Internal');
     });
 
     it('strips all supported metadata fields and validates clean output', async () => {

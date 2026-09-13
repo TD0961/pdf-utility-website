@@ -28,9 +28,22 @@ export async function getPdfJs() {
  */
 export async function getPdfDocument(data: ArrayBuffer | Uint8Array) {
   const pdfjs = await getPdfJs();
-  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+  // Always copy buffer to prevent PDF.js Web Worker transfer from detaching caller's ArrayBuffer
+  const bytes =
+    data instanceof Uint8Array
+      ? new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength))
+      : new Uint8Array(data.slice(0));
   const loadingTask = pdfjs.getDocument({ data: bytes });
-  return loadingTask.promise;
+  const doc = await loadingTask.promise;
+  const originalCleanup = doc.cleanup ? doc.cleanup.bind(doc) : async () => {};
+  doc.cleanup = async () => {
+    try {
+      await originalCleanup();
+    } finally {
+      await loadingTask.destroy();
+    }
+  };
+  return doc;
 }
 
 /**
@@ -39,7 +52,8 @@ export async function getPdfDocument(data: ArrayBuffer | Uint8Array) {
 export async function getPdfPageCount(file: File | ArrayBuffer): Promise<number> {
   const pdfjs = await getPdfJs();
   const data = file instanceof File ? await file.arrayBuffer() : file;
-  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(data) });
+  const bytes = new Uint8Array(data.slice(0));
+  const loadingTask = pdfjs.getDocument({ data: bytes });
   const doc = await loadingTask.promise;
   const numPages = doc.numPages;
   await doc.cleanup();

@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Shared Coordinate-Aware Table Detector
+ * PDFSimplify — Shared Coordinate-Aware Table Detector
  * Analyzes positional text coordinates from PDF pages, clusters text items
  * into visual rows and column anchors, and produces structured 2D cell grids.
  */

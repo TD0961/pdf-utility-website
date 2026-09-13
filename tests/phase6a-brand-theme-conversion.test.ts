@@ -119,8 +119,8 @@ describe('Phase 6A: Product Expansion, Brand UX, Theme System & Conversion Found
       const layoutContent = fs.readFileSync(layoutPath, 'utf-8');
 
       assert.ok(
-        layoutContent.includes('ilikepdf_theme'),
-        'layout.tsx inline script must check localStorage ilikepdf_theme'
+        layoutContent.includes('pdfsimplify_theme'),
+        'layout.tsx inline script must check localStorage pdfsimplify_theme'
       );
       assert.ok(
         layoutContent.includes('suppressHydrationWarning'),

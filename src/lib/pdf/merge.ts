@@ -148,3 +148,5 @@ export async function mergePdfFiles({
     fileName: sanitizedName,
   };
 }
+
+export const mergePdf = mergePdfFiles;

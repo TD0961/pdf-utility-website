@@ -101,7 +101,7 @@ export async function extractPdfPages({
   for (const idx of targetIndices) {
     if (idx < 0 || idx >= totalOriginalPages) {
       throw new Error(
-        `Selected page ${idx + 1} does not exist in this PDF. The document only has ${totalOriginalPages} pages.`
+        `Selected page ${idx + 1} is out of range and does not exist in this PDF. The document only has ${totalOriginalPages} pages.`
       );
     }
   }
@@ -147,3 +147,5 @@ export async function extractPdfPages({
     fileName: finalName,
   };
 }
+
+export const extractPages = extractPdfPages;

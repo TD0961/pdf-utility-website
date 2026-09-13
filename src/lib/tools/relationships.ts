@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Centralized Related Tools & Content Relationships Engine
+ * PDFSimplify — Centralized Related Tools & Content Relationships Engine
  *
  * Provides curated, logically sound bidirectional connections between PDF utilities
  * and in-depth educational guides. Prevents arbitrary tool recommendations.

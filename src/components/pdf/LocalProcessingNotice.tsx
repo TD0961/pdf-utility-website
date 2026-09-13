@@ -39,7 +39,7 @@ export function LocalProcessingNotice({ className, compact = false }: LocalProce
           Your PDF is processed locally in your browser.
         </p>
         <p className="text-emerald-800/90 dark:text-emerald-300/80 text-xs mt-0.5">
-          iLikePDF processes documents on your device using client-side WebAssembly and Web Workers. No document data is transmitted to our servers or external cloud services during processing.
+          PDFSimplify processes documents on your device using client-side WebAssembly and Web Workers. No document data is transmitted to our servers or external cloud services during processing.
         </p>
       </div>
     </div>

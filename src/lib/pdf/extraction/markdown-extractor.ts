@@ -1,5 +1,5 @@
 /**
- * iLikePDF — Zero-Backend PDF to Markdown Converter
+ * PDFSimplify — Zero-Backend PDF to Markdown Converter
  * Analyzes PDF typography and layout, reconstructs headings and paragraphs,
  * and generates clean GitHub Flavored Markdown directly in the browser.
  */
@@ -16,6 +16,7 @@ export interface MarkdownExtractorOptions extends MarkdownBuilderOptions {
 
 export interface MarkdownExtractionResult {
   markdownText: string;
+  markdownContent: string;
   outputBlob: Blob;
   outputFileName: string;
   totalPages: number;
@@ -25,12 +26,34 @@ export interface MarkdownExtractionResult {
 }
 
 export async function convertPdfToMarkdown(
-  fileOrData: File | { name: string; buffer: ArrayBuffer },
+  fileOrData: File | ArrayBuffer | Uint8Array | { name?: string; buffer?: ArrayBuffer; bytes?: Uint8Array },
   options: MarkdownExtractorOptions = {}
 ): Promise<MarkdownExtractionResult> {
   const startTime = Date.now();
-  const fileName = fileOrData instanceof File ? fileOrData.name : fileOrData.name;
-  const buffer = fileOrData instanceof File ? await fileOrData.arrayBuffer() : fileOrData.buffer;
+
+  let buffer: ArrayBuffer;
+  let fileName = 'document.pdf';
+
+  if (fileOrData instanceof File) {
+    fileName = fileOrData.name;
+    buffer = await fileOrData.arrayBuffer();
+  } else if (fileOrData instanceof Uint8Array) {
+    buffer = fileOrData.buffer.slice(fileOrData.byteOffset, fileOrData.byteOffset + fileOrData.byteLength) as ArrayBuffer;
+  } else if (fileOrData instanceof ArrayBuffer) {
+    buffer = fileOrData;
+  } else if (fileOrData && typeof fileOrData === 'object') {
+    fileName = (fileOrData as { name?: string }).name || 'document.pdf';
+    if ('bytes' in fileOrData && (fileOrData as { bytes: Uint8Array }).bytes instanceof Uint8Array) {
+      const b = (fileOrData as { bytes: Uint8Array }).bytes;
+      buffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
+    } else if ('buffer' in fileOrData && (fileOrData as { buffer: ArrayBuffer }).buffer instanceof ArrayBuffer) {
+      buffer = (fileOrData as { buffer: ArrayBuffer }).buffer;
+    } else {
+      buffer = fileOrData as unknown as ArrayBuffer;
+    }
+  } else {
+    buffer = fileOrData as unknown as ArrayBuffer;
+  }
 
   const notifyProgress = (progress: ConversionProgress) => {
     options.onProgress?.(progress);
@@ -38,10 +61,10 @@ export async function convertPdfToMarkdown(
 
   notifyProgress({
     stage: 'initializing',
-    stageDescription: 'Loading PDF document for Markdown analysis...',
+    stageDescription: 'Analyzing document structure for Markdown export...',
     currentPage: 0,
     totalPages: 0,
-    percentage: 5,
+    percentage: 10,
   });
 
   const layout = await analyzePdfDocument(
@@ -61,19 +84,17 @@ export async function convertPdfToMarkdown(
 
   notifyProgress({
     stage: 'packaging',
-    stageDescription: 'Formatting Markdown syntax...',
+    stageDescription: 'Synthesizing clean Markdown syntax...',
     currentPage: layout.totalPages,
     totalPages: layout.totalPages,
-    percentage: 92,
+    percentage: 85,
   });
 
-  const markdownText = buildMarkdownFromLayout(layout, options);
+  const markdownText = buildMarkdownFromLayout(layout);
   const outputBlob = new Blob([markdownText], { type: 'text/markdown;charset=utf-8;' });
   const outputFileName = deriveOutputFilename(fileName, 'md');
 
-  // Calculate statistics
-  const trimmed = markdownText.trim();
-  const wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
+  const wordCount = (markdownText.match(/\S+/g) || []).length;
   const charCount = markdownText.length;
 
   notifyProgress({
@@ -86,6 +107,7 @@ export async function convertPdfToMarkdown(
 
   return {
     markdownText,
+    markdownContent: markdownText,
     outputBlob,
     outputFileName,
     totalPages: layout.totalPages,

@@ -69,12 +69,12 @@ describe('Phase 5: SEO Architecture & Content Footprint', () => {
     const schema = getToolSoftwareSchema({
       name: 'Merge PDF',
       description: 'Merge multiple PDF files into one.',
-      url: 'https://ilikepdf.com/pdf-tools/merge-pdf',
+      url: 'https://pdfsimplify.com/pdf-tools/merge-pdf',
     });
 
     assert.equal(schema['@context'], 'https://schema.org');
     assert.equal(schema['@type'], 'WebApplication');
-    assert.equal(schema.name, 'Merge PDF — iLikePDF');
+    assert.equal(schema.name, 'Merge PDF — PDFSimplify');
     assert.equal(schema.applicationCategory, 'BusinessApplication');
   });
 
@@ -111,7 +111,7 @@ describe('Phase 5: SEO Architecture & Content Footprint', () => {
       (schema.mainEntityOfPage as { '@id'?: string })?.['@id'],
       `${SITE_URL}/guides/${guide.slug}`
     );
-    assert.equal((schema.author as { name?: string })?.name, 'iLikePDF');
+    assert.equal((schema.author as { name?: string })?.name, 'PDFSimplify');
   });
 
   it('constructs metadata with canonical URL and openGraph', () => {
@@ -121,7 +121,7 @@ describe('Phase 5: SEO Architecture & Content Footprint', () => {
       path: '/pdf-tools/protect-pdf',
     });
 
-    assert.equal(meta.title, 'Protect PDF Online | iLikePDF');
+    assert.equal(meta.title, 'Protect PDF Online | PDFSimplify');
     assert.equal(meta.description, 'Encrypt and password-protect your PDF files.');
     assert.equal(meta.alternates?.canonical, `${SITE_URL}/pdf-tools/protect-pdf`);
     assert.equal(meta.openGraph?.url, `${SITE_URL}/pdf-tools/protect-pdf`);

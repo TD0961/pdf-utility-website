@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useTheme, Theme } from './ThemeProvider';
+import { useTheme, Theme, useIsMounted } from './ThemeProvider';
 import { Sun, Moon, Laptop, Check } from 'lucide-react';
 
 export interface ThemeToggleProps {
@@ -11,6 +11,7 @@ export interface ThemeToggleProps {
 export function ThemeToggle({ className = '' }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
+  const mounted = useIsMounted();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -43,13 +44,14 @@ export function ThemeToggle({ className = '' }: ThemeToggleProps) {
     <div ref={containerRef} className={`relative inline-block ${className}`} onKeyDown={handleKeyDown}>
       <button
         type="button"
+        suppressHydrationWarning
         onClick={() => setOpen(!open)}
-        aria-label={`Color theme: ${theme}. Click to change theme.`}
+        aria-label={`Color theme: ${mounted ? theme : 'system'}. Click to change theme.`}
         aria-haspopup="listbox"
         aria-expanded={open}
         className="w-10 h-10 min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px] flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none transition-colors shadow-xs"
       >
-        {resolvedTheme === 'dark' ? (
+        {mounted && resolvedTheme === 'dark' ? (
           <Moon className="w-4 h-4 text-indigo-400" />
         ) : (
           <Sun className="w-4 h-4 text-amber-500" />

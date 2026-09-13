@@ -22,7 +22,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
       'Zero server upload — full local privacy',
       'Preserves original vector quality and links',
     ],
-    howItWorks: 'iLikePDF reads each PDF file locally in memory using WebAssembly and Web Workers, reassembles the page hierarchy in the order you specify, and generates the consolidated PDF document directly on your device.',
+    howItWorks: 'PDFSimplify reads each PDF file locally in memory using WebAssembly and Web Workers, reassembles the page hierarchy in the order you specify, and generates the consolidated PDF document directly on your device.',
     steps: [
       { step: 1, title: 'Select Files', description: 'Choose two or more PDF files from your device.' },
       { step: 2, title: 'Reorder Pages', description: 'Drag and drop files to set your preferred page sequence.' },
@@ -39,7 +39,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
     faqs: [
       {
         question: 'Are my PDF files uploaded to a remote server?',
-        answer: 'No. iLikePDF operates locally inside your web browser. Files are processed in your device’s memory without remote uploads.',
+        answer: 'No. PDFSimplify operates locally inside your web browser. Files are processed in your device’s memory without remote uploads.',
       },
       {
         question: 'Is there a limit on how many PDFs I can merge?',
@@ -181,7 +181,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
     faqs: [
       {
         question: 'Does this perform legal redline certification?',
-        answer: 'No. iLikePDF provides algorithmic text and word-frequency comparison for convenience and revision tracking, not statutory legal redline verification.',
+        answer: 'No. PDFSimplify provides algorithmic text and word-frequency comparison for convenience and revision tracking, not statutory legal redline verification.',
       },
       {
         question: 'Are either of my files uploaded?',
@@ -223,7 +223,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
     faqs: [
       {
         question: 'Is this an Adobe Acrobat replacement?',
-        answer: 'No. iLikePDF provides lightweight annotations and additions without claiming to replace full enterprise desktop publishing suites.',
+        answer: 'No. PDFSimplify provides lightweight annotations and additions without claiming to replace full enterprise desktop publishing suites.',
       },
     ],
     relatedTools: ['sign-pdf', 'fill-pdf', 'watermark-pdf', 'crop-pdf'],
@@ -261,7 +261,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
       },
       {
         question: 'Is my signature stored on your servers?',
-        answer: 'Never. iLikePDF has no backend servers or databases. Your signature exists only in your browser memory during the session.',
+        answer: 'Never. PDFSimplify has no backend servers or databases. Your signature exists only in your browser memory during the session.',
       },
     ],
     relatedTools: ['fill-pdf', 'pdf-editor', 'protect-pdf'],
@@ -680,7 +680,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
       },
       {
         question: 'What if my file is already compressed?',
-        answer: 'iLikePDF honestly notifies you if the file cannot be shrunk further and allows you to keep the original without alteration.',
+        answer: 'PDFSimplify honestly notifies you if the file cannot be shrunk further and allows you to keep the original without alteration.',
       },
     ],
     relatedTools: ['pdf-to-word', 'pdf-to-jpg', 'ocr-pdf', 'merge-pdf'],
@@ -689,8 +689,8 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
   {
     slug: 'ocr-pdf',
     name: 'OCR PDF',
-    shortDescription: 'Recognize text from scanned documents using in-browser Optical Character Recognition.',
-    metaDescription: 'Convert scanned PDF documents into searchable text and searchable PDFs using client-side OCR with zero cloud uploads.',
+    shortDescription: 'Extract text layers and reconstruct searchable PDFs using client-side processing.',
+    metaDescription: 'Convert scanned PDF documents into searchable text and searchable PDFs using client-side OCR analysis with zero cloud uploads.',
     category: 'optimize',
     badge: 'Smart OCR',
     status: 'available',
@@ -698,19 +698,22 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
     acceptsMultiple: false,
     acceptedFileTypes: ['.pdf', 'application/pdf'],
     features: [
-      'In-browser Optical Character Recognition with zero cloud APIs',
-      'Converts scanned image pages into searchable PDFs',
+      'Extracts and preserves digital text layers with 100% precision',
+      'Local canvas binarization & contrast line analysis for image pages',
+      'Generates searchable PDF documents with selectable text overlays',
       'Extracts clean plain text (.txt) for copying',
-      'Sequential page processing to safeguard device memory',
+      'Zero server upload — 100% private in-browser execution',
     ],
-    howItWorks: 'Renders scanned pages to an offscreen HTML5 canvas, analyzes glyph contours, and overlays an invisible searchable text layer over the image using pdf-lib.',
+    howItWorks: 'Analyzes digital text streams and image contrast directly in your browser. For pages with text layers, extracts exact typography; for scanned pages, performs local contrast binarization and overlays selectable text.',
     steps: [
-      { step: 1, title: 'Upload Scan', description: 'Select your scanned PDF.' },
-      { step: 2, title: 'Run OCR', description: 'Characters are analyzed page by page in memory.' },
+      { step: 1, title: 'Upload Document', description: 'Select your PDF document.' },
+      { step: 2, title: 'Process Text', description: 'Pages are analyzed sequentially in memory.' },
       { step: 3, title: 'Download', description: 'Save your searchable PDF or copy extracted text.' },
     ],
-    tips: ['High-contrast scans with dark text on white backgrounds produce the highest accuracy.'],
-    commonProblems: ['Faint handwriting or low-resolution faxes may result in lower character recognition confidence.'],
+    tips: ['Documents with clean high-contrast text produce the most accurate searchable overlays.'],
+    commonProblems: [
+      'Scanned pages without an existing digital text layer are analyzed via local canvas contrast binarization; full multilingual neural OCR requires heavy external models not bundled in-browser.',
+    ],
     faqs: [
       {
         question: 'Does this tool send my scans to an OCR cloud server?',
@@ -754,7 +757,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
     commonProblems: ['Do not close the tab before the encryption stream finishes saving.'],
     faqs: [
       {
-        question: 'Can iLikePDF recover my password if I lose it?',
+        question: 'Can PDFSimplify recover my password if I lose it?',
         answer: 'No. Because everything runs strictly in your browser without accounts or servers, we never see or store your password.',
       },
     ],
@@ -1031,7 +1034,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
     faqs: [
       {
         question: 'Does resizing make my PDF blurry or pixelated?',
-        answer: 'No. iLikePDF uses mathematical vector transformations. Vector text, fonts, and illustrations remain razor sharp at any target size.',
+        answer: 'No. PDFSimplify uses mathematical vector transformations. Vector text, fonts, and illustrations remain razor sharp at any target size.',
       },
     ],
     relatedTools: ['crop-pdf', 'rotate-pdf', 'compress-pdf', 'pdf-editor'],
