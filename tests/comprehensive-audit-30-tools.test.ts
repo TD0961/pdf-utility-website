@@ -10,7 +10,7 @@ import { PDFDocument } from 'pdf-lib';
 import JSZip from 'jszip';
 
 // Matrix generator
-import { generateTestMatrix, TestMatrix, SAMPLE_PNG_BASE64, SAMPLE_JPG_BASE64 } from '../scratch/test-matrix-generator';
+import { generateTestMatrix, TestMatrix, SAMPLE_PNG_BASE64, SAMPLE_JPG_BASE64 } from './test-matrix-generator';
 
 // Tool Engines
 import { mergePdf } from '../src/lib/pdf/merge';
