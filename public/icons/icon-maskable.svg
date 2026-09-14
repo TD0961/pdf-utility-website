@@ -1,48 +1,48 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="mBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4f46e5" />
-      <stop offset="50%" stop-color="#6366f1" />
+      <stop offset="0%" stop-color="#4338ca" />
+      <stop offset="45%" stop-color="#4f46e5" />
       <stop offset="100%" stop-color="#7c3aed" />
     </linearGradient>
     <linearGradient id="mFoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#60a5fa" />
     </linearGradient>
-    <filter id="mDocShadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#1e1b4b" flood-opacity="0.3" />
-    </filter>
   </defs>
 
   <!-- Full Bleed Background for Maskable Spec -->
   <rect width="512" height="512" fill="url(#mBgGrad)" />
 
   <!-- Safe Zone Elements (contained well within 410px circle / 80% safe zone) -->
-  <g transform="translate(256, 256) scale(0.78) translate(-256, -256)" filter="url(#mDocShadow)">
-    <!-- Contour Document Frame -->
+  <g transform="translate(256, 256) scale(0.80) translate(-256, -256)">
+    <!-- Document Body Silhouette -->
     <path
-      d="M128 71 H327 L441 185 V384 C441 415.5 415.5 441 384 441 H128 C96.5 441 71 415.5 71 384 V128 C71 96.5 96.5 71 128 71 Z"
+      d="M120 64 H324 L448 188 V392 C448 423 423 448 392 448 H120 C89 448 64 423 64 392 V120 C64 89 89 64 120 64 Z"
       stroke="#ffffff"
-      stroke-width="28"
+      stroke-width="38"
       stroke-linejoin="round"
-      fill="rgba(255,255,255,0.06)"
+      fill="rgba(255,255,255,0.14)"
     />
-    <!-- Folded Corner Flap -->
+    <!-- Vibrant Folded Corner Flap -->
     <path
-      d="M327 71 V170 C327 178 333 185 341 185 H441 L327 71 Z"
+      d="M324 64 V174 C324 182 330 188 338 188 H448 L324 64 Z"
       fill="url(#mFoldGrad)"
+      stroke="#ffffff"
+      stroke-width="4"
+      stroke-linejoin="round"
     />
-    <!-- Centered, Symmetrical S Contour Line -->
+    <!-- Bold, High-Contrast S-Curve -->
     <path
-      d="M320 220 H220 C187 220 164 244 164 273 C164 301 187 320 220 320 H292 C325 320 348 339 348 367 C348 396 325 420 292 420 H192"
+      d="M324 228 H218 C182 228 156 252 156 282 C156 312 182 332 218 332 H294 C330 332 356 352 356 382 C356 412 330 436 294 436 H188"
       fill="none"
       stroke="#ffffff"
-      stroke-width="36"
+      stroke-width="50"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
-    <!-- Dynamic Flow Terminal Dots -->
-    <circle cx="320" cy="220" r="18" fill="#38bdf8" />
-    <circle cx="192" cy="420" r="18" fill="#a5b4fc" />
+    <!-- Distinct Dynamic Flow Terminals -->
+    <circle cx="324" cy="228" r="26" fill="#38bdf8" stroke="#ffffff" stroke-width="4" />
+    <circle cx="188" cy="436" r="26" fill="#c084fc" stroke="#ffffff" stroke-width="4" />
   </g>
 </svg>
