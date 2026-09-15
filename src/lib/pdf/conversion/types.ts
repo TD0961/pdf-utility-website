@@ -32,7 +32,27 @@ export interface TextLine {
   isHeadingCandidate: boolean;
 }
 
-export type BlockType = 'heading1' | 'heading2' | 'heading3' | 'paragraph' | 'listItem';
+export type BlockType =
+  | 'heading1'
+  | 'heading2'
+  | 'heading3'
+  | 'paragraph'
+  | 'listItem'
+  | 'tocItem'
+  | 'table';
+
+export interface TocItemData {
+  title: string;
+  pageNumber: string;
+  level: number;
+  targetBookmark?: string;
+}
+
+export interface TableBlockData {
+  headers?: string[];
+  rows: string[][];
+  colWidths?: number[];
+}
 
 export interface TextBlock {
   type: BlockType;
@@ -43,6 +63,8 @@ export interface TextBlock {
   isBold: boolean;
   isItalic: boolean;
   alignment: 'left' | 'center' | 'right' | 'justify';
+  tocData?: TocItemData;
+  tableData?: TableBlockData;
 }
 
 export interface ConversionPageLayout {
@@ -55,6 +77,13 @@ export interface ConversionPageLayout {
   hasSelectableText: boolean;
 }
 
+export interface PdfOutlineNode {
+  title: string;
+  dest?: string | unknown[];
+  pageNumber?: number;
+  items?: PdfOutlineNode[];
+}
+
 export interface ConversionDocumentLayout {
   fileName: string;
   fileSizeBytes: number;
@@ -62,6 +91,7 @@ export interface ConversionDocumentLayout {
   pages: ConversionPageLayout[];
   medianBodyFontSize: number;
   title?: string;
+  outline?: PdfOutlineNode[];
 }
 
 export interface CancellationToken {

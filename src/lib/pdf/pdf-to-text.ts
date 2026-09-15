@@ -6,7 +6,7 @@
  */
 
 import { validatePdfMagicBytes, sanitizeDownloadFilename } from '@/lib/validation/file-validator';
-import { getPdfJs } from './pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from './pdf-renderer';
 
 export interface PdfToTextProgressCallback {
   (current: number, total: number, stage: string, percentage: number): void;
@@ -169,7 +169,7 @@ export async function extractTextFromPdfDocument({
   let doc: PdfJsTextDoc | null = null;
 
   try {
-    loadingTask = pdfjs.getDocument({ data: new Uint8Array(arrayBuffer.slice(0)) });
+    loadingTask = pdfjs.getDocument(getPdfLoadingParams(arrayBuffer) as { data: Uint8Array });
     doc = await loadingTask.promise;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();

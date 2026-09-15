@@ -4,7 +4,7 @@
  * and generates standards-compliant Excel spreadsheets directly in the browser.
  */
 
-import { getPdfJs } from '../pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from '../pdf-renderer';
 import { buildXlsxFromSheets, XlsxSheetData, XlsxRow } from './xlsx-builder';
 import { validateOpenXmlPackage, deriveOutputFilename } from './converter';
 import {
@@ -46,7 +46,7 @@ export async function convertPdfToExcel(
   });
 
   const pdfjs = await getPdfJs();
-  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(buffer.slice(0)) });
+  const loadingTask = pdfjs.getDocument(getPdfLoadingParams(buffer));
   const pdfDoc = await loadingTask.promise;
   const totalPages = pdfDoc.numPages;
 

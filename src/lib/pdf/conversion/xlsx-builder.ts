@@ -190,9 +190,16 @@ export async function buildXlsxFromSheets(
           isNum = true;
         } else if (typeof cell === 'string') {
           rawVal = cell;
-          if (/^-?\d+(\.\d+)?$/.test(cell.trim()) && cell.trim().length <= 15) {
+          const trimmed = cell.trim();
+          if (/^-?\d+(\.\d+)?$/.test(trimmed) && trimmed.length <= 15) {
             isNum = true;
-            rawVal = parseFloat(cell.trim());
+            rawVal = parseFloat(trimmed);
+          } else if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(trimmed) && trimmed.length <= 18) {
+            const unformatted = trimmed.replace(/,/g, '');
+            if (!isNaN(Number(unformatted))) {
+              isNum = true;
+              rawVal = parseFloat(unformatted);
+            }
           }
         } else {
           rawVal = String(cell);

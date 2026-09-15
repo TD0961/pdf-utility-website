@@ -19,6 +19,9 @@ import { EditorObjectManager } from './EditorObjectManager';
 import { EditorMetadataModal } from './EditorMetadataModal';
 import { EditorShortcutsModal } from './EditorShortcutsModal';
 import { EditorExportModal } from './EditorExportModal';
+import { EditorMobileBottomBar, MobileTab } from './EditorMobileBottomBar';
+import { EditorMobilePageDrawer } from './EditorMobilePageDrawer';
+import { EditorMobilePropertiesSheet } from './EditorMobilePropertiesSheet';
 import { getDeterministicExportFilename } from '@/lib/pdf/editor/export';
 import { PdfDropzone } from '@/components/pdf/PdfDropzone';
 import { LocalProcessingNotice } from '@/components/pdf/LocalProcessingNotice';
@@ -68,6 +71,7 @@ export function PdfEditorWorkspace() {
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [showProperties, setShowProperties] = useState(true);
   const [showObjectManager, setShowObjectManager] = useState(false);
+  const [mobileTab, setMobileTab] = useState<MobileTab>(null);
 
   // Search state
   const [showSearch, setShowSearch] = useState(false);
@@ -1054,22 +1058,24 @@ export function PdfEditorWorkspace() {
       <div className="flex-1 flex min-h-0 relative">
         {/* Left: Page Thumbnails Sidebar */}
         {showThumbnails && (
-          <EditorPageThumbnails
-            pages={docState.pages}
-            activePageIndex={docState.activePageIndex}
-            sourceBytes={docState.sourceBytes}
-            onSelectPage={(index) => {
-              engine.setActivePageIndex(index);
-              syncState();
-            }}
-            onRotatePage={handleRotatePage}
-            onDuplicatePage={handleDuplicatePage}
-            onDeletePage={handleDeletePage}
-            onMovePage={handleMovePage}
-            onRotatePages={handleRotatePages}
-            onDuplicatePages={handleDuplicatePages}
-            onDeletePages={handleDeletePages}
-          />
+          <div className="hidden md:block shrink-0 h-full">
+            <EditorPageThumbnails
+              pages={docState.pages}
+              activePageIndex={docState.activePageIndex}
+              sourceBytes={docState.sourceBytes}
+              onSelectPage={(index) => {
+                engine.setActivePageIndex(index);
+                syncState();
+              }}
+              onRotatePage={handleRotatePage}
+              onDuplicatePage={handleDuplicatePage}
+              onDeletePage={handleDeletePage}
+              onMovePage={handleMovePage}
+              onRotatePages={handleRotatePages}
+              onDuplicatePages={handleDuplicatePages}
+              onDeletePages={handleDeletePages}
+            />
+          </div>
         )}
 
         {/* Floating Tool Palette (Centered Left) */}
@@ -1102,7 +1108,7 @@ export function PdfEditorWorkspace() {
         {/* Center: Scrollable Canvas Container */}
         <main
           role="main"
-          className="flex-1 overflow-auto flex flex-col relative bg-slate-200/50 dark:bg-slate-950"
+          className="flex-1 overflow-auto flex flex-col relative bg-slate-200/50 dark:bg-slate-950 pb-20 sm:pb-0"
         >
           {/* Floating Search Bar (Top Right) */}
           {showSearch && (
@@ -1141,81 +1147,76 @@ export function PdfEditorWorkspace() {
               onSwitchTool={(t) => setActiveTool(t)}
             />
           ) : null}
-
-          {/* Mobile Floating Bottom Tool Palette */}
-          <div className="sm:hidden sticky bottom-3 mx-auto z-30">
-            <ToolPalette
-              orientation="horizontal"
-              activeTool={activeTool}
-              onSelectTool={handleToolSelect}
-            />
-          </div>
         </main>
 
         {/* Right: Object Manager Panel */}
         {showObjectManager && (
-          <EditorObjectManager
-            pages={docState.pages}
-            activePageIndex={docState.activePageIndex}
-            selectedObjectId={docState.selectedObjectId}
-            selectedObjectIds={docState.selectedObjectIds}
-            onSelectObject={(id, pageIndex) => {
-              if (pageIndex !== docState.activePageIndex) {
-                engine.setActivePageIndex(pageIndex);
-              }
-              engine.selectObject(id);
-              syncState();
-            }}
-            onDeleteObject={(id, pageIndex) => {
-              if (pageIndex === docState.activePageIndex) {
-                handleDeleteObject(id);
-              } else {
-                const page = docState.pages[pageIndex];
-                const obj = page?.objects.find((o) => o.id === id);
-                if (obj) {
-                  engine.deleteObject(pageIndex, id);
-                  syncState();
+          <div className="hidden md:block shrink-0 h-full">
+            <EditorObjectManager
+              pages={docState.pages}
+              activePageIndex={docState.activePageIndex}
+              selectedObjectId={docState.selectedObjectId}
+              selectedObjectIds={docState.selectedObjectIds}
+              onSelectObject={(id, pageIndex) => {
+                if (pageIndex !== docState.activePageIndex) {
+                  engine.setActivePageIndex(pageIndex);
                 }
-              }
-            }}
-            onDuplicateObject={handleDuplicateObject}
-            onBringForward={handleBringForward}
-            onSendBackward={handleSendBackward}
-            onClose={() => setShowObjectManager(false)}
-          />
+                engine.selectObject(id);
+                syncState();
+              }}
+              onDeleteObject={(id, pageIndex) => {
+                if (pageIndex === docState.activePageIndex) {
+                  handleDeleteObject(id);
+                } else {
+                  const page = docState.pages[pageIndex];
+                  const obj = page?.objects.find((o) => o.id === id);
+                  if (obj) {
+                    engine.deleteObject(pageIndex, id);
+                    syncState();
+                  }
+                }
+              }}
+              onDuplicateObject={handleDuplicateObject}
+              onBringForward={handleBringForward}
+              onSendBackward={handleSendBackward}
+              onClose={() => setShowObjectManager(false)}
+            />
+          </div>
         )}
 
         {/* Right: Contextual Properties Panel */}
         {showProperties && (
-          <EditorPropertiesPanel
-            selectedObject={selectedObject}
-            selectedObjects={engine.getSelectedObjects()}
-            activePage={activePage}
-            activeTool={activeTool}
-            toolDefaults={toolDefaults}
-            onUpdateObject={(updates) => {
-              if (selectedObject) {
-                handleUpdateObject(selectedObject.id, updates);
-              }
-            }}
-            onDeleteObject={() => {
-              if (selectedObject) {
-                handleDeleteObject(selectedObject.id);
-              }
-            }}
-            onDuplicateObject={handleDuplicateObject}
-            onDeleteSelected={handleDeleteSelected}
-            onDuplicateSelected={handleDuplicateSelected}
-            onAlignSelected={handleAlignSelected}
-            onDistributeSelected={handleDistributeSelected}
-            onBringForward={handleBringForward}
-            onSendBackward={handleSendBackward}
-            onBringToFront={handleBringToFront}
-            onSendToBack={handleSendToBack}
-            onUpdateToolDefaults={(updates) => {
-              setToolDefaults((prev) => ({ ...prev, ...updates }));
-            }}
-          />
+          <div className="hidden md:block shrink-0 h-full">
+            <EditorPropertiesPanel
+              selectedObject={selectedObject}
+              selectedObjects={engine.getSelectedObjects()}
+              activePage={activePage}
+              activeTool={activeTool}
+              toolDefaults={toolDefaults}
+              onUpdateObject={(updates) => {
+                if (selectedObject) {
+                  handleUpdateObject(selectedObject.id, updates);
+                }
+              }}
+              onDeleteObject={() => {
+                if (selectedObject) {
+                  handleDeleteObject(selectedObject.id);
+                }
+              }}
+              onDuplicateObject={handleDuplicateObject}
+              onDeleteSelected={handleDeleteSelected}
+              onDuplicateSelected={handleDuplicateSelected}
+              onAlignSelected={handleAlignSelected}
+              onDistributeSelected={handleDistributeSelected}
+              onBringForward={handleBringForward}
+              onSendBackward={handleSendBackward}
+              onBringToFront={handleBringToFront}
+              onSendToBack={handleSendToBack}
+              onUpdateToolDefaults={(updates) => {
+                setToolDefaults((prev) => ({ ...prev, ...updates }));
+              }}
+            />
+          </div>
         )}
       </div>
 
@@ -1267,6 +1268,74 @@ export function PdfEditorWorkspace() {
           onClose={() => setShowShortcutsModal(false)}
         />
       )}
+
+      {/* Mobile Bottom Navigation Bar (iLovePDF capability) */}
+      <EditorMobileBottomBar
+        activeTool={activeTool}
+        onSelectTool={handleToolSelect}
+        currentPage={docState.activePageIndex + 1}
+        totalPages={docState.pages.length}
+        onPrevPage={handlePrevPage}
+        onNextPage={handleNextPage}
+        activeTab={mobileTab}
+        onSelectTab={setMobileTab}
+        hasSelectedObject={Boolean(selectedObject)}
+        onDeleteSelected={selectedObject ? () => handleDeleteObject(selectedObject.id) : undefined}
+        onDuplicateSelected={selectedObject ? () => handleDuplicateObject() : undefined}
+        zoom={docState.zoom}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onZoomReset={handleZoomReset}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onExport={handleExport}
+        isExporting={isExporting}
+        objectCount={totalObjectCount}
+      />
+
+      {/* Mobile Page Thumbnails Slide-Up Drawer */}
+      <EditorMobilePageDrawer
+        isOpen={mobileTab === 'pages'}
+        pages={docState.pages}
+        activePageIndex={docState.activePageIndex}
+        sourceBytes={docState.sourceBytes}
+        onSelectPage={(index) => {
+          engine.setActivePageIndex(index);
+          syncState();
+          setMobileTab(null);
+        }}
+        onRotatePage={handleRotatePage}
+        onDuplicatePage={handleDuplicatePage}
+        onDeletePage={handleDeletePage}
+        onClose={() => setMobileTab(null)}
+      />
+
+      {/* Mobile Contextual Properties Sheet */}
+      <EditorMobilePropertiesSheet
+        isOpen={mobileTab === 'properties'}
+        selectedObject={selectedObject}
+        activeTool={activeTool}
+        toolDefaults={toolDefaults}
+        onUpdateObject={(updates) => {
+          if (selectedObject) {
+            handleUpdateObject(selectedObject.id, updates);
+          }
+        }}
+        onDeleteObject={() => {
+          if (selectedObject) {
+            handleDeleteObject(selectedObject.id);
+          }
+        }}
+        onDuplicateObject={handleDuplicateObject}
+        onBringForward={handleBringForward}
+        onSendBackward={handleSendBackward}
+        onUpdateToolDefaults={(updates) => {
+          setToolDefaults((prev) => ({ ...prev, ...updates }));
+        }}
+        onClose={() => setMobileTab(null)}
+      />
     </div>
   );
 }

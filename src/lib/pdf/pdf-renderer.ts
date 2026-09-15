@@ -24,16 +24,38 @@ export async function getPdfJs() {
 }
 
 /**
- * Loads a PDF document using PDF.js
+ * Returns optimized PDF.js loading parameters including offline CMap and standard font tables
+ * for robust handling of global multilingual PDFs (CJK, Arabic, Cyrillic, non-embedded fonts).
  */
-export async function getPdfDocument(data: ArrayBuffer | Uint8Array) {
-  const pdfjs = await getPdfJs();
-  // Always copy buffer to prevent PDF.js Web Worker transfer from detaching caller's ArrayBuffer
+export function getPdfLoadingParams(data: Uint8Array | ArrayBuffer): {
+  data: Uint8Array;
+  cMapUrl?: string;
+  cMapPacked?: boolean;
+  standardFontDataUrl?: string;
+} {
   const bytes =
     data instanceof Uint8Array
       ? new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength))
       : new Uint8Array(data.slice(0));
-  const loadingTask = pdfjs.getDocument({ data: bytes });
+
+  if (typeof window !== 'undefined') {
+    return {
+      data: bytes,
+      cMapUrl: '/cmaps/',
+      cMapPacked: true,
+      standardFontDataUrl: '/standard_fonts/',
+    };
+  }
+
+  return { data: bytes };
+}
+
+/**
+ * Loads a PDF document using PDF.js
+ */
+export async function getPdfDocument(data: ArrayBuffer | Uint8Array) {
+  const pdfjs = await getPdfJs();
+  const loadingTask = pdfjs.getDocument(getPdfLoadingParams(data));
   const doc = await loadingTask.promise;
   const originalCleanup = doc.cleanup ? doc.cleanup.bind(doc) : async () => {};
   doc.cleanup = async () => {
@@ -52,8 +74,7 @@ export async function getPdfDocument(data: ArrayBuffer | Uint8Array) {
 export async function getPdfPageCount(file: File | ArrayBuffer): Promise<number> {
   const pdfjs = await getPdfJs();
   const data = file instanceof File ? await file.arrayBuffer() : file;
-  const bytes = new Uint8Array(data.slice(0));
-  const loadingTask = pdfjs.getDocument({ data: bytes });
+  const loadingTask = pdfjs.getDocument(getPdfLoadingParams(data));
   const doc = await loadingTask.promise;
   const numPages = doc.numPages;
   await doc.cleanup();
@@ -71,7 +92,7 @@ export async function renderPdfPageToDataUrl(
 ): Promise<string> {
   const pdfjs = await getPdfJs();
   const data = file instanceof File ? await file.arrayBuffer() : file;
-  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(data) });
+  const loadingTask = pdfjs.getDocument(getPdfLoadingParams(data));
   const doc = await loadingTask.promise;
 
   try {
@@ -112,7 +133,7 @@ export async function extractTextFromPdf(
 ): Promise<string> {
   const pdfjs = await getPdfJs();
   const data = file instanceof File ? await file.arrayBuffer() : file;
-  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(data) });
+  const loadingTask = pdfjs.getDocument(getPdfLoadingParams(data));
   const doc = await loadingTask.promise;
 
   try {

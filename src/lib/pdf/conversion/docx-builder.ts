@@ -89,6 +89,7 @@ export async function buildDocxFromLayout(
     <w:next w:val="Normal"/>
     <w:pPr>
       <w:spacing w:before="360" w:after="140"/>
+      <w:outlineLvl w:val="0"/>
     </w:pPr>
     <w:rPr>
       <w:b/>
@@ -104,6 +105,7 @@ export async function buildDocxFromLayout(
     <w:next w:val="Normal"/>
     <w:pPr>
       <w:spacing w:before="240" w:after="100"/>
+      <w:outlineLvl w:val="1"/>
     </w:pPr>
     <w:rPr>
       <w:b/>
@@ -111,6 +113,66 @@ export async function buildDocxFromLayout(
       <w:szCs w:val="28"/>
       <w:color w:val="1E293B"/>
     </w:rPr>
+  </w:style>
+
+  <w:style w:type="paragraph" w:styleId="Heading3">
+    <w:name w:val="heading 3"/>
+    <w:basedOn w:val="Normal"/>
+    <w:next w:val="Normal"/>
+    <w:pPr>
+      <w:spacing w:before="180" w:after="80"/>
+      <w:outlineLvl w:val="2"/>
+    </w:pPr>
+    <w:rPr>
+      <w:b/>
+      <w:sz w:val="24"/>
+      <w:szCs w:val="24"/>
+      <w:color w:val="334155"/>
+    </w:rPr>
+  </w:style>
+
+  <w:style w:type="paragraph" w:styleId="TOC1">
+    <w:name w:val="toc 1"/>
+    <w:basedOn w:val="Normal"/>
+    <w:next w:val="Normal"/>
+    <w:pPr>
+      <w:spacing w:before="60" w:after="60"/>
+      <w:tabs>
+        <w:tab w:val="right" w:leader="dot" w:pos="9360"/>
+      </w:tabs>
+    </w:pPr>
+    <w:rPr>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+      <w:color w:val="1E293B"/>
+    </w:rPr>
+  </w:style>
+
+  <w:style w:type="paragraph" w:styleId="TOC2">
+    <w:name w:val="toc 2"/>
+    <w:basedOn w:val="Normal"/>
+    <w:next w:val="Normal"/>
+    <w:pPr>
+      <w:spacing w:before="40" w:after="40"/>
+      <w:ind w:left="360"/>
+      <w:tabs>
+        <w:tab w:val="right" w:leader="dot" w:pos="9360"/>
+      </w:tabs>
+    </w:pPr>
+    <w:rPr>
+      <w:sz w:val="20"/>
+      <w:szCs w:val="20"/>
+      <w:color w:val="475569"/>
+    </w:rPr>
+  </w:style>
+
+  <w:style w:type="paragraph" w:styleId="ListParagraph">
+    <w:name w:val="List Paragraph"/>
+    <w:basedOn w:val="Normal"/>
+    <w:pPr>
+      <w:ind w:left="720" w:hanging="360"/>
+      <w:spacing w:after="80"/>
+    </w:pPr>
   </w:style>
 </w:styles>`
   );
@@ -142,6 +204,7 @@ export async function buildDocxFromLayout(
 
   // 6. word/document.xml
   const bodyXmlParts: string[] = [];
+  let bookmarkCounter = 1;
 
   for (let pageIdx = 0; pageIdx < layout.pages.length; pageIdx++) {
     const page = layout.pages[pageIdx];
@@ -162,7 +225,7 @@ export async function buildDocxFromLayout(
     }
 
     for (const block of page.blocks) {
-      bodyXmlParts.push(renderBlockToDocxXml(block));
+      bodyXmlParts.push(renderBlockToDocxXml(block, bookmarkCounter++));
     }
   }
 
@@ -190,13 +253,103 @@ export async function buildDocxFromLayout(
   });
 }
 
-function renderBlockToDocxXml(block: TextBlock): string {
+function renderBlockToDocxXml(block: TextBlock, bookmarkId: number): string {
+  // 1. Table Block Rendering
+  if (block.type === 'table' && block.tableData && block.tableData.rows.length > 0) {
+    const rowsXml: string[] = [];
+    for (let rIdx = 0; rIdx < block.tableData.rows.length; rIdx++) {
+      const row = block.tableData.rows[rIdx];
+      const isHeader = rIdx === 0;
+      const cellsXml: string[] = [];
+
+      for (const cellText of row) {
+        cellsXml.push(
+          `<w:tc>
+            <w:tcPr>
+              <w:tcMar>
+                <w:top w:w="120" w:type="dxa"/>
+                <w:bottom w:w="120" w:type="dxa"/>
+                <w:left w:w="160" w:type="dxa"/>
+                <w:right w:w="160" w:type="dxa"/>
+              </w:tcMar>
+            </w:tcPr>
+            <w:p>
+              <w:pPr>
+                <w:spacing w:after="40" w:line="220" w:lineRule="auto"/>
+              </w:pPr>
+              <w:r>
+                ${isHeader ? '<w:rPr><w:b/></w:rPr>' : ''}
+                <w:t xml:space="preserve">${escapeXml(cellText || ' ')}</w:t>
+              </w:r>
+            </w:p>
+          </w:tc>`
+        );
+      }
+
+      rowsXml.push(
+        `<w:tr>
+          ${isHeader ? '<w:trPr><w:tblHeader/></w:trPr>' : ''}
+          ${cellsXml.join('')}
+        </w:tr>`
+      );
+    }
+
+    return `<w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="9360" w:type="dxa"/>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>
+          <w:bottom w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>
+          <w:insideH w:val="single" w:sz="4" w:space="0" w:color="E2E8F0"/>
+          <w:insideV w:val="none"/>
+          <w:left w:val="none"/>
+          <w:right w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>
+      ${rowsXml.join('')}
+    </w:tbl>`;
+  }
+
+  // 2. Table of Contents (TOC) Item Rendering with Dot Leaders
+  if (block.type === 'tocItem' && block.tocData) {
+    const styleId = block.tocData.level === 2 ? 'TOC2' : 'TOC1';
+    const cleanTitle = escapeXml(block.tocData.title);
+    const pageNum = escapeXml(block.tocData.pageNumber);
+
+    return `<w:p>
+      <w:pPr>
+        <w:pStyle w:val="${styleId}"/>
+        <w:tabs>
+          <w:tab w:val="right" w:leader="dot" w:pos="9360"/>
+        </w:tabs>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">${cleanTitle}</w:t>
+      </w:r>
+      <w:r>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="334155"/>
+        </w:rPr>
+        <w:t xml:space="preserve">${pageNum}</w:t>
+      </w:r>
+    </w:p>`;
+  }
+
+  // 3. Headings, Lists, and Paragraphs Rendering
   const pPrParts: string[] = [];
 
   if (block.type === 'heading1') {
     pPrParts.push('<w:pStyle w:val="Heading1"/>');
   } else if (block.type === 'heading2') {
     pPrParts.push('<w:pStyle w:val="Heading2"/>');
+  } else if (block.type === 'heading3') {
+    pPrParts.push('<w:pStyle w:val="Heading3"/>');
+  } else if (block.type === 'listItem') {
+    pPrParts.push('<w:pStyle w:val="ListParagraph"/>');
   }
 
   if (block.alignment === 'center') {
@@ -239,6 +392,12 @@ function renderBlockToDocxXml(block: TextBlock): string {
     if (lIdx < block.lines.length - 1) {
       runsXml.push('<w:r><w:t xml:space="preserve"> </w:t></w:r>');
     }
+  }
+
+  // If this is a major heading, wrap in bookmark for TOC / navigation linking
+  if (block.type === 'heading1' || block.type === 'heading2') {
+    const bmName = `_Heading_${bookmarkId}`;
+    return `<w:p>${pPr}<w:bookmarkStart w:id="${bookmarkId}" w:name="${bmName}"/>${runsXml.join('')}<w:bookmarkEnd w:id="${bookmarkId}"/></w:p>`;
   }
 
   return `<w:p>${pPr}${runsXml.join('')}</w:p>`;

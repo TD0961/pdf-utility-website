@@ -75,9 +75,24 @@ export async function buildPptxFromLayout(layout: ConversionDocumentLayout): Pro
     .map((_, idx) => `<p:sldId id="${256 + idx}" r:id="rId${idx + 1}"/>`)
     .join('\n    ');
 
-  // Standard 16:9 slide size (10 inches x 5.625 inches) in EMUs
-  const slideWidthEmu = 9144000;
-  const slideHeightEmu = 5143500;
+  // Dynamically calculate slide size from PDF page aspect ratio (16:9 widescreen, 4:3 standard, or portrait)
+  const firstPage = layout.pages[0];
+  const isPortrait = firstPage && firstPage.height > firstPage.width;
+
+  let slideWidthEmu = 9144000;
+  let slideHeightEmu = 5143500;
+  let slideType = 'screen16x9';
+
+  if (isPortrait) {
+    slideWidthEmu = 6858000;
+    slideHeightEmu = 9144000;
+    slideType = 'screen4x3';
+  } else if (firstPage && firstPage.width / firstPage.height < 1.45) {
+    // 4:3 standard presentation
+    slideWidthEmu = 9144000;
+    slideHeightEmu = 6858000;
+    slideType = 'screen4x3';
+  }
 
   zip.file(
     'ppt/presentation.xml',
@@ -87,7 +102,7 @@ export async function buildPptxFromLayout(layout: ConversionDocumentLayout): Pro
   <p:sldIdLst>
     ${sldIdList}
   </p:sldIdLst>
-  <p:sldSz cx="${slideWidthEmu}" cy="${slideHeightEmu}" type="screen16x9"/>
+  <p:sldSz cx="${slideWidthEmu}" cy="${slideHeightEmu}" type="${slideType}"/>
   <p:notesSz cx="6858000" cy="9144000"/>
 </p:presentation>`
   );

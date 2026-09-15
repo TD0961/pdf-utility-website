@@ -27,7 +27,7 @@ import {
 } from '@/lib/pdf/editor/objects';
 import { EditorTool } from './ToolPalette';
 import { ToolDefaults } from './EditorPropertiesPanel';
-import { getPdfJs } from '@/lib/pdf/pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from '@/lib/pdf/pdf-renderer';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -117,7 +117,7 @@ export function EditorCanvas({
       try {
         setPageLoading(true);
         const pdfjs = await getPdfJs();
-        const loadingTask = pdfjs.getDocument({ data: sourceBytes.slice(0) });
+        const loadingTask = pdfjs.getDocument(getPdfLoadingParams(sourceBytes));
         loadingTaskToDestroy = loadingTask;
         const doc = await loadingTask.promise;
         docToCleanup = doc;

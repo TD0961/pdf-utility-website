@@ -5,7 +5,7 @@
  */
 
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import { getPdfJs } from '@/lib/pdf/pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from '@/lib/pdf/pdf-renderer';
 import {
   ConversionDocumentLayout,
   ConversionPageLayout,
@@ -15,7 +15,10 @@ import {
   FontDescriptor,
   BoundingBox,
   CancellationToken,
+  PdfOutlineNode,
+  TocItemData,
 } from '../types';
+import { clusterIntoRows, detectColumnAnchors, alignRowsToColumns } from '@/lib/pdf/extraction/table-detector';
 
 interface RawTextItem {
   str: string;
@@ -232,32 +235,95 @@ export async function analyzePageLayout(
     lines.push(buildLineFromItems(currentLineItems));
   }
 
-  // 3. Group lines into coherent paragraph blocks
+  // 3. Group lines into coherent semantic blocks (TOC items, tables, lists, and paragraphs)
   const blocks: TextBlock[] = [];
-  if (lines.length > 0) {
-    let currentBlockLines: TextLine[] = [lines[0]];
+  let i = 0;
 
-    for (let i = 1; i < lines.length; i++) {
-      const prevLine = lines[i - 1];
-      const currLine = lines[i];
+  while (i < lines.length) {
+    const line = lines[i];
 
-      const lineSpacing = currLine.box.y - (prevLine.box.y + prevLine.box.height);
-      const fontSizeDiff = Math.abs(currLine.dominantFontSize - prevLine.dominantFontSize);
+    // Check for Table of Contents line
+    const tocData = detectTocLine(line, width);
+    if (tocData) {
+      blocks.push({
+        type: 'tocItem',
+        box: line.box,
+        lines: [line],
+        text: line.text,
+        fontSize: line.dominantFontSize,
+        isBold: line.spans.some((s) => s.font.isBold),
+        isItalic: line.spans.every((s) => s.font.isItalic),
+        alignment: 'left',
+        tocData,
+      });
+      i++;
+      continue;
+    }
 
-      // Start a new block if line spacing is large or font size changes significantly
-      const isNewParagraph = lineSpacing > prevLine.dominantFontSize * 1.5 || fontSizeDiff > 3;
+    // Check for tabular data block across consecutive lines
+    const tableCandidateLines: TextLine[] = [];
+    let tableLookahead = i;
+    while (
+      tableLookahead < lines.length &&
+      lines[tableLookahead].spans.length >= 2 &&
+      !detectTocLine(lines[tableLookahead], width)
+    ) {
+      tableCandidateLines.push(lines[tableLookahead]);
+      tableLookahead++;
+    }
 
-      if (isNewParagraph) {
-        blocks.push(buildBlockFromLines(currentBlockLines));
-        currentBlockLines = [currLine];
-      } else {
-        currentBlockLines.push(currLine);
+    if (tableCandidateLines.length >= 2) {
+      const detectedTable = buildTableFromLines(tableCandidateLines);
+      if (detectedTable) {
+        blocks.push(detectedTable);
+        i = tableLookahead;
+        continue;
       }
     }
 
-    if (currentBlockLines.length > 0) {
-      blocks.push(buildBlockFromLines(currentBlockLines));
+    // Check for List Item line
+    if (isListItemLine(line.text)) {
+      blocks.push({
+        type: 'listItem',
+        box: line.box,
+        lines: [line],
+        text: line.text,
+        fontSize: line.dominantFontSize,
+        isBold: line.spans.some((s) => s.font.isBold),
+        isItalic: line.spans.every((s) => s.font.isItalic),
+        alignment: 'left',
+      });
+      i++;
+      continue;
     }
+
+    // Standard paragraph grouping
+    const currentBlockLines: TextLine[] = [line];
+    i++;
+
+    while (i < lines.length) {
+      const nextLine = lines[i];
+      if (
+        detectTocLine(nextLine, width) ||
+        isListItemLine(nextLine.text) ||
+        (nextLine.spans.length >= 2 && i + 1 < lines.length && lines[i + 1].spans.length >= 2)
+      ) {
+        break;
+      }
+
+      const prevLine = currentBlockLines[currentBlockLines.length - 1];
+      const lineSpacing = nextLine.box.y - (prevLine.box.y + prevLine.box.height);
+      const fontSizeDiff = Math.abs(nextLine.dominantFontSize - prevLine.dominantFontSize);
+
+      if (lineSpacing > prevLine.dominantFontSize * 1.5 || fontSizeDiff > 3) {
+        break;
+      }
+
+      currentBlockLines.push(nextLine);
+      i++;
+    }
+
+    blocks.push(buildBlockFromLines(currentBlockLines));
   }
 
   return {
@@ -268,6 +334,99 @@ export async function analyzePageLayout(
     blocks,
     rawItemCount: rawItems.length,
     hasSelectableText: rawItems.length > 0,
+  };
+}
+
+function detectTocLine(line: TextLine, pageWidth: number): TocItemData | null {
+  const text = line.text.trim();
+  if (!text) return null;
+
+  // Pattern 1: Title followed by dot/dash leaders and trailing page number
+  // e.g. "Chapter 1: Getting Started ................ 12" or "1. Overview . . . . . . 3"
+  const leaderMatch = text.match(/^(.+?)(?:\s*[\.·\-_…]{2,}\s*|\s{3,})(\d+|[ivxlcdmIVXLCDM]+)$/);
+  if (leaderMatch) {
+    const rawTitle = leaderMatch[1].replace(/[\.·\-_…]+$/, '').trim();
+    const pageNumber = leaderMatch[2].trim();
+    if (rawTitle.length >= 2 && pageNumber.length >= 1 && pageNumber.length <= 6) {
+      const level = /^\s*(\d+\.\d+|\([a-z]\)|\b[A-Z]\.)/i.test(rawTitle) ? 2 : 1;
+      return {
+        title: rawTitle,
+        pageNumber,
+        level,
+      };
+    }
+  }
+
+  // Pattern 2: Multi-span line where first span is on left and last span is a page number near right margin
+  if (line.spans.length >= 2) {
+    const firstSpan = line.spans[0];
+    const lastSpan = line.spans[line.spans.length - 1];
+    const lastStr = lastSpan.text.trim();
+    const isNum = /^(\d+|[ivxlcdmIVXLCDM]+)$/.test(lastStr);
+
+    if (isNum && lastSpan.box.x >= pageWidth * 0.65 && firstSpan.box.x <= pageWidth * 0.45) {
+      const titleSpans = line.spans.slice(0, line.spans.length - 1);
+      const title = titleSpans
+        .map((s) => s.text)
+        .join(' ')
+        .replace(/[\.·\-_…]{2,}/g, '')
+        .trim();
+      if (title.length >= 2) {
+        return {
+          title,
+          pageNumber: lastStr,
+          level: 1,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+function isListItemLine(text: string): boolean {
+  const t = text.trim();
+  return /^([•\-\*–—]|(?:\d+|[a-zA-Z])[\.\)])\s+/.test(t);
+}
+
+function buildTableFromLines(lines: TextLine[]): TextBlock | null {
+  const rawItems = lines.flatMap((l) =>
+    l.spans.map((s) => ({
+      str: s.text,
+      x: s.box.x,
+      y: s.box.y,
+      width: s.box.width,
+      height: s.box.height,
+    }))
+  );
+
+  const clustered = clusterIntoRows(rawItems);
+  const anchors = detectColumnAnchors(clustered, 25);
+  if (anchors.length < 2) return null;
+
+  const grid = alignRowsToColumns(clustered, anchors);
+  if (grid.length < 2 || !grid.some((r) => r.filter(Boolean).length >= 2)) {
+    return null;
+  }
+
+  const minX = Math.min(...lines.map((l) => l.box.x));
+  const maxX = Math.max(...lines.map((l) => l.box.x + l.box.width));
+  const minY = Math.min(...lines.map((l) => l.box.y));
+  const maxY = Math.max(...lines.map((l) => l.box.y + l.box.height));
+
+  return {
+    type: 'table',
+    box: { x: minX, y: minY, width: maxX - minX, height: maxY - minY },
+    lines,
+    text: lines.map((l) => l.text).join('\n'),
+    fontSize: lines[0]?.dominantFontSize || 12,
+    isBold: false,
+    isItalic: false,
+    alignment: 'left',
+    tableData: {
+      headers: grid[0],
+      rows: grid,
+    },
   };
 }
 
@@ -321,6 +480,18 @@ function buildBlockFromLines(lines: TextLine[]): TextBlock {
   };
 }
 
+function mapRawOutlineNodes(nodes: unknown[]): PdfOutlineNode[] {
+  if (!Array.isArray(nodes)) return [];
+  return nodes
+    .filter((n): n is { title?: string; dest?: unknown; items?: unknown[] } => typeof n === 'object' && n !== null)
+    .map((n) => ({
+      title: String(n.title || '').trim(),
+      dest: typeof n.dest === 'string' ? n.dest : undefined,
+      items: Array.isArray(n.items) && n.items.length > 0 ? mapRawOutlineNodes(n.items) : undefined,
+    }))
+    .filter((n) => n.title.length > 0);
+}
+
 /**
  * Analyzes an entire PDF document and marks semantic hierarchy (headings vs paragraphs)
  */
@@ -332,14 +503,24 @@ export async function analyzePdfDocument(
 ): Promise<ConversionDocumentLayout> {
   const pdfjs = await getPdfJs();
   const data = fileData instanceof Uint8Array ? fileData : new Uint8Array(fileData);
-  const loadingTask = pdfjs.getDocument({ data: data.slice(0) });
+  const loadingTask = pdfjs.getDocument(getPdfLoadingParams(data));
   const doc = await loadingTask.promise;
   const totalPages = doc.numPages;
 
   const pages: ConversionPageLayout[] = [];
   const allFontSizes: number[] = [];
+  let outline: PdfOutlineNode[] | undefined = undefined;
 
   try {
+    try {
+      const rawOutline = await doc.getOutline();
+      if (rawOutline && Array.isArray(rawOutline) && rawOutline.length > 0) {
+        outline = mapRawOutlineNodes(rawOutline);
+      }
+    } catch {
+      // Outline extraction is non-fatal
+    }
+
     for (let i = 1; i <= totalPages; i++) {
       if (cancellationToken?.isCancelled) {
         throw new Error('Conversion cancelled by user.');
@@ -369,13 +550,34 @@ export async function analyzePdfDocument(
     ? allFontSizes[Math.floor(allFontSizes.length / 2)]
     : 12;
 
-  // Semantic classification: detect headings based on font size threshold
+  // Flatten outline titles for matching
+  const outlineTitles = new Set<string>();
+  if (outline) {
+    const collectTitles = (nodes: PdfOutlineNode[]) => {
+      for (const n of nodes) {
+        outlineTitles.add(n.title.toLowerCase().trim());
+        if (n.items) collectTitles(n.items);
+      }
+    };
+    collectTitles(outline);
+  }
+
+  // Semantic classification: detect headings based on outline match or font size threshold
   for (const p of pages) {
     for (const b of p.blocks) {
-      if (b.fontSize >= medianBodyFontSize * 1.5 && b.text.length < 140) {
+      if (b.type === 'tocItem' || b.type === 'table' || b.type === 'listItem') {
+        continue;
+      }
+
+      const cleanText = b.text.toLowerCase().trim();
+      const matchesOutline = outlineTitles.has(cleanText);
+
+      if (matchesOutline || (b.fontSize >= medianBodyFontSize * 1.5 && b.text.length < 140)) {
         b.type = 'heading1';
       } else if (b.fontSize >= medianBodyFontSize * 1.25 && b.text.length < 200) {
         b.type = 'heading2';
+      } else if ((b.fontSize >= medianBodyFontSize * 1.15 || b.isBold) && b.text.length < 100) {
+        b.type = 'heading3';
       } else {
         b.type = 'paragraph';
       }
@@ -388,5 +590,6 @@ export async function analyzePdfDocument(
     totalPages,
     pages,
     medianBodyFontSize,
+    outline,
   };
 }
