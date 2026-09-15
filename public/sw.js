@@ -202,9 +202,49 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// 4. Message Event: Handle skipWaiting or cache management commands
+// 4. Message Event: Handle skipWaiting, notifications, or cache management commands
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (!event.data) return;
+
+  if (event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+
+  // Allow client tabs to trigger system notifications via Service Worker
+  if (event.data.type === 'SHOW_NOTIFICATION' && event.data.payload) {
+    const { title, options } = event.data.payload;
+    self.registration.showNotification(title, options || {});
+  }
 });
+
+// 5. Notification Click Event: Deep-link and focus tab or open new window
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/pdf-tools';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        // If a PDFSimplify tab is already open, focus it and navigate
+        for (const client of clientList) {
+          if ('focus' in client) {
+            client.focus();
+            if ('navigate' in client && targetUrl) {
+              client.navigate(targetUrl);
+            }
+            return;
+          }
+        }
+        // If no tab is open, open a new window
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(targetUrl);
+        }
+      })
+  );
+});
+
+// 6. Notification Close Event
+self.addEventListener('notificationclose', (event) => {
+  console.log('[SW] Notification dismissed:', event.notification.tag);
+});
+

@@ -16,6 +16,7 @@ import { inspectPdfDocument, DocumentDiagnostics } from '@/lib/pdf/inspector';
 import { DocumentDiagnosticsBadge } from './DocumentDiagnosticsBadge';
 import { TOOL_RELATIONSHIPS } from '@/lib/tools/relationships';
 import { getToolBySlug } from '@/data/tools';
+import { showTaskCompleteNotification } from '@/lib/notifications/notification-manager';
 
 export interface PdfWorkspaceProps {
   tool: ToolMetadata;
@@ -101,6 +102,11 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
 
       setResult(res);
       setStatus('success');
+      showTaskCompleteNotification(
+        tool.name,
+        res.fileName,
+        typeof window !== 'undefined' ? window.location.href : undefined
+      ).catch(() => {});
     } catch (err: unknown) {
       console.error('PDF processing error:', err);
       setStatus('error');

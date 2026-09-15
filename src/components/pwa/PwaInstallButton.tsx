@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import { Download } from 'lucide-react';
+import { showAppInstalledNotification } from '@/lib/notifications/notification-manager';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -53,6 +54,10 @@ export function PwaInstallButton({ className = '', variant = 'nav' }: PwaInstall
     const handleAppInstalled = () => {
       setInstallPrompt(null);
       console.log('[PWA] PDFSimplify was successfully installed!');
+      // Trigger post-install welcome notification to re-engage user
+      showAppInstalledNotification().catch((err) => {
+        console.warn('[PWA] Post-install notification error:', err);
+      });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
