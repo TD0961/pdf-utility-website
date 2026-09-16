@@ -60,6 +60,9 @@ export function constructMetadata({
       title: fullTitle,
       description,
     },
+    other: {
+      'google-adsense-account': 'ca-pub-7704232652384788',
+    },
     robots: {
       index: !noIndex,
       follow: !noIndex,
