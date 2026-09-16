@@ -21,6 +21,7 @@ import {
 
 export function ExtractImagesWorkspace() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
+  const [targetFormat, setTargetFormat] = useState<'original' | 'png' | 'jpg'>('original');
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<ConversionProgress | null>(null);
   const [zipDownloadUrl, setZipDownloadUrl] = useState<string | null>(null);
@@ -39,12 +40,8 @@ export function ExtractImagesWorkspace() {
     };
   }, [zipDownloadUrl, result]);
 
-  const handleFileSelected = async (selectedFiles: File[]) => {
-    if (!selectedFiles || selectedFiles.length === 0) return;
-    const file = selectedFiles[0];
-    setSourceFile(file);
+  const runExtraction = async (file: File, format: 'original' | 'png' | 'jpg') => {
     setErrorMessage(null);
-
     const cancelToken = createCancellationToken();
     cancelTokenRef.current = cancelToken;
 
@@ -60,6 +57,7 @@ export function ExtractImagesWorkspace() {
 
       const extractionResult = await extractImagesFromPdf(file, {
         deduplicate: true,
+        targetFormat: format,
         cancellationToken: cancelToken,
         onProgress: (p) => setProgress(p),
       });
@@ -77,6 +75,13 @@ export function ExtractImagesWorkspace() {
         setErrorMessage(formatUserFacingPdfError(err, 'extracting images from PDF'));
       }
     }
+  };
+
+  const handleFileSelected = async (selectedFiles: File[]) => {
+    if (!selectedFiles || selectedFiles.length === 0) return;
+    const file = selectedFiles[0];
+    setSourceFile(file);
+    await runExtraction(file, targetFormat);
   };
 
   const handleCancel = () => {
@@ -103,6 +108,68 @@ export function ExtractImagesWorkspace() {
 
   return (
     <div className="space-y-8">
+      {/* Format Preference Selector */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+            Output Image Format
+          </p>
+          <p className="text-xs text-slate-500">
+            Extract in native formats or convert all embedded images to PNG or JPG
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+          <button
+            type="button"
+            onClick={() => {
+              setTargetFormat('original');
+              if (sourceFile && !isProcessing) {
+                runExtraction(sourceFile, 'original');
+              }
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              targetFormat === 'original'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            Original (Auto)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setTargetFormat('png');
+              if (sourceFile && !isProcessing) {
+                runExtraction(sourceFile, 'png');
+              }
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              targetFormat === 'png'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            All as PNG
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setTargetFormat('jpg');
+              if (sourceFile && !isProcessing) {
+                runExtraction(sourceFile, 'jpg');
+              }
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              targetFormat === 'jpg'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            All as JPG
+          </button>
+        </div>
+      </div>
+
       {/* 1. File Selection / Dropzone */}
       {!sourceFile && (
         <div className="space-y-6">

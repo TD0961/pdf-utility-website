@@ -5,8 +5,10 @@
  */
 
 import JSZip from 'jszip';
+import pako from 'pako';
 import { PDFDocument, PDFName, PDFRawStream, PDFStream } from 'pdf-lib';
 import { ConversionProgress, CancellationToken } from '../conversion/types';
+import { encodeRawPixelsToPng, combineRgbAndAlphaMask } from './png-encoder';
 
 export interface ExtractedImage {
   id: string;
@@ -24,6 +26,72 @@ export interface ImageExtractionOptions {
   onProgress?: (progress: ConversionProgress) => void;
   cancellationToken?: CancellationToken;
   deduplicate?: boolean; // prevent duplicate images
+  targetFormat?: 'original' | 'png' | 'jpg';
+}
+
+/**
+ * Converts an image blob to a different format using an offscreen canvas in browser environments.
+ */
+async function convertImageBlob(
+  blob: Blob,
+  targetMime: 'image/png' | 'image/jpeg'
+): Promise<{ blob: Blob; data: Uint8Array }> {
+  if (typeof document === 'undefined') {
+    const data = new Uint8Array(await blob.arrayBuffer());
+    return { blob, data };
+  }
+
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          blob.arrayBuffer().then((buf) => resolve({ blob, data: new Uint8Array(buf) }));
+          return;
+        }
+
+        if (targetMime === 'image/jpeg') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+
+        canvas.toBlob(
+          async (convertedBlob) => {
+            if (convertedBlob) {
+              const buf = await convertedBlob.arrayBuffer();
+              resolve({ blob: convertedBlob, data: new Uint8Array(buf) });
+            } else {
+              const buf = await blob.arrayBuffer();
+              resolve({ blob, data: new Uint8Array(buf) });
+            }
+          },
+          targetMime,
+          targetMime === 'image/jpeg' ? 0.92 : undefined
+        );
+      } catch {
+        URL.revokeObjectURL(url);
+        blob.arrayBuffer().then((buf) => resolve({ blob, data: new Uint8Array(buf) }));
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      blob.arrayBuffer().then((buf) => resolve({ blob, data: new Uint8Array(buf) }));
+    };
+
+    img.src = url;
+  });
 }
 
 export interface ImageExtractionResult {
@@ -113,14 +181,105 @@ export async function extractImagesFromPdf(
 
         const contents = obj.getContents();
         if (contents && contents.length > 0) {
-          const format: 'jpg' | 'png' = isDct ? 'jpg' : 'png';
-          const name = `image_${String(imgIndex).padStart(3, '0')}.${format}`;
+          let finalData: Uint8Array;
+          let finalFormat: 'jpg' | 'png';
+
+          if (isDct) {
+            // Stream is natively compressed JPEG
+            if (options.targetFormat === 'png') {
+              const converted = await convertImageBlob(
+                new Blob([contents as unknown as BlobPart], { type: 'image/jpeg' }),
+                'image/png'
+              );
+              finalData = converted.data;
+              finalFormat = 'png';
+            } else {
+              finalData = contents;
+              finalFormat = 'jpg';
+            }
+          } else {
+            // Stream is non-JPEG (FlateDecode, raw bitmap samples)
+            try {
+              let decompressed: Uint8Array;
+              try {
+                decompressed = pako.inflate(contents);
+              } catch {
+                decompressed = contents;
+              }
+
+              const cs = dict.get(PDFName.of('ColorSpace'))?.toString() || '/DeviceRGB';
+              let channels: 1 | 3 | 4 = cs.includes('Gray') ? 1 : 3;
+
+              // Check for SMask (Soft Mask / Alpha Transparency channel)
+              const smaskRef = dict.get(PDFName.of('SMask'));
+              let alphaMask: Uint8Array | null = null;
+              if (smaskRef) {
+                try {
+                  const smaskObj = context.lookup(smaskRef);
+                  if (smaskObj instanceof PDFRawStream || smaskObj instanceof PDFStream) {
+                    const smaskRaw = smaskObj.getContents();
+                    if (smaskRaw) {
+                      try {
+                        alphaMask = pako.inflate(smaskRaw);
+                      } catch {
+                        alphaMask = smaskRaw;
+                      }
+                    }
+                  }
+                } catch {
+                  // Fallback without alpha if SMask lookup fails
+                }
+              }
+
+              let pixelData: Uint8Array = decompressed;
+              if (alphaMask && channels === 3 && width > 0 && height > 0) {
+                pixelData = combineRgbAndAlphaMask(width, height, decompressed, alphaMask);
+                channels = 4;
+              }
+
+              // Check if DecodeParms specified a PNG predictor
+              let hasPredictor = false;
+              const decodeParms = dict.get(PDFName.of('DecodeParms'));
+              if (decodeParms && typeof decodeParms === 'object' && 'get' in decodeParms) {
+                const predictor = Number((decodeParms as unknown as { get: (k: unknown) => { toString: () => string } | undefined }).get(PDFName.of('Predictor'))?.toString() || 1);
+                if (predictor >= 10 && predictor <= 15) {
+                  hasPredictor = true;
+                }
+              }
+
+              const pngBytes = encodeRawPixelsToPng({
+                width: width || 100,
+                height: height || 100,
+                data: pixelData,
+                channels,
+                hasPredictor,
+              });
+
+              if (options.targetFormat === 'jpg') {
+                const converted = await convertImageBlob(
+                  new Blob([pngBytes as unknown as BlobPart], { type: 'image/png' }),
+                  'image/jpeg'
+                );
+                finalData = converted.data;
+                finalFormat = 'jpg';
+              } else {
+                finalData = pngBytes;
+                finalFormat = 'png';
+              }
+            } catch {
+              // Fallback to raw bytes if decoding fails
+              finalData = contents;
+              finalFormat = 'png';
+            }
+          }
+
+          const name = `image_${String(imgIndex).padStart(3, '0')}.${finalFormat}`;
           imgIndex++;
 
           let blobUrl: string | undefined;
           if (typeof URL !== 'undefined' && typeof Blob !== 'undefined') {
-            const mime = format === 'jpg' ? 'image/jpeg' : 'image/png';
-            const blob = new Blob([contents as unknown as BlobPart], { type: mime });
+            const mime = finalFormat === 'jpg' ? 'image/jpeg' : 'image/png';
+            const blob = new Blob([finalData as unknown as BlobPart], { type: mime });
             blobUrl = URL.createObjectURL(blob);
             createdUrls.push(blobUrl);
           }
@@ -131,9 +290,9 @@ export async function extractImagesFromPdf(
             pageNum: 1,
             width: width || 100,
             height: height || 100,
-            format,
-            sizeBytes: contents.length,
-            data: contents,
+            format: finalFormat,
+            sizeBytes: finalData.length,
+            data: finalData,
             blobUrl,
           });
         }
