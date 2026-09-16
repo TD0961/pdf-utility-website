@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
       <header className="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full w-fit">
           <ShieldCheck className="w-4 h-4" />
-          <span>Last Updated: February 2025</span>
+          <span>Last Updated: September 2026</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Privacy Policy
@@ -79,8 +79,47 @@ export default function PrivacyPolicyPage() {
             We may use privacy-preserving aggregate metrics to understand high-level website traffic (such as tool page views and anonymous error rates). No analytics event ever contains file contents, filenames, or user document metadata.
           </p>
           <p>
-            We display contextual advertising via Google AdSense to fund platform hosting and maintenance. Advertisements are strictly separated from tool controls and have zero access to the browser’s PDF processing memory space.
+            PDFSimplify may display advertisements through Google AdSense after advertising is enabled to fund platform hosting and maintenance. Advertisements are strictly separated from tool controls and have zero access to the browser’s PDF processing memory space.
           </p>
+          <p>
+            Third-party advertising providers, including Google, may use cookies, web beacons, or similar technologies to serve personalized or contextual advertisements based on a user’s prior visits to this website or other websites across the internet. Third-party advertising partners collect and process data in accordance with their respective privacy policies.
+          </p>
+          <p>
+            Users have options to manage their advertising preferences or opt out of personalized advertising at any time:
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-slate-600 dark:text-slate-400">
+            <li>
+              You can manage your Google advertising preferences by visiting{' '}
+              <a
+                href="https://www.google.com/settings/ads"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+              >
+                Google Ads Settings
+              </a>.
+            </li>
+            <li>
+              You can opt out of third-party personalized advertising cookies by visiting{' '}
+              <a
+                href="https://www.aboutads.info/choices/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+              >
+                AboutAds.info Choices
+              </a>{' '}
+              or{' '}
+              <a
+                href="https://www.youronlinechoices.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+              >
+                Your Online Choices
+              </a>.
+            </li>
+          </ul>
         </section>
 
         <section className="space-y-3">

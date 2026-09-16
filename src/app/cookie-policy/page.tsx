@@ -19,7 +19,7 @@ export default function CookiePolicyPage() {
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Cookie Policy
         </h1>
-        <p className="text-sm text-slate-500">Last updated: February 2025</p>
+        <p className="text-sm text-slate-500">Last updated: September 2026</p>
       </header>
 
       <div className="space-y-6 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
@@ -40,7 +40,24 @@ export default function CookiePolicyPage() {
         <section className="space-y-2">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">3. Third-Party Cookies (Advertising)</h2>
           <p>
-            Third-party advertising partners such as Google AdSense may place cookies to serve relevant advertisements based on visits to this and other websites. You may manage your ad preferences via Google&rsquo;s Ad Settings or through standard browser cookie blocking tools.
+            Third-party advertising partners such as Google AdSense may place cookies or web beacons to serve relevant advertisements based on visits to this and other websites across the internet. You may manage your ad preferences via{' '}
+            <a
+              href="https://www.google.com/settings/ads"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+            >
+              Google Ads Settings
+            </a>{' '}
+            or through industry opt-out portals such as{' '}
+            <a
+              href="https://www.aboutads.info/choices/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+            >
+              AboutAds.info Choices
+            </a>.
           </p>
         </section>
 

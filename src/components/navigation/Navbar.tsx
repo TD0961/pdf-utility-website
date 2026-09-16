@@ -125,7 +125,7 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu & Theme Toggle */}
-          <div className="flex sm:hidden items-center gap-1.5">
+          <div className="flex sm:hidden items-center gap-1">
             <NotificationBell />
             <ThemeToggle />
             <button

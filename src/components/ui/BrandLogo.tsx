@@ -99,7 +99,7 @@ export function BrandLogo({
             PDF<span className="text-indigo-600 dark:text-indigo-400">Simplify</span>
           </span>
           {variant === 'compact' && (
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-semibold tracking-wide">
+            <span className="hidden sm:inline-block text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-semibold tracking-wide">
               Private
             </span>
           )}

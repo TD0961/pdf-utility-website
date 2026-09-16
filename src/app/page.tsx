@@ -25,26 +25,27 @@ export default function HomePage() {
   return (
     <div className="space-y-16 sm:space-y-24 pb-16">
       {/* Hero Section */}
-      <section className="relative pt-12 sm:pt-20 pb-12 overflow-hidden">
+      <section className="relative pt-6 sm:pt-20 pb-8 sm:pb-12 overflow-hidden">
         {/* Subtle background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-indigo-500/10 via-violet-500/10 to-emerald-500/10 blur-3xl pointer-events-none -z-10 rounded-full" />
 
-        <Container className="text-center space-y-6">
-          <BrandMark size={56} className="mx-auto shadow-lg shadow-indigo-500/25 hover:scale-105 transition-transform duration-300" />
+        <Container className="text-center space-y-4 sm:space-y-6">
+          <BrandMark size={56} className="hidden sm:inline-flex mx-auto shadow-lg shadow-indigo-500/25 hover:scale-105 transition-transform duration-300" />
 
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-xs">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Client-Side In-Browser Processing • Zero Server Uploads</span>
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-[11px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-xs">
+            <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="hidden sm:inline">Client-Side In-Browser Processing • Zero Server Uploads</span>
+            <span className="sm:hidden">100% Private • Processed In Browser</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-3xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-3xl mx-auto leading-tight">
             Simple PDF tools.{' '}
             <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
               Private by design.
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
             Merge, split, convert, organize, and work with PDF files directly in your browser. No files are uploaded to any server.
           </p>
 

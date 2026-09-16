@@ -34,9 +34,9 @@ export default function ContactPage() {
           <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
             <Mail className="w-5 h-5" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">General Inquiries</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">General Inquiries & Support</h2>
           <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-            For general feedback, feature suggestions, or business questions:
+            For general feedback, feature suggestions, technical questions, or bug reports:
           </p>
           <a
             href={`mailto:${siteConfig.supportEmail}`}
@@ -44,15 +44,18 @@ export default function ContactPage() {
           >
             {siteConfig.supportEmail}
           </a>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+            Typical response time: 24–48 business hours.
+          </p>
         </Card>
 
         <Card className="p-6 space-y-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <ShieldCheck className="w-5 h-5" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Privacy & Security</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Privacy & Architecture Inquiries</h2>
           <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-            For technical security disclosures or questions regarding our zero-backend model:
+            For technical security audits, privacy policy questions, or zero-backend compliance inquiries:
           </p>
           <a
             href={`mailto:${siteConfig.privacyEmail}`}
@@ -60,7 +63,37 @@ export default function ContactPage() {
           >
             {siteConfig.privacyEmail}
           </a>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+            Handled directly by our security & privacy engineering lead.
+          </p>
         </Card>
+      </div>
+
+      {/* Structured Bug Reporting & Guidelines */}
+      <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+        <h3 className="font-bold text-base text-slate-900 dark:text-white">
+          Help Us Help You Faster
+        </h3>
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Because PDFSimplify processes documents entirely in your local browser without uploading files to our servers, our team cannot see your documents or server logs. When reporting a tool issue, including the following details helps us reproduce and fix it rapidly:
+        </p>
+        <ul className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-600 dark:text-slate-300">
+          <li className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
+            <span className="font-semibold text-slate-900 dark:text-white block">1. Browser & Version</span>
+            <span>e.g., Chrome 128, Safari 18, Firefox 130</span>
+          </li>
+          <li className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
+            <span className="font-semibold text-slate-900 dark:text-white block">2. Operating System</span>
+            <span>e.g., Windows 11, macOS Sequoia, iOS 18, Android 14</span>
+          </li>
+          <li className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
+            <span className="font-semibold text-slate-900 dark:text-white block">3. Error Notice</span>
+            <span>Exact error message or visual behavior observed</span>
+          </li>
+        </ul>
+        <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-300">
+          <strong>Privacy Note:</strong> Please do <em>not</em> email confidential or sensitive documents. Our tools are designed for zero document custody, and we will never ask you to transmit confidential files over email.
+        </div>
       </div>
 
       <div className="p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">

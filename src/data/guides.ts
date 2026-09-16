@@ -101,33 +101,72 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Learn how to split PDF files into individual pages or custom ranges without uploading files to third-party servers.',
     category: 'Organize',
-    readTime: '3 min read',
+    readTime: '5 min read',
     publishedDate: '2025-01-22',
-    updatedDate: '2025-02-14',
+    updatedDate: '2026-09-16',
     relatedToolSlug: 'split-pdf',
     relatedGuides: ['how-to-merge-pdf-files', 'how-to-extract-pages-from-a-pdf'],
     content: {
       intro:
-        'Large multi-page PDF documents frequently contain extra boilerplate or sections you need to share separately. Splitting lets you isolate exactly what you need.',
+        'Large multi-page PDF documents frequently contain extra boilerplate or sections you need to share separately. Splitting lets you isolate exactly what you need without altering the original source file.',
       sections: [
         {
-          heading: 'Splitting Methods',
+          heading: '1. Common Scenarios for Splitting PDF Documents',
           body: [
-            'Custom Ranges: Extract grouped pages like "1-4, 8, 12-15" into targeted files.',
-            'Burst to Single Pages: Convert a 20-page document into 20 standalone single-page PDFs.',
+            'Working with large PDFs often requires dividing a bulky master document into concise, focused sub-files. Typical use cases include:',
+            'Dividing Multi-Chapter Reports: Isolating individual chapters or executive summaries from quarterly reports so stakeholders receive only relevant information.',
+            'Separating Financial Statements: Splitting a 60-page bank statement or tax packet into distinct monthly statements or specific tax schedules.',
+            'Extracting Signed Contracts: Extracting the signature and terms pages from larger master agreements for rapid email transmission.',
+            'Overcoming Email Size Caps: Breaking 50MB documents into smaller chunks that easily pass through email attachment limits without degrading quality.',
           ],
         },
         {
-          heading: 'How to Split Using PDFSimplify',
+          heading: '2. The Three Splitting Methods Explained',
           body: [
-            '1. Upload your multi-page PDF into the Split tool.',
-            '2. Define your desired range intervals.',
-            '3. Click Split PDF to generate the distinct sub-documents instantly in your browser.',
+            'PDFSimplify provides three distinct splitting modes designed for different workflows:',
+            'Mode A — Extract Selected Pages: Pulls out specific pages (e.g. pages 1, 3, and 7) and combines them into a single new PDF document.',
+            'Mode B — Burst to Single Pages: Takes every page in the document and outputs each as a separate, standalone PDF bundled neatly into a single ZIP archive.',
+            'Mode C — Split by Custom Ranges: Divides the document into multiple files based on page intervals (e.g. pages 1-5 into one file, pages 6-12 into a second file).',
+          ],
+          callout: {
+            type: 'tip',
+            text: 'If you only need a couple of pages from a 100-page file, Mode A is the quickest path. If you need to separate 20 scanned invoices, Mode B automatically names each invoice sequentially.',
+          },
+        },
+        {
+          heading: '3. Mastering Custom Range Syntax',
+          body: [
+            'When using custom range intervals, PDFSimplify supports standard formatting conventions using commas and dashes:',
+            'Hyphens define continuous page bounds. Entering "1-4" produces a document containing pages 1, 2, 3, and 4.',
+            'Commas separate independent files or pages. Entering "1-4, 5-8, 9-12" produces three separate PDF files corresponding to those exact page intervals.',
+            'Mixed expressions allow precision extraction. An expression like "1-3, 5, 8-10" produces three files: a 3-page range, a 1-page document, and another 3-page range.',
+          ],
+        },
+        {
+          heading: '4. Important Technical & Security Considerations',
+          body: [
+            'Vector Quality Preservation: Splitting in PDFSimplify is completely lossless. The engine re-indexes internal object cross-reference (xref) tables without re-compressing images or rasterizing vector typography.',
+            'Encrypted Documents: If a PDF is protected with a user password, you must decrypt it using the Unlock PDF tool before splitting can take place.',
+            'Browser Memory Lifecycle: All operations occur within your browser RAM. Splitting a 500-page document requires sufficient device memory, but zero bytes ever leave your device.',
+          ],
+          callout: {
+            type: 'info',
+            text: 'Because processing happens 100% client-side, confidential tax returns and healthcare forms are split in private memory without third-party server exposure.',
+          },
+        },
+        {
+          heading: '5. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify Split PDF tool.',
+            '2. Select or drag your target PDF file into the dropzone.',
+            '3. Choose your preferred splitting mode (Extract Pages, Burst All, or Custom Ranges).',
+            '4. Enter your desired page ranges or select thumbnail pages visually.',
+            '5. Click "Split PDF" and download your generated files instantly.',
           ],
         },
       ],
       summary:
-        'Extracting chapters or isolated pages takes seconds and requires no subscription or software installation.',
+        'Splitting PDFs in your browser is fast, maintains vector resolution, and guarantees absolute privacy for confidential paperwork.',
     },
   },
   {
@@ -179,35 +218,62 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Learn how to visually arrange, reorder, rotate, and delete PDF pages directly in your browser with complete privacy.',
     category: 'Organize',
-    readTime: '3 min read',
+    readTime: '5 min read',
     publishedDate: '2025-02-06',
-    updatedDate: '2025-02-21',
+    updatedDate: '2026-09-16',
     relatedToolSlug: 'organize-pdf',
     relatedGuides: ['how-to-rotate-pdf-pages', 'how-to-split-a-pdf'],
     content: {
       intro:
-        'Scanning a multi-page agreement often produces upside-down pages or misplaced sections. Visual page organization lets you rectify document flow with drag-and-drop simplicity.',
+        'Scanning a multi-page agreement often produces upside-down sheets, misplaced appendices, or redundant blank pages. Visual page organization lets you rectify document flow with drag-and-drop simplicity directly on your device.',
       sections: [
         {
-          heading: 'Visual Document Arrangement',
+          heading: '1. Why Visual Document Organization Matters',
           body: [
-            'Instead of guessing page numbers in text fields, modern browser tools render thumbnail previews of every page in real time.',
-            'You can drag pages to new positions, rotate upside-down sheets by 90-degree increments, and duplicate sheets when duplicate forms are needed.',
+            'Traditional command-line or blind numbering tools force you to guess which page corresponds to which number. In contrast, visual page organizers display interactive thumbnail renderings of every sheet in real time.',
+            'Fixing Feeder Scanner Errors: Automatic document feeders frequently pull pages out of sequence or invert double-sided sheets. Reordering lets you restore the logical sequence in seconds.',
+            'Removing Unwanted Blank Sheets: Inadvertently scanned blank separator pages inflate file sizes and look unprofessional in executive presentations.',
+            'Assembling Custom Portfolios: Tailoring a master design proposal or portfolio for specific clients by retaining only pertinent project sheets.',
           ],
         },
         {
-          heading: 'Step-by-Step Instructions',
+          heading: '2. Drag-and-Drop Reordering Mechanics in Browser RAM',
           body: [
-            '1. Open Organize PDF and choose your document.',
-            '2. Drag thumbnails into your intended reading sequence.',
-            '3. Use the page rotate icon to correct individual orientations.',
-            '4. Click the trash icon on blank or redundant pages to remove them.',
-            '5. Click "Organize PDF" and download your clean document.',
+            'When you load a document into PDFSimplify, Mozilla PDF.js renders hardware-accelerated canvas thumbnails directly from raw bytes in your computer’s RAM.',
+            'Dragging a thumbnail simply modifies an in-memory page tree reference array. Unlike destructive editors that re-rasterize entire pages into compressed images, PDFSimplify keeps the underlying PDF stream intact. Vector fonts, high-DPI photographs, hyperlinks, and document bookmarks remain pin-sharp.',
           ],
+          callout: {
+            type: 'tip',
+            text: 'Because rendering is hardware-accelerated, you can scroll through a 50-page document smoothly and reorder pages without lag.',
+          },
+        },
+        {
+          heading: '3. Correcting Page Orientation & Deleting Pages',
+          body: [
+            'Each thumbnail card provides contextual action controls:',
+            'Rotate by 90 Degrees: Click the rotate icon on any individual page to toggle between 0°, 90°, 180°, and 270°. This updates the standard PDF /Rotate dictionary entry permanently.',
+            'Instant Page Deletion: Click the trash icon to exclude any page from the final export. The page is removed cleanly without leaving orphan font dictionaries.',
+            'Page Duplication: Need to insert duplicate template forms or signature blanks? Duplicate any page with a single click.',
+          ],
+        },
+        {
+          heading: '4. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify Organize PDF tool.',
+            '2. Select or drag your target PDF document into the workspace.',
+            '3. Review the thumbnail grid and drag cards into your desired sequential reading order.',
+            '4. Use the rotation icon on sideways or inverted sheets to orient them correctly.',
+            '5. Delete unwanted pages using the trash icon on the thumbnail card.',
+            '6. Click "Organize PDF" to compile the new document structure and download the result.',
+          ],
+          callout: {
+            type: 'info',
+            text: 'Your document never leaves your machine. Sensitive payroll records and private contracts remain strictly within your device’s local memory.',
+          },
         },
       ],
       summary:
-        'Organizing pages visually guarantees that the final PDF looks exactly as intended before you distribute it.',
+        'Visual page organization gives you full tactile control over your documents, guaranteeing that every presentation, contract, or academic report looks flawless before sharing.',
     },
   },
   {
@@ -259,31 +325,62 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Extract single pages or ranges from any PDF document in your browser. Fast, free, and completely local.',
     category: 'Organize',
-    readTime: '3 min read',
+    readTime: '5 min read',
     publishedDate: '2025-02-09',
-    updatedDate: '2025-02-23',
+    updatedDate: '2026-09-16',
     relatedToolSlug: 'extract-pages',
     relatedGuides: ['how-to-split-a-pdf', 'how-to-organize-and-reorder-pdf-pages'],
     content: {
       intro:
-        'When you only need pages 3, 7, and 12-15 from a 100-page manual, page extraction creates a lightweight, focused document ready for sharing.',
+        'When you only need specific excerpts, case study pages, or financial schedules from an extensive multi-hundred-page manual, page extraction creates a lightweight, standalone PDF tailored precisely for your recipients.',
       sections: [
         {
-          heading: 'Precision Extraction Approaches',
+          heading: '1. Extraction vs. Splitting: When to Use Extraction',
           body: [
-            'Click Selection: Click individual thumbnail cards to curate a custom set of pages.',
-            'Range Notation: Type expressions like "1-3, 5, 8-10" to extract batches instantaneously.',
+            'While splitting divides an entire document into multiple files, page extraction focuses on selecting specific sheets from a large master file and compiling them into one unified, clean excerpt.',
+            'Sharing Relevant Excerpts: Providing external vendors or auditors with only the relevant invoice or specification sheets rather than an entire 200-page operational manual.',
+            'Isolating Legal Exhibits: Pulling marked exhibits and signed affidavits from legal discovery packets into dedicated filing exhibits.',
+            'Extracting Academic Citations: Isolating key journal articles or appendix tables from comprehensive dissertations for peer review.',
           ],
         },
         {
-          heading: 'Preserving Document Fidelity',
+          heading: '2. Flexible Page Selection Approaches',
           body: [
-            'High-quality extraction clones the exact page content stream, including vector fonts and embedded images, while stripping unneeded pages from the xref table.',
+            'Interactive Thumbnail Selection: Click directly on page previews in the grid to highlight the exact sheets you wish to pull.',
+            'Range & Interval Notation: For documents with dozens of pages, type page expressions like "2, 5, 8-12, 19" into the range field to select targeted groups instantly.',
+            'Preserving Source Page Sequence: PDFSimplify maintains the original document sequence or allows you to specify the exact export order based on your needs.',
           ],
+          callout: {
+            type: 'tip',
+            text: 'You can extract non-consecutive pages (e.g. pages 4, 18, and 33) into a single continuous 3-page document in seconds.',
+          },
+        },
+        {
+          heading: '3. Lossless Stream Copying & Quality Preservation',
+          body: [
+            'Unlike primitive converters that rasterize vector pages into flattened images, PDFSimplify clones the underlying PDF content streams directly.',
+            'High-Resolution Vector Typography: Font dictionaries and glyph vectors remain 100% scalable without blurry text or pixelation.',
+            'Active Annotations & Hyperlinks: Embedded web links, table of contents outlines, and vector drawings transfer into the extracted document cleanly.',
+            'Stripped Unneeded Overhead: Orphan objects and unused font subsets from unselected pages are stripped, drastically reducing the final file size.',
+          ],
+        },
+        {
+          heading: '4. Step-by-Step Extraction Guide',
+          body: [
+            '1. Open the PDFSimplify Extract Pages tool.',
+            '2. Select or drag your source PDF document into the browser window.',
+            '3. Click individual page thumbnails or enter your desired page range syntax (e.g. "1-3, 7, 10-12").',
+            '4. Review the highlighted pages in the preview strip.',
+            '5. Click "Extract Pages" and save your clean, lightweight PDF immediately.',
+          ],
+          callout: {
+            type: 'info',
+            text: 'Because processing runs inside your browser’s local sandbox, confidential client records and internal audits are never uploaded to third-party web servers.',
+          },
         },
       ],
       summary:
-        'Extracted PDFs maintain original vector quality, hyperlinks, and bookmarks without unnecessary document bulk.',
+        'Extracting pages client-side gives you precision document control, lossless vector fidelity, and uncompromised privacy for all your sensitive paperwork.',
     },
   },
   {
@@ -294,33 +391,60 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Convert JPG and PNG images into a professional PDF in your browser. Custom page sizes, margins, and orientations with zero uploads.',
     category: 'Convert',
-    readTime: '4 min read',
+    readTime: '5 min read',
     publishedDate: '2025-02-11',
-    updatedDate: '2025-02-24',
+    updatedDate: '2026-09-16',
     relatedToolSlug: 'jpg-to-pdf',
     relatedGuides: ['how-to-convert-pdf-to-jpg', 'how-to-merge-pdf-files'],
     content: {
       intro:
-        'Photos of paperwork taken with smartphones are difficult to print consistently. Converting images into a standardized PDF formats them into clean, paginated reports.',
+        'Smartphone photos of receipts, whiteboard notes, and identification cards are tricky to share and print consistently across different devices. Converting images into a standardized PDF formats them into paginated, professional documents that look identical everywhere.',
       sections: [
         {
-          heading: 'Image Embedding vs. Quality Preservation',
+          heading: '1. Why Convert Images to PDF?',
           body: [
-            'Direct image embedding places JPEG and PNG byte streams into PDF XObjects without lossy canvas recompression.',
-            'This preserves the full resolution of your original camera photos while standardizing dimensions to Letter or A4 standards.',
+            'While JPEG and PNG image formats excel at storing photography, they lack consistent physical page geometry. Different operating systems print images at arbitrary zoom levels.',
+            'Expense Reporting & Invoicing: Compiling multi-photo expense receipts into a single sequential PDF makes accounting approval seamless.',
+            'Government & University Portfolios: Most application portals require documents in PDF rather than loose image files.',
+            'Preserving High-Resolution Detail: High-megapixel mobile camera captures are preserved without lossy re-encoding when properly wrapped in PDF containers.',
           ],
         },
         {
-          heading: 'Configurable Layout Options',
+          heading: '2. Page Geometry, Margins, and Orientation Options',
           body: [
-            'Fit to Page: Scales large camera photos to fit within page borders.',
-            'Margins: Adds comfortable white borders for hole punching or stapling.',
-            'Orientation: Supports portrait, landscape, or automatic per-image orientation detection.',
+            'Page Size Standards: Choose standard Letter or A4 dimensions, or let the PDF inherit the native aspect ratio of your image.',
+            'Orientation Modes: Supports Portrait, Landscape, or Smart Auto-Detection where each photo is evaluated and oriented individually to match its camera aspect ratio.',
+            'Margin Settings: Add comfortable border margins (e.g. 0.5 inches) for binder hole-punching, or use zero margins for edge-to-edge photography and architectural blueprints.',
           ],
+          callout: {
+            type: 'tip',
+            text: 'Use Auto-Orientation when compiling mixed documents, such as vertical receipts combined with horizontal landscape certificate photos.',
+          },
+        },
+        {
+          heading: '3. Lossless Image Embedding in Local RAM',
+          body: [
+            'Many web converters decode your images and re-compress them with aggressive lossy compression algorithms, degrading text legibility.',
+            'PDFSimplify directly embeds the raw JPEG or PNG byte stream into standard PDF XObjects. This zero-recompression approach maintains exact pixel clarity, reduces conversion time to milliseconds, and avoids unnecessary compression artifacts.',
+          ],
+        },
+        {
+          heading: '4. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify JPG to PDF tool.',
+            '2. Drag and drop one or more JPG, JPEG, or PNG images into the workspace.',
+            '3. Reorder the image thumbnail sequence to match your intended reading flow.',
+            '4. Configure your desired page size (Letter/A4/Fit), page orientation, and margin spacing.',
+            '5. Click "Convert to PDF" and download your compiled PDF report immediately.',
+          ],
+          callout: {
+            type: 'info',
+            text: 'Your photos never travel over the network. Personal ID cards and medical receipts are processed strictly in your local device memory.',
+          },
         },
       ],
       summary:
-        'Converting images to PDF provides a universal document format that opens identically on any computer or mobile phone.',
+        'Converting photos and graphics to PDF produces structured, standardized documents suitable for business, academic, and legal submissions.',
     },
   },
   {
@@ -371,32 +495,58 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Extract readable plain text from PDF documents in your browser. Preserves reading order and paragraphs without cloud uploads.',
     category: 'Convert',
-    readTime: '3 min read',
+    readTime: '5 min read',
     publishedDate: '2025-02-14',
-    updatedDate: '2025-02-26',
+    updatedDate: '2026-09-16',
     relatedToolSlug: 'pdf-to-text',
     relatedGuides: ['what-is-ocr', 'how-to-convert-pdf-to-jpg'],
     content: {
       intro:
-        'Copying large sections of text from a multi-page PDF often results in garbled line breaks or missing spaces. Text extraction reconstructs the natural reading flow automatically.',
+        'Copying large sections of text from a multi-page PDF often results in garbled line breaks, missing spaces, or scrambled columns. Understanding how text extraction works allows you to cleanly export readable paragraphs and structured data directly on your device.',
       sections: [
         {
-          heading: 'Reading Order Reconstruction',
+          heading: '1. Why Traditional Copy-Paste Fails in PDF Viewers',
           body: [
-            'PDFs store text snippets with absolute (X, Y) coordinates rather than paragraphs. A quality text extractor groups text items by vertical baseline and horizontal proximity.',
-            'This produces formatted paragraphs and maintains column structure for straightforward copying into Word or Google Docs.',
+            'Unlike Word processors or web pages that store text as sequential semantic paragraphs, PDFs position glyphs using absolute Cartesian (X, Y) page coordinates.',
+            'When you manually highlight and copy text from a viewer, the clipboard often reads text across columns horizontally or inserts arbitrary line breaks at the end of every visual line.',
+            'A dedicated text extraction engine mathematically groups text tokens by their vertical baseline and horizontal kerning, reconstructing cohesive paragraphs, headings, and lists accurately.',
           ],
         },
         {
-          heading: 'Digital vs. Scanned Documents',
+          heading: '2. Digital PDFs vs. Scanned Image PDFs',
           body: [
-            'Digital PDFs with selectable text extract instantaneously.',
-            'If a PDF is a photo scan, text extraction will notify you that the file contains no digital text layer and recommend OCR processing.',
+            'Native Digital PDFs: Created by Word, Google Docs, InDesign, or modern print drivers. These documents contain pure digital font streams that extract instantaneously with 100% character fidelity.',
+            'Scanned Bitmaps: Produced by physical document scanners or phone cameras. These contain only static pixel pictures of words. Pure text extractors will detect zero font streams and recommend running OCR (Optical Character Recognition) to reconstruct the text layer.',
           ],
+          callout: {
+            type: 'tip',
+            text: 'To test if your PDF is digital, try highlighting individual words with your cursor. If a blue selection box highlights the letters, it is a native digital PDF.',
+          },
+        },
+        {
+          heading: '3. Multi-Column Layouts & Special Characters',
+          body: [
+            'Academic papers, newspapers, and financial reports frequently use multi-column formats. PDFSimplify uses coordinate gutter analysis to read down column one entirely before starting column two, eliminating disjointed sentence mixing.',
+            'Unicode & Foreign Character Support: Fully supports international accents, Cyrillic, Greek, Asian CJK character maps, and mathematical symbols without producing question-mark replacement glyphs.',
+          ],
+        },
+        {
+          heading: '4. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify PDF to Text tool.',
+            '2. Drag and drop your PDF document into the browser.',
+            '3. The engine parses the document’s font dictionaries in local memory.',
+            '4. Review the extracted plain text in the interactive preview area, including word and character counts.',
+            '5. Copy the text to your clipboard or download it as a standardized .TXT document.',
+          ],
+          callout: {
+            type: 'info',
+            text: 'Zero server exposure: When extracting sensitive legal testimony, medical history, or confidential financial metrics, your text never leaves your local computer.',
+          },
         },
       ],
       summary:
-        'Plain text extraction strips away visual styling, giving you clean, raw text for analysis, summarization, or translation.',
+        'Client-side text extraction provides clean, unformatted plain text ready for summarization, language translation, or spreadsheet import without installing desktop software.',
     },
   },
   {
@@ -407,31 +557,63 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Add page numbers to PDF documents in your browser. Choose position, font size, custom starting numbers, and page range offsets.',
     category: 'Enhance',
-    readTime: '3 min read',
+    readTime: '4 min read',
     publishedDate: '2025-02-15',
     updatedDate: '2025-02-27',
     relatedToolSlug: 'add-page-numbers',
     relatedGuides: ['how-to-add-a-watermark-to-a-pdf', 'how-to-organize-and-reorder-pdf-pages'],
     content: {
       intro:
-        'Professional submissions, academic dissertations, and legal briefs require clean, consistent page numbering. Here is how to stamp numbers onto your document without altering underlying vector art.',
+        'Professional submissions, academic dissertations, and legal briefs require clean, consistent page numbering. Merging multiple separate files or reordering pages often disrupts pagination, leaving documents disorganized. Here is how to stamp custom page numbers onto your document without altering underlying vector art.',
       sections: [
         {
-          heading: 'Positioning & Format Styles',
+          heading: '1. Why Document Pagination Matters',
           body: [
-            'Common Formats: "Page X of Y", "X / Y", or simple numerals "1, 2, 3".',
-            'Placements: Bottom-center, bottom-right, bottom-left, top-right, or custom margin offsets.',
+            'Court Filings & Legal Briefs: Judicial rules routinely require strict sequential pagination across evidentiary exhibits and pleadings for unambiguous cross-referencing.',
+            'Academic Theses & Technical Manuals: Long-form documents demand precise page indices so readers can navigate tables of contents, bibliographies, and index entries.',
+            'Post-Merge Reconciliation: When combining quarterly reports, spreadsheets, and memos into a single executive dossier, page numbers unify disparate page counts into a cohesive deliverable.',
           ],
         },
         {
-          heading: 'Rotation-Aware Stamping',
+          heading: '2. Placement and Numbering Styles',
           body: [
-            'Documents often contain mixed portrait and landscape orientations. A robust page numbering engine calculates rotation-aware coordinate transforms (0°, 90°, 180°, 270°) so that numbers always appear at the visual foot of each page.',
+            'Formatting Variants: Choose between simple numerals ("1, 2, 3"), formal fractions ("1 / 24"), or full explanatory strings ("Page 1 of 24"). For multi-section documents, custom prefix stamping (e.g., "Appendix A - 1") provides clear section demarcation.',
+            'Visual Placements: The six standard positions are Top Left, Top Center, Top Right, Bottom Left, Bottom Center, and Bottom Right. Bottom Center and Bottom Right are the most universally accepted formats in academic and commercial publishing.',
+            'Margin Insets: Safe margin offsets (typically 36pt to 54pt from the physical page boundary) ensure numerals remain well outside printer bleed margins and clear of body paragraphs.',
+          ],
+        },
+        {
+          heading: '3. Mixed Orientations & Rotation-Aware Coordinates',
+          body: [
+            'Complex corporate reports frequently mix portrait executive summaries with landscape spreadsheet annexes. Basic PDF editors apply numbers based on static Cartesian coordinates, causing numbers on landscape pages to print sideways along the edge.',
+            'PDFSimplify checks the native rotational dictionary (/Rotate key: 0°, 90°, 180°, 270°) of each individual page. Coordinate transformation matrices dynamically translate stamps so numbers always align to the visual bottom or top of every sheet.',
+          ],
+        },
+        {
+          heading: '4. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify Add Page Numbers tool.',
+            '2. Drag and drop your PDF into the secure browser workspace.',
+            '3. Select your desired placement (e.g., Bottom Right) and numbering format.',
+            '4. Configure starting number and page offset. If your document has a cover or title page, set the numbering to begin on page 2 while displaying "Page 1".',
+            '5. Preview the real-time position stamp in the document viewer.',
+            '6. Click "Add Page Numbers" to generate and download your paginated PDF.',
+          ],
+          callout: {
+            type: 'tip',
+            text: 'Skip Title Pages: Most publishing guidelines require the cover page to remain unnumbered. Use the offset option to start numbering on page 2 without displaying a numeral on page 1.',
+          },
+        },
+        {
+          heading: '5. Common Numbering Mistakes to Avoid',
+          body: [
+            'Stamping Over Pre-existing Footers: If your document already contains page numbers from a previous export, remove or crop the old footers first to prevent overlapping numbers.',
+            'Ignoring Varying Trim Sizes: If a PDF contains both Letter and oversized Tabloid sheets, verify that margin distances look balanced across both dimensions before final distribution.',
           ],
         },
       ],
       summary:
-        'Stamping page numbers provides formal document organization suitable for publication or court filings.',
+        'Stamping page numbers provides formal document organization suitable for publication or court filings, executed 100% client-side without document uploads.',
     },
   },
   {
@@ -442,31 +624,63 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Add text watermarks to PDF files in your browser. Customize opacity, angle, color, and position with 100% privacy.',
     category: 'Enhance',
-    readTime: '3 min read',
+    readTime: '4 min read',
     publishedDate: '2025-02-16',
     updatedDate: '2025-02-27',
     relatedToolSlug: 'watermark-pdf',
     relatedGuides: ['how-to-protect-a-pdf', 'how-to-add-page-numbers-to-a-pdf'],
     content: {
       intro:
-        'Whether distributing preview manuscripts or safeguarding proprietary trade secrets, watermarking clearly signals document confidentiality.',
+        'Whether distributing preview manuscripts, safeguarding proprietary trade secrets, or tagging internal audit drafts, watermarking provides immediate visual context. A well-placed watermark identifies document status and discourages unauthorized circulation without obstructing readability.',
       sections: [
         {
-          heading: 'Diagonal vs. Tiled Watermarks',
+          heading: '1. When and Why to Watermark Documents',
           body: [
-            'Diagonal Center: A large semi-transparent stamp (e.g. 45-degree angle) spanning the center of every page.',
-            'Tiled Repeating Grid: A repeating matrix of subtle markings across the entire background, making unauthorized redaction difficult.',
+            'Declaring Document Status: Prominently stamp files as "DRAFT", "PRELIMINARY", or "SUPERSEDED" to prevent coworkers or clients from relying on outdated contract versions.',
+            'Confidentiality & Compliance: Mark investor presentations or intellectual property records with "STRICTLY CONFIDENTIAL" or "FOR BOARD REVIEW ONLY" to enforce sensitivity expectations.',
+            'Reviewer Tracking: Personalize distributed review copies with recipient names or email addresses to deter unauthorized leaking.',
           ],
         },
         {
-          heading: 'Opacity Control',
+          heading: '2. Diagonal Stamping vs. Repeating Tiled Grids',
           body: [
-            'Setting opacity between 15% and 25% ensures the watermark remains clearly visible to readers while keeping the text underneath completely legible.',
+            'Diagonal Center (45° Angle): A large semi-transparent text banner running diagonally across the page center. This is the classic legal and corporate standard because it crosses text and diagrams, making removal without altering content nearly impossible.',
+            'Tiled Repeating Matrix: A subtle, recurring pattern of smaller stamps placed diagonally across the entire surface. This format is ideal for multi-column documents where readers might otherwise crop out single central stamps.',
+          ],
+        },
+        {
+          heading: '3. Calibrating Opacity and Text Contrast',
+          body: [
+            'Setting the correct opacity is essential: too dark, and the watermark obscures the underlying legal text; too light, and it vanishes when printed on black-and-white laser printers.',
+            'Recommended Opacity: An opacity level between 15% and 25% provides optimal readability for underlying vector typography while remaining unmistakable.',
+            'Font & Styling: Standard bold sans-serif typefaces (such as Helvetica or Arial Bold) with subtle gray or muted red tones maximize legibility across both white space and high-density text.',
+          ],
+        },
+        {
+          heading: '4. Watermarking vs. Redaction: Critical Differences',
+          body: [
+            'Watermarking overlays visual status stamps onto a page. It does NOT hide, censor, or scramble underlying data.',
+            'If you need to conceal sensitive Social Security numbers, medical details, or trade secrets before public release, watermarking is insufficient. You must use true vector redaction tools that permanently erase character streams from the file.',
+          ],
+          callout: {
+            type: 'warning',
+            text: 'Never rely on watermarks to hide confidential information. Watermarks are visual indicators, not data sanitation tools. Underlying text remains fully selectable and searchable.',
+          },
+        },
+        {
+          heading: '5. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify Watermark PDF tool.',
+            '2. Select or drag your PDF file into the browser window.',
+            '3. Enter your custom text (e.g., "CONFIDENTIAL" or "DRAFT COPY").',
+            '4. Choose your stamp layout (Diagonal Center or Tiled Grid) and calibrate opacity (18% recommended).',
+            '5. Preview the stamped result in real time across different pages.',
+            '6. Click "Apply Watermark" to download your stamped document.',
           ],
         },
       ],
       summary:
-        'Client-side watermarking embeds text layers directly into the PDF content stream without exposing confidential files to online servers.',
+        'Client-side watermarking embeds text layers directly into the PDF content stream without exposing confidential files or trade secrets to online cloud servers.',
     },
   },
   {
@@ -477,35 +691,62 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Password protect PDF documents client-side using authentic AES-256 encryption. Control printing, copying, and modification permissions.',
     category: 'Security',
-    readTime: '4 min read',
+    readTime: '5 min read',
     publishedDate: '2025-02-18',
     updatedDate: '2025-02-28',
     relatedToolSlug: 'protect-pdf',
     relatedGuides: ['how-to-unlock-a-pdf', 'how-to-add-a-watermark-to-a-pdf'],
     content: {
       intro:
-        'Sending unencrypted financial statements or proprietary agreements over email is a major data security risk. Encrypting PDFs with AES-256 ensures only authorized recipients with the password can open them.',
+        'Sending unencrypted tax returns, medical records, or proprietary corporate agreements over email is a serious data security vulnerability. Email relays and server backups frequently store unencrypted attachments indefinitely. Encrypting PDFs with authentic AES-256 guarantees that only authorized recipients possessing the decryption key can view the contents.',
       sections: [
         {
-          heading: 'Standard AES-256 Encryption',
+          heading: '1. Why Emailing Unprotected Documents Is a Security Risk',
           body: [
-            'Standard PDF encryption applies 256-bit Advanced Encryption Standard (AES) cipher algorithms to all document streams and cross-reference entries.',
-            'Using modern Web Crypto API primitives, encryption happens directly inside your browser RAM. Your chosen password is never transmitted across the network.',
+            'Standard email transfer protocols do not guarantee end-to-end encryption across all intermediate mail servers and caching proxies.',
+            'If an email account or laptop is compromised, unencrypted attachments expose Social Security numbers, bank account details, and trade secrets.',
+            'Encrypting documents before transmission ensures that even if a message is intercepted, the underlying PDF payload remains an indecipherable block of ciphertext.',
+          ],
+        },
+        {
+          heading: '2. Understanding Authentic AES-256 vs. Legacy RC4 Ciphers',
+          body: [
+            'Legacy PDF encryption (PDF 1.4 to 1.6) relied on 40-bit or 128-bit RC4 stream ciphers. These obsolete ciphers have documented cryptographic flaws and can be cracked in minutes on modern hardware.',
+            'PDFSimplify implements authentic 256-bit Advanced Encryption Standard (AES-256) conforming to ISO 32000-2 (PDF 2.0) and Adobe Extension Level 7. It uses standard PBKDF2/SHA-256 password key derivation and Cipher Block Chaining (CBC) with random initialization vectors.',
+          ],
+        },
+        {
+          heading: '3. Open Passwords vs. Permissions (Owner) Passwords',
+          body: [
+            'Document Open Password (User Password): Required to decrypt the document. Without this credential, PDF readers cannot render a single page or extract text.',
+            'Permissions Password (Owner Password): Restricts capabilities within conforming PDF viewers, such as disallowing high-resolution printing, disabling text and graphic copying, and blocking annotation modifications.',
+          ],
+        },
+        {
+          heading: '4. Step-by-Step Encryption Guide',
+          body: [
+            '1. Open the PDFSimplify Protect PDF tool.',
+            '2. Drag and drop your confidential PDF into the dropzone.',
+            '3. Type a strong password containing a combination of uppercase letters, lowercase letters, numbers, and symbols.',
+            '4. (Optional) Set permissions to restrict printing or clipboard copying.',
+            '5. Click "Encrypt PDF". The Web Crypto API derives encryption keys and seals the document directly in browser RAM.',
+            '6. Download your password-protected PDF file.',
           ],
           callout: {
             type: 'warning',
-            text: 'Always save your encryption password in a secure password manager. Because PDFSimplify does not store passwords or document copies, lost passwords cannot be recovered.',
+            text: 'Save your password in a secure password manager. Because PDFSimplify operates 100% client-side with zero server storage, we have no access to your documents and cannot recover forgotten passwords.',
           },
         },
         {
-          heading: 'Configurable User Permissions',
+          heading: '5. Client-Side Web Crypto Key Derivation',
           body: [
-            'In addition to an open password, you can restrict permissions: disallowing printing, preventing text copying, and prohibiting annotations without an owner credential.',
+            'Unlike legacy online encryptors that transmit your document and secret password over the public internet to a cloud server, PDFSimplify executes all cryptographic operations inside your browser.',
+            'Neither your cleartext document, your password, nor the resulting encrypted file ever leaves your local computer.',
           ],
         },
       ],
       summary:
-        'Client-side encryption ensures enterprise-grade security without trusting third-party cloud servers with your passwords.',
+        'Client-side encryption ensures enterprise-grade AES-256 security without trusting third-party cloud servers with your confidential passwords or sensitive files.',
     },
   },
   {
@@ -516,32 +757,60 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Remove password protection from PDF documents client-side when you know the password. Fast, free, and processed locally in your browser.',
     category: 'Security',
-    readTime: '3 min read',
+    readTime: '4 min read',
     publishedDate: '2025-02-19',
     updatedDate: '2025-03-01',
     relatedToolSlug: 'unlock-pdf',
     relatedGuides: ['how-to-protect-a-pdf', 'how-to-merge-pdf-files'],
     content: {
       intro:
-        'Repeatedly typing a password to open your monthly bank statements or insurance certificates is tedious. If you are authorized to view the file, you can decrypt and save an unencrypted copy.',
+        'Repeatedly typing passwords every time you open recurring utility bills, pay stubs, bank statements, or insurance policies is tedious. When you have authorized access to an encrypted file, permanently removing the password protection streamlines personal archiving and document management.',
       sections: [
         {
-          heading: 'Authentic Decryption vs. Password Cracking',
+          heading: '1. Authorized Decryption for Everyday Document Archiving',
           body: [
-            'PDFSimplify does not crack passwords or bypass security. You provide the authentic password, the browser uses Web Crypto to decrypt the object streams, and the encryption dictionary is stripped from the document catalog.',
-            'The output file can then be opened in any PDF viewer without password prompts.',
+            'Personal Record Consolidation: Banks and utility providers routinely encrypt PDF statements with birthdates or account numbers. Removing protection allows you to merge monthly statements into a unified annual tax folder.',
+            'Workflow Automation: Encrypted documents cannot be indexed by desktop search tools or processed by automated document ingestion scripts. Decrypting authorized files restores full text searchability.',
           ],
         },
         {
-          heading: 'Zero Server Exposure for Passwords',
+          heading: '2. Authentic Decryption vs. Password Cracking',
           body: [
-            'Unlike traditional online unlockers where your document and password are sent across the web, PDFSimplify unlocks documents entirely inside your browser memory.',
-            'Neither your original document, decrypted contents, nor entered passwords ever leave your computer or touch an external server.',
+            'PDFSimplify is an authentic document decryption utility, NOT a password cracker or brute-force tool. It requires the valid user or owner password that you already have permission to use.',
+            'Attempting to brute-force a modern AES-256 PDF password would require trillions of compute years. Decryption simply uses the correct key to unlock the cryptographic streams and strips the /Encrypt dictionary from the document catalog.',
+          ],
+        },
+        {
+          heading: '3. Technical Decryption & Object Stream Unlocking',
+          body: [
+            'When you enter the correct password, the engine normalizes the string using Unicode SASLprep and hashes it with the document’s unique salt bytes.',
+            'Once authenticated, all compressed stream objects (pages, fonts, images) are decrypted using the derived AES key, and a clean cross-reference table is written without encryption flags.',
+            'The resulting PDF opens instantly in any desktop, web, or mobile reader without password challenges.',
+          ],
+        },
+        {
+          heading: '4. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify Unlock PDF tool.',
+            '2. Drag and drop your password-protected PDF into the browser window.',
+            '3. Enter the valid document password in the secure prompt.',
+            '4. The client-side engine validates the key and decrypts the object streams.',
+            '5. Click "Download Unlocked PDF" to save an unencrypted, permanent copy.',
+          ],
+          callout: {
+            type: 'info',
+            text: 'Complete privacy: Traditional online unlockers require uploading your sensitive files and passwords to third-party web servers. PDFSimplify decrypts entirely in your device RAM.',
+          },
+        },
+        {
+          heading: '5. When You Cannot Unlock a Document',
+          body: [
+            'If you do not know the password or were never granted access by the author, PDFSimplify cannot bypass the encryption. You must contact the original document sender or issuer to obtain the valid credentials.',
           ],
         },
       ],
       summary:
-        'Permanently unlocking authorized files streamlines document workflows while keeping credentials local to your device.',
+        'Permanently unlocking authorized files streamlines document workflows and archiving while keeping confidential passwords completely local to your device.',
     },
   },
   {
@@ -599,25 +868,54 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     relatedGuides: ['how-browser-based-pdf-processing-works', 'how-to-extract-text-from-a-pdf'],
     content: {
       intro:
-        'If you have ever scanned a physical paper document with an office scanner or smartphone camera, you may have noticed you cannot highlight or copy the text. Here is why, and how OCR fixes it.',
+        'If you have ever scanned a physical paper document with an office scanner or smartphone camera, you may have noticed that you cannot highlight phrases, copy paragraphs, or search for keywords (Ctrl+F). To the computer, that scan is not a document—it is merely a high-resolution photograph of ink on paper. Optical Character Recognition (OCR) is the computational technology that bridges this divide.',
       sections: [
         {
-          heading: 'Image Pixels vs. Digital Vector Text',
+          heading: '1. Image Pixels vs. Digital Vector Text',
           body: [
-            'A digital PDF created in Word contains font glyph instructions and Unicode character mappings. The computer understands the word "contract" as specific letter codes.',
-            'A scanned PDF, however, is simply a photo embedded inside a PDF wrapper. The computer sees only a grid of colored pixels, not words.',
+            'Digital Native PDFs: Documents exported directly from word processors or desktop layout tools contain embedded font glyph dictionaries, Unicode character mappings, and vector drawing operators. Software recognizes "Contract" as specific Unicode code points (U+0043, U+006F, U+006E, etc.).',
+            'Scanned PDFs: An office scanner simply captures a grid of colored or grayscale dots (pixels) and wraps the resulting bitmap image inside a PDF container. To your computer or mobile phone, a letter "A" is indistinguishable from coffee stains or background page wrinkles.',
           ],
         },
         {
-          heading: 'How OCR Solves This',
+          heading: '2. The Optical Character Recognition Pipeline',
           body: [
-            'Optical Character Recognition (OCR) analyzes the pixel shapes, identifies baseline edges, and matches patterns to recognized letterforms.',
-            'The engine then embeds an invisible, selectable text layer directly behind the scanned image, allowing you to highlight, search (Ctrl+F), and copy text.',
+            '1. Image Binarization & Pre-processing: The incoming page image is converted to binary black-and-white. Algorithms analyze pixel gradients, remove scanner speckle artifacts, and automatically calculate skew angles to rotate tilted pages upright.',
+            '2. Line and Word Segmentation: The engine scans horizontal white space gaps to segment paragraphs into discrete text lines, then identifies vertical spaces to separate individual word blocks.',
+            '3. Neural Feature Extraction: Advanced character classifiers evaluate topological loops, vertical strokes, diagonal intersections, and baseline curves to identify candidate letters in fractions of a millisecond.',
+            '4. Language Model Disambiguation: Statistical dictionary lookups resolve ambiguous characters (e.g., distinguishing the numeral "1", uppercase "I", and lowercase "l" based on surrounding grammar context).',
+          ],
+        },
+        {
+          heading: '3. The "Sandwich PDF" Layer Architecture',
+          body: [
+            'A common misconception is that OCR replaces the scanned photograph with computer text. In reality, modern document OCR creates what engineers call a "Sandwich PDF" or Searchable Image.',
+            'The original high-resolution scan remains fully visible on the top layer, preserving original signatures, corporate stamps, and paper texture.',
+            'Beneath that picture, the OCR engine places an invisible, transparent text layer where every word is sized and positioned directly under its matching bitmap glyph. When you drag your cursor across the page, you are selecting the invisible text layer seamlessly.',
+          ],
+          callout: {
+            type: 'info',
+            text: 'Accessibility & Screen Readers: Searchable PDFs generated by OCR allow assistive screen readers to vocalize text for visually impaired users, turning inaccessible scans into fully compliant documents.',
+          },
+        },
+        {
+          heading: '4. Best Practices for Maximizing OCR Accuracy',
+          body: [
+            'Scan Resolution: Always scan paper documents at 300 DPI (dots per inch). Scanning at 150 DPI or lower frequently causes adjacent letters to bleed together, dropping recognition accuracy.',
+            'High Contrast: Avoid colored paper backgrounds where possible. Crisp black text on clean white paper provides maximum edge definition.',
+            'Language Dictionaries: Ensure your OCR processor is configured for the language of the document so special diacritics (such as ä, ö, ü, ñ, é) are properly indexed.',
+          ],
+        },
+        {
+          heading: '5. Common OCR Failures & How to Troubleshoot',
+          body: [
+            'Heavily Cursive Handwriting: OCR engines are optimized for machine-printed typefaces. Unstructured handwriting or signatures cannot be reliably converted to plain text.',
+            'Double-Sided Bleed-Through: On thin paper, text printed on the reverse side can show through as ghostly artifacts. Increasing contrast before scanning eliminates ghost text.',
           ],
         },
       ],
       summary:
-        'OCR transforms static photos of paper into actionable, indexable, and accessible digital documents.',
+        'OCR transforms static photos of paper into actionable, indexable, and accessible digital documents with full keyword searchability.',
     },
   },
 
@@ -883,24 +1181,50 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     relatedGuides: ['how-to-compress-a-pdf', 'how-browser-based-pdf-processing-works'],
     content: {
       intro:
-        'Color printing is expensive, and many business archives, court systems, and scanning depositories require documents in uniform monochrome format. Here is how client-side grayscale conversion works.',
+        'Color printing is expensive, and many business archives, court systems, and scanning depositories require documents in uniform monochrome format. Converting full-color presentations, flyers, or invoices into clean grayscale prevents costly color cartridge charges and produces predictable physical prints.',
       sections: [
         {
-          heading: 'Luminance-Weighted Grayscale Desaturation',
+          heading: '1. Why Convert Color PDFs to Grayscale?',
           body: [
-            'Simply stripping color channels or averaging Red, Green, and Blue produces muddy contrast because human eyes perceive green light much brighter than blue light.',
-            'Our engine applies standard ITU-R luminance weights (0.299 Red + 0.587 Green + 0.114 Blue) across pixel buffers. This preserves high visual contrast between dark text and colored backgrounds.',
+            'Toner and Ink Savings: Color laser and inkjet cartridges cost significantly more than standard black toner. Desaturating color backgrounds and decorative banners before sending files to office printers drastically lowers operating costs.',
+            'Regulatory & Legal Archival: Many judicial discovery portals and government document repositories strictly enforce black-and-white or 8-bit grayscale submission standards to minimize server storage bloat.',
+            'Standardizing Multi-Source Compilations: When assembling a master manual from diverse sources with clashing color schemes, converting all assets to grayscale creates a unified, professional aesthetic.',
           ],
         },
         {
-          heading: 'Why Resolution Matters for Monochrome Printing',
+          heading: '2. The Science of Luminance-Weighted Desaturation',
           body: [
-            'When converting color pages into print-ready grayscale, our browser engine renders pages at 2× DPI. This ensures fine text serifs, lines, and chart axes remain crisp when printed on office laser printers.',
+            'A common flaw in rudimentary PDF converters is averaging RGB color channels: (Red + Green + Blue) / 3. Because human eyes are far more sensitive to green wavelengths (555 nm) than red or blue, raw mathematical averaging causes bright yellow text or light blue charts to wash out into unreadable gray haze.',
+            'PDFSimplify applies the standard ITU-R BT.601 / Rec. 709 luminance formula: Y = 0.299*Red + 0.587*Green + 0.114*Blue across all rendered pixel buffers. This preserves high perceptual contrast between dark body typography, colorful badges, and white page backgrounds.',
+          ],
+        },
+        {
+          heading: '3. Vector Resolution vs. Raster Artifacts',
+          body: [
+            'When rendering vector pages for monochrome conversion, our browser engine utilizes high-density rasterization (2× standard DPI / 300 DPI equivalent).',
+            'This guarantees that fine serif fonts, mathematical formulas, and subtle architectural lines remain crisp and clear rather than blurry or pixelated when output to laser printers.',
+          ],
+        },
+        {
+          heading: '4. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify Grayscale PDF tool.',
+            '2. Drag and drop your color document into the browser workspace.',
+            '3. Select your preferred output resolution (Standard or High Quality).',
+            '4. Click "Convert to Grayscale". The desaturation algorithm processes page buffers locally in memory.',
+            '5. Preview the desaturated pages in real time and click "Download Grayscale PDF".',
+          ],
+        },
+        {
+          heading: '5. Evaluating Charts and Multi-Line Graphs',
+          body: [
+            'If your document contains charts that rely solely on color to differentiate data series (for example, red and green lines of identical brightness), they may appear in similar shades of gray.',
+            'Before printing large volumes, always inspect the grayscale preview. If necessary, adjust source charts with dashed lines or distinctive data-point markers to maintain clarity.',
           ],
         },
       ],
       summary:
-        'Grayscale conversion standardizes document appearances and prevents costly color ink charges with instant local execution.',
+        'Grayscale conversion standardizes document appearances and prevents costly color ink charges with instant local execution and zero server uploads.',
     },
   },
   {
@@ -911,32 +1235,66 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
     metaDescription:
       'Step-by-step guide to adding headers and footers to PDF files in your browser. Customize titles, dates, and dynamic page numbering.',
     category: 'Edit & Annotate',
-    readTime: '4 min read',
+    readTime: '5 min read',
     publishedDate: '2025-02-26',
     updatedDate: '2025-03-02',
     relatedToolSlug: 'header-footer',
     relatedGuides: ['how-to-add-page-numbers-to-a-pdf', 'how-to-add-a-watermark-to-a-pdf'],
     content: {
       intro:
-        'Whether preparing corporate audit reports, academic theses, or confidential legal discoveries, professional documents require clear headers and footers. Here is how to format your documents quickly.',
+        'Whether preparing corporate audit reports, academic theses, or confidential legal discoveries, professional documents require clear headers and footers. Headers and footers establish ownership, declare confidentiality status, provide tracking codes, and guide readers through multi-page files.',
       sections: [
         {
-          heading: 'Dynamic Tokens for Automated Pagination',
+          heading: '1. Essential Elements of Headers and Footers',
           body: [
-            'Rather than typing page numbers manually on every page, use dynamic tokens like "Page {page} of {total}". The stamping engine calculates the exact page count and current sequence automatically.',
-            'You can also include the current date ({date}) or confidentiality notices like "Confidential — Internal Distribution Only".',
+            'Document Titles & Running Headers: Placed in the top-left or top-center to remind readers of the current chapter or policy title.',
+            'Bates Numbering & Tracking Codes: Placed in the top-right or bottom-right to comply with court discovery rules and corporate document retention tracking.',
+            'Confidentiality Warnings: Notices like "STRICTLY CONFIDENTIAL — DO NOT DISTRIBUTE" positioned in the bottom-left footer to emphasize legal sensitivity.',
+            'Dynamic Pagination: Formats like "Page X of Y" positioned in the bottom-center or bottom-right for unambiguous sequence verification.',
           ],
         },
         {
-          heading: 'Rotation and Alignment Awareness',
+          heading: '2. Dynamic Token Automation',
           body: [
-            'PDFs with mixed portrait and landscape orientations can cause headers to appear sideways in basic editors.',
-            'Our engine checks the rotation dictionary of each individual page, ensuring top headers always align to the visual top of the page and bottom footers align to the visual bottom.',
+            'Manually stamping text across a 100-page document is tedious and error-prone. Our engine supports dynamic macro tokens that compute on the fly:',
+            '"{page}" inserts the current sequence number.',
+            '"{total}" inserts the total page count of the entire document.',
+            '"{date}" inserts the current formatted date.',
+            'Combining tokens allows clean, automated strings like "Document ID 8820 • Page {page} of {total} • Generated {date}".',
           ],
+        },
+        {
+          heading: '3. Multi-Zone Alignment & Safe Print Margins',
+          body: [
+            'Header and footer areas are divided into three discrete alignment zones: Left, Center, and Right. This allows you to combine a title on the left with a page count on the right without overlapping.',
+            'Safe Margin Insets: Margins must be calibrated (typically 36pt to 54pt from outer boundaries) so stamped text does not bleed off physical paper during commercial printing or clash with existing body paragraphs.',
+          ],
+        },
+        {
+          heading: '4. Mixed Orientations & Rotation-Aware Coordinates',
+          body: [
+            'Documents that mix portrait summaries with landscape spreadsheet pages often result in headers stamping sideways in standard tools.',
+            'PDFSimplify inspects each page’s rotation dictionary (/Rotate key: 0°, 90°, 180°, 270°) to translate coordinates so headers always stamp at the visual top and footers at the visual bottom.',
+          ],
+        },
+        {
+          heading: '5. Step-by-Step Instructions',
+          body: [
+            '1. Open the PDFSimplify Header & Footer tool.',
+            '2. Load your document into the client-side workspace.',
+            '3. Enter your custom text or dynamic tokens in the Header (Left/Center/Right) and Footer (Left/Center/Right) fields.',
+            '4. Configure font family, font size, and color.',
+            '5. Set page exclusion rules (e.g., skip page 1 for cover pages).',
+            '6. Click "Apply Headers & Footers" to generate and download your formatted PDF.',
+          ],
+          callout: {
+            type: 'info',
+            text: '100% Private Stamping: All header and footer modifications execute in your browser RAM using native vector operators. Sensitive business filings are never transmitted across the network.',
+          },
         },
       ],
       summary:
-        'Custom headers and footers transform rough document drafts into polished, formal business presentations in seconds.',
+        'Custom headers and footers transform rough document drafts into polished, formal business presentations in seconds without uploading files to third-party servers.',
     },
   },
 ];
