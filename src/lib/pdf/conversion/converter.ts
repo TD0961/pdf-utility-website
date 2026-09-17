@@ -7,7 +7,7 @@
 import JSZip from 'jszip';
 import { analyzePdfDocument } from './layout/page-analyzer';
 import { buildDocxFromLayout } from './docx-builder';
-import { buildPptxFromLayout } from './pptx-builder';
+import { buildPptxFromLayout, extractSlidesSummary } from './pptx-builder';
 import {
   ConversionOptions,
   ConversionResult,
@@ -119,7 +119,8 @@ export async function convertPdfToWord(
   });
 
   const docxBytes = await buildDocxFromLayout(layout, {
-    includePageBreaks: options.includePageBreaks ?? true,
+    includePageBreaks: options.includePageBreaks ?? (options.layoutMode !== 'flowing'),
+    layoutMode: options.layoutMode,
   });
 
   if (options.cancellationToken?.isCancelled) {
@@ -141,18 +142,23 @@ export async function convertPdfToWord(
   }
 
   const outputName = options.outputFileName || deriveOutputFilename(fileName, '.docx');
-  const blob = new Blob([docxBytes.buffer as ArrayBuffer], {
+  const blob = new Blob([docxBytes as BlobPart], {
     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
 
-  // Calculate stats
+  // Calculate stats & extracted text preview
   let totalBlocks = 0;
   let totalHeadings = 0;
   let totalParagraphs = 0;
   let totalWords = 0;
 
-  for (const page of layout.pages) {
+  const textSections: string[] = [];
+
+  for (let pIdx = 0; pIdx < layout.pages.length; pIdx++) {
+    const page = layout.pages[pIdx];
     totalBlocks += page.blocks.length;
+
+    const pageTexts: string[] = [];
     for (const b of page.blocks) {
       if (b.type === 'heading1' || b.type === 'heading2') {
         totalHeadings++;
@@ -160,8 +166,15 @@ export async function convertPdfToWord(
         totalParagraphs++;
       }
       totalWords += b.text.split(/\s+/).filter(Boolean).length;
+      pageTexts.push(b.text.trim());
+    }
+
+    if (pageTexts.length > 0) {
+      textSections.push(`--- Page ${pIdx + 1} ---\n` + pageTexts.join('\n\n'));
     }
   }
+
+  const extractedText = textSections.join('\n\n');
 
   notifyProgress({
     stage: 'completed',
@@ -181,6 +194,7 @@ export async function convertPdfToWord(
     totalPages: layout.totalPages,
     fileSizeBytes: blob.size,
     durationMs: Date.now() - startTime,
+    extractedText,
     stats: {
       totalBlocks,
       totalHeadings,
@@ -242,7 +256,10 @@ export async function convertPdfToPpt(
     percentage: 75,
   });
 
-  const pptxBytes = await buildPptxFromLayout(layout);
+  const pptxBytes = await buildPptxFromLayout(layout, {
+    mode: options.presentationMode || 'smart',
+    theme: options.theme || 'modern',
+  });
 
   if (options.cancellationToken?.isCancelled) {
     throw new Error('Conversion cancelled by user.');
@@ -263,7 +280,7 @@ export async function convertPdfToPpt(
   }
 
   const outputName = options.outputFileName || deriveOutputFilename(fileName, '.pptx');
-  const blob = new Blob([pptxBytes.buffer as ArrayBuffer], {
+  const blob = new Blob([pptxBytes as BlobPart], {
     type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   });
 
@@ -272,8 +289,13 @@ export async function convertPdfToPpt(
   let totalParagraphs = 0;
   let totalWords = 0;
 
-  for (const page of layout.pages) {
+  const textSections: string[] = [];
+
+  for (let pIdx = 0; pIdx < layout.pages.length; pIdx++) {
+    const page = layout.pages[pIdx];
     totalBlocks += page.blocks.length;
+
+    const pageTexts: string[] = [];
     for (const b of page.blocks) {
       if (b.type === 'heading1' || b.type === 'heading2') {
         totalHeadings++;
@@ -281,8 +303,16 @@ export async function convertPdfToPpt(
         totalParagraphs++;
       }
       totalWords += b.text.split(/\s+/).filter(Boolean).length;
+      pageTexts.push(b.text.trim());
+    }
+
+    if (pageTexts.length > 0) {
+      textSections.push(`--- Slide ${pIdx + 1} ---\n` + pageTexts.join('\n\n'));
     }
   }
+
+  const extractedText = textSections.join('\n\n');
+  const slidesSummary = extractSlidesSummary(layout);
 
   notifyProgress({
     stage: 'completed',
@@ -299,9 +329,11 @@ export async function convertPdfToPpt(
     outputBytes: pptxBytes,
     bytes: pptxBytes,
     uint8Array: pptxBytes,
-    totalPages: layout.totalPages,
+    totalPages: slidesSummary.length > 0 ? slidesSummary.length : layout.totalPages,
     fileSizeBytes: blob.size,
     durationMs: Date.now() - startTime,
+    extractedText,
+    slidesSummary,
     stats: {
       totalBlocks,
       totalHeadings,

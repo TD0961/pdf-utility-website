@@ -219,6 +219,20 @@ describe('Phase 6B: Core Conversion & High-Value PDF Tools', () => {
       assert.equal(result.pageCount, 1);
       assert.ok(result.compressedSize <= result.originalSize || result.isAlreadyOptimized);
     });
+
+    it('supports targetSizeMb and strong compression mode with integrity verification', async () => {
+      const doc = await createSyntheticPdf(2, 'Multi-page document for target size testing');
+      const result = await compressPdf(doc, { level: 'strong', targetSizeMb: 1.5 });
+
+      assert.ok(result.blob);
+      assert.equal(result.pageCount, 2);
+      assert.equal(result.level, 'strong');
+      assert.ok(result.compressedSize > 0);
+
+      const arrayBuf = await result.blob.arrayBuffer();
+      const report = await validatePdfOutput(new Uint8Array(arrayBuf), { expectedPages: 2 });
+      assert.equal(report.valid, true);
+    });
   });
 
   // ==========================================

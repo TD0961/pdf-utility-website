@@ -126,6 +126,9 @@ export interface ConversionOptions {
   outputFileName?: string;
   onProgress?: ConversionProgressCallback;
   cancellationToken?: CancellationToken;
+  layoutMode?: 'flowing' | 'exact';
+  presentationMode?: 'smart' | 'exact';
+  theme?: 'modern' | 'dark';
 }
 
 export interface ConversionResult {
@@ -138,6 +141,12 @@ export interface ConversionResult {
   totalPages: number;
   fileSizeBytes: number;
   durationMs: number;
+  extractedText?: string;
+  slidesSummary?: Array<{
+    title: string;
+    bulletCount: number;
+    previewText: string;
+  }>;
   stats: {
     totalBlocks: number;
     totalHeadings: number;

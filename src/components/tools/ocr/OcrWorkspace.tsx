@@ -19,11 +19,25 @@ import {
   FileText,
   Info,
   XCircle,
+  Languages,
 } from 'lucide-react';
+
+const OCR_LANGUAGES = [
+  { code: 'eng', name: 'English (Default)' },
+  { code: 'eng+amh', name: 'English + Amharic (Ethiopic)' },
+  { code: 'spa', name: 'Spanish (Español)' },
+  { code: 'fra', name: 'French (Français)' },
+  { code: 'deu', name: 'German (Deutsch)' },
+  { code: 'ara', name: 'Arabic (العربية)' },
+  { code: 'chi_sim', name: 'Chinese (Simplified)' },
+  { code: 'por', name: 'Portuguese (Português)' },
+  { code: 'ita', name: 'Italian (Italiano)' },
+];
 
 export function OcrWorkspace() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [pageRange, setPageRange] = useState<string>('all');
+  const [language, setLanguage] = useState<string>('eng');
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<OcrProgress | null>(null);
   const [result, setResult] = useState<OcrResult | null>(null);
@@ -40,12 +54,8 @@ export function OcrWorkspace() {
     };
   }, [searchablePdfUrl, textDownloadUrl]);
 
-  const handleFileSelected = async (selectedFiles: File[]) => {
-    if (!selectedFiles || selectedFiles.length === 0) return;
-    const file = selectedFiles[0];
-    setSourceFile(file);
+  const runOcr = async (file: File, selectedRange: string, selectedLang: string) => {
     setErrorMessage(null);
-
     const cancelToken = createCancellationToken();
     cancelTokenRef.current = cancelToken;
 
@@ -59,10 +69,14 @@ export function OcrWorkspace() {
       });
 
       const ocrRes = await performClientOcr(file, {
-        pageRange,
+        pageRange: selectedRange,
+        language: selectedLang,
         cancellationToken: cancelToken,
         onProgress: (p) => setProgress(p),
       });
+
+      if (searchablePdfUrl) memoryManager.revokeUrl(searchablePdfUrl);
+      if (textDownloadUrl) memoryManager.revokeUrl(textDownloadUrl);
 
       const pdfUrl = memoryManager.createTrackedUrl(ocrRes.searchablePdfBlob);
       const txtUrl = memoryManager.createTrackedUrl(ocrRes.textBlob);
@@ -80,6 +94,13 @@ export function OcrWorkspace() {
         setErrorMessage(formatUserFacingPdfError(err, 'performing OCR on document'));
       }
     }
+  };
+
+  const handleFileSelected = async (selectedFiles: File[]) => {
+    if (!selectedFiles || selectedFiles.length === 0) return;
+    const file = selectedFiles[0];
+    setSourceFile(file);
+    await runOcr(file, pageRange, language);
   };
 
   const handleCancel = () => {
@@ -111,52 +132,77 @@ export function OcrWorkspace() {
     try {
       await navigator.clipboard.writeText(result.text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 2500);
     } catch {
-      // Fallback
+      // Clipboard fallback
     }
+  };
+
+  const getOutputFilename = (ext: 'pdf' | 'txt') => {
+    if (!sourceFile) return `ocr_result.${ext}`;
+    const base = sourceFile.name.replace(/\.pdf$/i, '');
+    return `${base}_ocr.${ext}`;
   };
 
   return (
     <div className="space-y-6">
       <LocalProcessingNotice />
 
-      {/* Honest OCR limitation notice */}
+      {/* Honest OCR limitation & architecture notice */}
       <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start gap-3">
         <Info className="w-5 h-5 text-primary-500 shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold mb-0.5">In-Browser Optical Character Recognition</p>
           <p className="leading-relaxed text-slate-500 dark:text-slate-400">
-            Performs local OCR entirely within your browser memory. Ideal for scanned receipts, articles, and invoices. Large multi-hundred-page scans are processed page-by-page to safeguard device memory.
+            For documents with digital text, headings and paragraph formatting are automatically reconstructed with 100% precision. For scanned pages and image documents, genuine Tesseract.js Optical Character Recognition runs locally in your browser with zero server uploads.
           </p>
         </div>
       </div>
 
-      {/* Upload Dropzone */}
+      {/* Upload Dropzone & Configuration */}
       {!sourceFile && !isProcessing && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200">
-              <ScanText className="w-4 h-4 text-primary-500" />
-              <span>Page Range:</span>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Language Selector */}
+              <div className="flex items-center gap-2">
+                <Languages className="w-4 h-4 text-primary-500" />
+                <span className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200">Language:</span>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="text-xs sm:text-sm px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                >
+                  {OCR_LANGUAGES.map((lang) => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Page Range Input */}
+              <div className="flex items-center gap-2">
+                <ScanText className="w-4 h-4 text-primary-500" />
+                <span className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200">Pages:</span>
+                <input
+                  type="text"
+                  value={pageRange}
+                  onChange={(e) => setPageRange(e.target.value)}
+                  placeholder="all (e.g., 1-5, 8)"
+                  className="text-xs sm:text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white w-36"
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={pageRange}
-                onChange={(e) => setPageRange(e.target.value)}
-                placeholder="all (e.g., 1-5, 8)"
-                className="text-xs sm:text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white w-44"
-              />
-              <span className="text-xs text-slate-400">Leave &quot;all&quot; for full file</span>
-            </div>
+
+            <span className="text-xs text-slate-400">Leave &quot;all&quot; for entire document</span>
           </div>
 
           <PdfDropzone
             onFilesSelected={handleFileSelected}
             acceptsMultiple={false}
-            title="Drop scanned PDF here to run OCR"
-            subtitle="Converts scanned image pages into searchable text and selectable PDFs"
+            title="Drop PDF here to run OCR"
+            subtitle="Converts scanned pages into searchable text and selectable PDFs"
           />
         </div>
       )}
@@ -223,7 +269,7 @@ export function OcrWorkspace() {
         </div>
       )}
 
-      {/* Results */}
+      {/* Results View */}
       {result && searchablePdfUrl && textDownloadUrl && !isProcessing && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
@@ -245,7 +291,7 @@ export function OcrWorkspace() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <Button
                 variant="secondary"
                 size="sm"
@@ -257,7 +303,7 @@ export function OcrWorkspace() {
               </Button>
               <a
                 href={searchablePdfUrl}
-                download={sourceFile ? sourceFile.name.replace(/\.pdf$/i, '_searchable.pdf') : 'searchable.pdf'}
+                download={getOutputFilename('pdf')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="primary" size="sm" className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">
@@ -267,7 +313,7 @@ export function OcrWorkspace() {
               </a>
               <a
                 href={textDownloadUrl}
-                download={sourceFile ? sourceFile.name.replace(/\.pdf$/i, '_ocr_text.txt') : 'ocr_text.txt'}
+                download={getOutputFilename('txt')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="secondary" size="sm" className="w-full justify-center">
@@ -320,10 +366,41 @@ export function OcrWorkspace() {
             <textarea
               readOnly
               value={result.text}
-              rows={8}
-              className="w-full text-xs font-mono p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 resize-none focus:outline-none"
+              rows={12}
+              className="w-full text-xs font-mono p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 resize-y focus:outline-none leading-relaxed"
             />
           </div>
+
+          {/* Re-run OCR Panel without re-upload */}
+          {sourceFile && (
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Languages className="w-4 h-4 text-primary-500" />
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Change Language & Re-run:</span>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                >
+                  {OCR_LANGUAGES.map((lang) => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => runOcr(sourceFile, pageRange, language)}
+                className="gap-1.5"
+              >
+                <ScanText className="w-4 h-4" />
+                <span>Re-run OCR</span>
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
