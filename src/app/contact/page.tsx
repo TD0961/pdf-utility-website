@@ -45,7 +45,7 @@ export default function ContactPage() {
             {siteConfig.supportEmail}
           </a>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-            Typical response time: 24–48 business hours.
+            General messages are typically answered within 24–48 business hours.
           </p>
         </Card>
 
@@ -53,9 +53,9 @@ export default function ContactPage() {
           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <ShieldCheck className="w-4 h-4" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Privacy & Compliance</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Privacy & Architecture</h2>
           <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-            For technical security audits, privacy policy questions, or zero-backend compliance inquiries:
+            For technical inquiries, privacy policy questions, or client-side architecture feedback:
           </p>
           <a
             href={`mailto:${siteConfig.privacyEmail}`}
@@ -64,7 +64,7 @@ export default function ContactPage() {
             {siteConfig.privacyEmail}
           </a>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-            Directly reviewed by our security & privacy team.
+            Reviewed by our engineering and privacy team.
           </p>
         </Card>
 

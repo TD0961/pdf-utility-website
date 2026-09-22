@@ -34,12 +34,12 @@ export default function PrivacyPolicyPage() {
       <div className="p-6 rounded-3xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
         <h2 className="text-lg font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
           <ServerOff className="w-5 h-5 text-emerald-600" />
-          <span>Core Privacy Architecture Guarantee</span>
+          <span>Core Privacy Architecture</span>
         </h2>
         <ul className="space-y-2 text-xs sm:text-sm text-emerald-900/90 dark:text-emerald-200/90">
           <li className="flex items-start gap-2">
             <span className="font-bold">•</span>
-            <span><strong>Your PDF is processed 100% locally in your browser:</strong> Files selected for processing are loaded into your device’s local volatile RAM and are never uploaded to a PDFSimplify server.</span>
+            <span><strong>Local Browser Processing:</strong> PDF files selected for supported tools are processed locally in your browser rather than uploaded to PDFSimplify’s servers.</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-bold">•</span>
@@ -183,7 +183,7 @@ export default function PrivacyPolicyPage() {
             <span>7. Contact Information & Data Protection Lead</span>
           </h2>
           <p>
-            If you have inquiries regarding this Privacy Policy, our zero-backend technical architecture, or data protection practices, please contact our data protection officer:
+            If you have inquiries regarding this Privacy Policy, our client-side technical architecture, or data protection practices, please contact our privacy team:
           </p>
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm space-y-1">
             <p><strong>Entity:</strong> PDFSimplify Engineering & Privacy Team</p>

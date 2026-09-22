@@ -442,7 +442,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
     slug: 'jpg-to-pdf',
     name: 'JPG to PDF',
     shortDescription: 'Convert JPG, PNG, and WebP images into clean, standardized PDF documents.',
-    metaDescription: 'Convert JPG and PNG images into PDF in seconds. Browser-side conversion guarantees complete privacy.',
+    metaDescription: 'Convert JPG and PNG images into PDF in seconds. Designed for private browser-side conversion without file uploads.',
     category: 'create-convert',
     badge: 'Popular',
     status: 'available',
@@ -702,7 +702,7 @@ export const TOOLS_REGISTRY: ToolMetadata[] = [
       'Local canvas binarization & contrast line analysis for image pages',
       'Generates searchable PDF documents with selectable text overlays',
       'Extracts clean plain text (.txt) for copying',
-      'Zero server upload — 100% private in-browser execution',
+      'Zero server upload — private in-browser execution',
     ],
     howItWorks: 'Analyzes digital text streams and image contrast directly in your browser. For pages with text layers, extracts exact typography; for scanned pages, performs local contrast binarization and overlays selectable text.',
     steps: [

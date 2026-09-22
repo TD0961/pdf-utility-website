@@ -60,27 +60,27 @@ const UNIVERSAL_TOOL_FAQS = [
   {
     question: 'Does using this tool upload my documents to an external server?',
     answer:
-      'No. PDFSimplify operates with a 100% client-side zero-backend architecture. All document manipulation and conversion occurs directly inside your local web browser using WebAssembly and Web Workers. Your files are never uploaded, transmitted, or stored on external servers.',
+      'PDFSimplify is designed to process supported PDF files locally in your browser. Files selected for supported tools are processed in local memory rather than uploaded to PDFSimplify’s servers.',
   },
   {
-    question: 'What PDF versions and document standards are supported?',
+    question: 'What PDF specifications and document standards are supported?',
     answer:
-      'PDFSimplify supports all standard PDF versions from legacy PDF 1.0 to modern ISO 32000-2 (PDF 2.0). All vector paths, embedded TrueType/OpenType fonts, transparency layers, form fields, and metadata are faithfully preserved.',
+      'PDFSimplify works with documents formatted according to standard PDF specifications (ISO 32000 family). The tools utilize established client-side parsing engines like Mozilla PDF.js and pdf-lib to preserve vector paths, embedded fonts, and page metadata.',
   },
   {
-    question: 'Are there file size limits or hidden subscription charges?',
+    question: 'Are there file size limits or usage fees?',
     answer:
-      'No. PDFSimplify is free to use without subscriptions, registration paywalls, or daily document quotas. Because processing occurs in local device memory, maximum file sizes depend solely on your computer or phone’s available RAM (typically handling files up to 150MB+ effortlessly).',
+      'PDFSimplify is free to use without subscriptions or account paywalls. Because files are processed directly within your browser’s local memory, maximum document size depends primarily on your device’s available RAM.',
   },
   {
     question: 'Can I use this tool offline without an internet connection?',
     answer:
-      'Yes. PDFSimplify is engineered as a modern Progressive Web App (PWA). Once this web page is loaded, the client-side WebAssembly engine is cached locally, allowing you to process confidential documents completely offline in airplane mode.',
+      'Yes. PDFSimplify provides Progressive Web App (PWA) support and caches static application assets in your browser, enabling core tool operations to run offline once loaded.',
   },
   {
-    question: 'Is processing confidential documents on PDFSimplify GDPR and HIPAA compliant?',
+    question: 'How does client-side processing protect document privacy?',
     answer:
-      'Yes. Because documents never leave your physical device and we operate zero file custody or logging infrastructure, no third-party data transmission occurs, natively adhering to stringent GDPR, HIPAA, and corporate data governance policies.',
+      'Because document manipulation occurs in local device memory without sending your files to remote conversion queues, your documents are not stored, copied, or inspected on our servers.',
   },
 ];
 

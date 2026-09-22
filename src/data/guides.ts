@@ -166,7 +166,7 @@ export const GUIDES_REGISTRY: GuideArticle[] = [
         },
       ],
       summary:
-        'Splitting PDFs in your browser is fast, maintains vector resolution, and guarantees absolute privacy for confidential paperwork.',
+        'Splitting PDFs in your browser is fast, maintains vector resolution, and provides strong document privacy for confidential paperwork.',
     },
   },
   {

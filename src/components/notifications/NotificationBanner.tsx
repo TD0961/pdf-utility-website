@@ -72,7 +72,7 @@ export function NotificationBanner() {
           </div>
 
           <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-            Get an alert when conversions finish so you can switch tabs freely. 100% private in-browser notifications.
+            Get an alert when conversions finish so you can switch tabs freely. Local in-browser notifications without server tracking.
           </p>
 
           <div className="flex items-center gap-2 mt-3">

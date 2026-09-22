@@ -5,7 +5,7 @@ import { constructMetadata } from '@/lib/seo/metadata';
 export const metadata: Metadata = constructMetadata({
   title: 'Terms of Service — PDFSimplify Document Utilities',
   description: 'Terms and conditions governing the use of PDFSimplify client-side tools, website, and services.',
-  path: '/terms-of-service',
+  path: '/terms',
 });
 
 export default TermsPage;

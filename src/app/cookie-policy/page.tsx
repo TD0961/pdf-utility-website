@@ -62,9 +62,23 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">4. Local Browser Storage</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">4. Local & Session Storage</h2>
           <p>
-            We may use browser LocalStorage strictly for functional UI preferences (such as remembering your dark mode preference). No document data is ever saved to persistent LocalStorage.
+            We may use browser LocalStorage or SessionStorage strictly for functional UI preferences (such as remembering your dark mode preference or tool UI configurations). No document files or extracted document contents are ever stored in persistent LocalStorage or IndexedDB databases.
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">5. Service Worker & Cache Storage</h2>
+          <p>
+            PDFSimplify includes an optional Service Worker and utilizes browser Cache Storage strictly to cache static application code (HTML, CSS, JavaScript bundles, WebAssembly binaries, and web fonts). This allows the application interface to load quickly on repeat visits. User document files are never placed into Cache Storage.
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">6. Managing and Disabling Cookies</h2>
+          <p>
+            Most modern web browsers allow you to view, manage, and delete cookies through your browser settings. You can configure your browser to block third-party cookies or alert you when cookies are set. Note that blocking functional storage may affect theme settings, but core in-browser PDF utilities will continue to operate.
           </p>
         </section>
       </div>

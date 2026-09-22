@@ -69,6 +69,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/pdf-tools/protect-pdf" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Protect PDF</Link></li>
               <li><Link href="/pdf-tools/unlock-pdf" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Unlock PDF</Link></li>
+              <li><Link href="/security" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Security & Architecture</Link></li>
               <li><Link href="/privacy-policy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Terms of Service</Link></li>
               <li><Link href="/cookie-policy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Cookie Policy</Link></li>

@@ -6,7 +6,7 @@ export const metadata: Metadata = constructMetadata({
   title: 'Privacy Policy — Zero-Backend Document Architecture & AdSense Disclosures',
   description:
     'Comprehensive privacy policy for PDFSimplify detailing client-side WebAssembly execution, zero document retention, Google AdSense third-party cookie disclosures, and user rights.',
-  path: '/privacy',
+  path: '/privacy-policy',
 });
 
 export default PrivacyPolicyPage;
