@@ -88,8 +88,8 @@ export default function TermsPage() {
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">8. Contact Information</h2>
           <p>
             For legal inquiries or questions regarding these Terms of Service, please reach out to{' '}
-            <a href="mailto:support@pdfsimplify.com" className="text-indigo-600 dark:text-indigo-400 underline font-semibold">
-              support@pdfsimplify.com
+            <a href="mailto:tensaedeme61@gmail.com" className="text-indigo-600 dark:text-indigo-400 underline font-semibold">
+              tensaedeme61@gmail.com
             </a>.
           </p>
         </section>

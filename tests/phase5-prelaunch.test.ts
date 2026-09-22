@@ -16,7 +16,7 @@ describe('Phase 5.2: Pre-Launch Domain, Search & Monetization Readiness', () => 
       assert.equal(siteConfig.domain, 'pdfsimplify.com');
       assert.equal(siteConfig.tagline, 'Simple PDF tools. Private by design.');
       assert.ok(siteConfig.url.startsWith('https://'));
-      assert.equal(siteConfig.supportEmail, 'support@pdfsimplify.com');
+      assert.equal(siteConfig.supportEmail, 'tensaedeme61@gmail.com');
       assert.equal(siteConfig.privacyEmail, 'privacy@pdfsimplify.com');
     });
 

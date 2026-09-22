@@ -33,7 +33,7 @@ export const siteConfig: SiteConfig = {
   tagline: 'Simple PDF tools. Private by design.',
   description:
     'Edit, convert, organize, protect, and manage PDFs directly in your browser. Zero backend file processing — private, client-side document utilities.',
-  supportEmail: `support@${DEFAULT_DOMAIN}`,
+  supportEmail: 'tensaedeme61@gmail.com',
   privacyEmail: `privacy@${DEFAULT_DOMAIN}`,
   copyrightYear: 2026,
   companyName: 'PDFSimplify',

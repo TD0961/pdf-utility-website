@@ -89,7 +89,7 @@ A repository-wide search was conducted for absolute or unverifiable privacy clai
 - **GDPR / HIPAA Disclosures**:
   - Removed all statements claiming the platform is "GDPR compliant" or "HIPAA compliant". Replaced with factual descriptions of how client-side data handling relates to data protection principles.
 - **Privacy Policy Completeness (`/privacy-policy`)**:
-  - Explicitly covers: local document processing, non-collection of document data, static asset delivery, advertising cookies, Google AdSense disclosures, third-party ad vendors, opt-out links (Google Ads Settings, AboutAds), data subject rights, and direct support contact (`support@pdfsimplify.com`).
+  - Explicitly covers: local document processing, non-collection of document data, static asset delivery, advertising cookies, Google AdSense disclosures, third-party ad vendors, opt-out links (Google Ads Settings, AboutAds), data subject rights, and direct support contact (`tensaedeme61@gmail.com`).
 - **Cookie Policy Completeness (`/cookie-policy`)**:
   - Covers: functional cookies, advertising cookies (Google AdSense), Local/Session Storage (dark mode preference only; no PDF files stored), Service Worker/Cache Storage (static application bundles only), and instructions for managing cookies in major browsers.
 

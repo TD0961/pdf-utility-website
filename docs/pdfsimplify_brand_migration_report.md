@@ -27,7 +27,7 @@ All core architectural invariants were rigorously preserved:
 | **Subtagline** | *"Edit, convert, organize, protect, and manage PDFs directly in your browser."* |
 | **Visual Mark** | Option 4 "Contour S": Document silhouette with precision 45° corner fold, continuous streamline "S", and terminal flow accents |
 | **Brand Palette** | Primary: Indigo `#4F46E5` / `#6366F1`; Accent: Cyan `#06B6D4`; Dark Mode: Slate `#0F172A` |
-| **Support Email** | `support@pdfsimplify.com` |
+| **Support Email** | `tensaedeme61@gmail.com` |
 | **Privacy Email** | `privacy@pdfsimplify.com` |
 
 ---

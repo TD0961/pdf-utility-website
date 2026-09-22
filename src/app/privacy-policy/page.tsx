@@ -195,8 +195,8 @@ export default function PrivacyPolicyPage() {
             </p>
             <p>
               <strong>Support Desk:</strong>{' '}
-              <a href="mailto:support@pdfsimplify.com" className="text-indigo-600 dark:text-indigo-400 underline font-semibold">
-                support@pdfsimplify.com
+              <a href="mailto:tensaedeme61@gmail.com" className="text-indigo-600 dark:text-indigo-400 underline font-semibold">
+                tensaedeme61@gmail.com
               </a>
             </p>
             <p className="text-slate-500 text-xs pt-1">Inquiries are answered within 24–48 business hours.</p>

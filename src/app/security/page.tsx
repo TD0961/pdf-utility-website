@@ -172,8 +172,8 @@ export default function SecurityPage() {
           If you are a security researcher, developer, or user with technical questions about our client-side architecture or discover an issue with our static deployment, please contact us at:
         </p>
         <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-          <a href="mailto:support@pdfsimplify.com" className="hover:underline">
-            support@pdfsimplify.com
+          <a href="mailto:tensaedeme61@gmail.com" className="hover:underline">
+            tensaedeme61@gmail.com
           </a>
         </p>
       </section>
