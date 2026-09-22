@@ -121,11 +121,11 @@ describe('Phase 5.3: Content Quality, Privacy Claims & AdSense Policy Audit', ()
   });
 
   describe('Sitemap & Canonical URL Uniqueness', () => {
-    it('ensures exactly 63 unique canonical URLs in sitemap without duplicates', () => {
+    it('ensures exactly 65 unique canonical URLs in sitemap without duplicates', () => {
       const urls = sitemap().map((e) => e.url);
-      assert.equal(urls.length, 63);
+      assert.equal(urls.length, 65);
       const uniqueUrls = new Set(urls);
-      assert.equal(uniqueUrls.size, 63, 'All sitemap URLs must be unique');
+      assert.equal(uniqueUrls.size, 65, 'All sitemap URLs must be unique');
     });
   });
 });

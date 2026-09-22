@@ -29,7 +29,7 @@ export default function ContactPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6 space-y-3">
           <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
             <Mail className="w-5 h-5" />
@@ -51,9 +51,9 @@ export default function ContactPage() {
 
         <Card className="p-6 space-y-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5" />
+            <ShieldCheck className="w-4 h-4" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Privacy & Architecture Inquiries</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Privacy & Compliance</h2>
           <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
             For technical security audits, privacy policy questions, or zero-backend compliance inquiries:
           </p>
@@ -64,7 +64,26 @@ export default function ContactPage() {
             {siteConfig.privacyEmail}
           </a>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-            Handled directly by our security & privacy engineering lead.
+            Directly reviewed by our security & privacy team.
+          </p>
+        </Card>
+
+        <Card className="p-6 space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <HelpCircle className="w-5 h-5" />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Publisher & Advertising</h2>
+          <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            For advertising network queries, Google AdSense compliance, and media partnerships:
+          </p>
+          <a
+            href="mailto:contact@pdfsimplify.com"
+            className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline block pt-2"
+          >
+            contact@pdfsimplify.com
+          </a>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+            Operating entity: PDFSimplify Project.
           </p>
         </Card>
       </div>

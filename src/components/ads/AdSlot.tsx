@@ -26,19 +26,36 @@ export function AdSlot({
   format = 'auto',
   className,
 }: AdSlotProps) {
-  // 1. Centralized Policy Check: Validate placement against page type
-  if (pageType && placement && !isAdPlacementAllowed(pageType, placement)) {
-    return null;
-  }
-
   const isAdSenseEnabled = process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true';
   const isTestMode = process.env.NEXT_PUBLIC_ADSENSE_TEST_MODE === 'true';
   const adClient =
     process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID ||
     process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
 
-  // 2. Production Disabled Check: Zero DOM footprint when disabled and not testing
-  if (!isAdSenseEnabled && !isTestMode) {
+  const isPlacementAllowed = !pageType || !placement || isAdPlacementAllowed(pageType, placement);
+  const isEligible = (isAdSenseEnabled || isTestMode) && isPlacementAllowed;
+
+  const adRef = React.useRef<HTMLModElement>(null);
+  const pushedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (isEligible && isAdSenseEnabled && adClient && adRef.current && !pushedRef.current) {
+      try {
+        if (typeof window !== 'undefined') {
+          if (adRef.current.innerHTML.trim() === '') {
+            ((window as unknown as { adsbygoogle: unknown[] }).adsbygoogle =
+              (window as unknown as { adsbygoogle: unknown[] }).adsbygoogle || []).push({});
+            pushedRef.current = true;
+          }
+        }
+      } catch {
+        // Silently suppress ad initialization errors from adblockers or pending reviews
+      }
+    }
+  }, [isEligible, isAdSenseEnabled, adClient]);
+
+  // 1. Centralized Policy & Production Disabled Check
+  if (!isEligible) {
     return null;
   }
 
@@ -65,6 +82,7 @@ export function AdSlot({
 
         {isAdSenseEnabled && adClient ? (
           <ins
+            ref={adRef}
             className="adsbygoogle"
             style={{ display: 'block', minHeight: `${minHeight - 40}px` }}
             data-ad-client={adClient}
