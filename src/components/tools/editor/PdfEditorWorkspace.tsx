@@ -166,7 +166,16 @@ export function PdfEditorWorkspace() {
 
     try {
       const state = await engine.loadDocument(file);
-      setDocState(state);
+      if (typeof window !== 'undefined' && window.innerWidth < 768 && state.pages[0]) {
+        const page0 = state.pages[0];
+        const isRot = page0.rotation === 90 || page0.rotation === 270;
+        const pWidth = isRot ? page0.height : page0.width;
+        if (pWidth > 0) {
+          const fitZoom = Math.min(1.0, Math.max(0.25, Number(((window.innerWidth - 20) / pWidth).toFixed(2))));
+          engine.setZoom(fitZoom);
+        }
+      }
+      setDocState(engine.getState());
       setCanUndo(false);
       setCanRedo(false);
 
@@ -292,6 +301,28 @@ export function PdfEditorWorkspace() {
     engine.setZoom(1.0);
     syncState();
   };
+
+  const handleZoomFitWidth = useCallback(() => {
+    if (!docState) return;
+    const page = docState.pages[docState.activePageIndex];
+    if (!page) return;
+    const isRot = page.rotation === 90 || page.rotation === 270;
+    const pageWidth = isRot ? page.height : page.width;
+    if (pageWidth <= 0) return;
+
+    let availableWidth = 800;
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 768) {
+        availableWidth = window.innerWidth - 20;
+      } else {
+        const sidebarsWidth = (showThumbnails ? 180 : 0) + (showObjectManager ? 220 : 0) + 96;
+        availableWidth = Math.max(320, window.innerWidth - sidebarsWidth);
+      }
+    }
+    const fitZoom = Math.min(2.5, Math.max(0.25, Number((availableWidth / pageWidth).toFixed(2))));
+    engine.setZoom(fitZoom);
+    syncState();
+  }, [docState, engine, showThumbnails, showObjectManager, syncState]);
 
   const handleResetDocument = () => {
     if (docState?.isModified) {
@@ -968,7 +999,7 @@ export function PdfEditorWorkspace() {
   const totalObjectCount = docState.pages.reduce((acc, p) => acc + p.objects.length, 0);
 
   return (
-    <div className="w-full flex flex-col bg-slate-100 dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden h-[86vh] min-h-[640px]">
+    <div className="w-full flex flex-col bg-slate-100 dark:bg-slate-950 rounded-xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden h-[86dvh] sm:h-[86vh] min-h-[500px] sm:min-h-[640px]">
       {/* 1. Top Toolbar */}
       <EditorToolbar
         fileName={docState.fileName}
@@ -1013,6 +1044,7 @@ export function PdfEditorWorkspace() {
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onZoomReset={handleZoomReset}
+        onFitWidth={handleZoomFitWidth}
         onExport={handleExport}
         onResetDocument={handleResetDocument}
       />
@@ -1108,7 +1140,7 @@ export function PdfEditorWorkspace() {
         {/* Center: Scrollable Canvas Container */}
         <main
           role="main"
-          className="flex-1 overflow-auto flex flex-col relative bg-slate-200/50 dark:bg-slate-950 pb-20 sm:pb-0"
+          className="flex-1 overflow-auto flex flex-col relative bg-slate-200/50 dark:bg-slate-950 pb-20 sm:pb-0 touch-pan-x touch-pan-y"
         >
           {/* Floating Search Bar (Top Right) */}
           {showSearch && (
@@ -1145,6 +1177,11 @@ export function PdfEditorWorkspace() {
               onDeleteObject={handleDeleteObject}
               onDeleteSelected={handleDeleteSelected}
               onSwitchTool={(t) => setActiveTool(t)}
+              onZoomFitWidth={handleZoomFitWidth}
+              onZoomChange={(newZoom) => {
+                engine.setZoom(newZoom);
+                syncState();
+              }}
             />
           ) : null}
         </main>
@@ -1286,6 +1323,7 @@ export function PdfEditorWorkspace() {
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onZoomReset={handleZoomReset}
+        onZoomFitWidth={handleZoomFitWidth}
         canUndo={canUndo}
         canRedo={canRedo}
         onUndo={handleUndo}

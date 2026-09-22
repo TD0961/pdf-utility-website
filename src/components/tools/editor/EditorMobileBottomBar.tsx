@@ -40,6 +40,7 @@ interface EditorMobileBottomBarProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onZoomReset: () => void;
+  onZoomFitWidth?: () => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -75,6 +76,7 @@ export function EditorMobileBottomBar({
   onZoomIn,
   onZoomOut,
   onZoomReset,
+  onZoomFitWidth,
 }: EditorMobileBottomBarProps) {
   const [showZoomPopup, setShowZoomPopup] = React.useState(false);
 
@@ -148,11 +150,11 @@ export function EditorMobileBottomBar({
 
       {/* 3. Floating Zoom Controls Popup */}
       {showZoomPopup && (
-        <div className="absolute bottom-16 right-4 z-50 bg-white dark:bg-slate-800 rounded-2xl p-2 shadow-xl border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+        <div className="absolute bottom-16 right-4 z-50 bg-white dark:bg-slate-800 rounded-2xl p-2 shadow-xl border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
           <button
             type="button"
             onClick={onZoomOut}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors"
             title="Zoom Out"
           >
             <ZoomOut className="w-4 h-4" />
@@ -160,14 +162,28 @@ export function EditorMobileBottomBar({
           <button
             type="button"
             onClick={onZoomReset}
-            className="px-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-100"
+            className="px-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-100 hover:text-indigo-600 transition-colors"
+            title="Reset to 100%"
           >
             {Math.round(zoom * 100)}%
           </button>
+          {onZoomFitWidth && (
+            <button
+              type="button"
+              onClick={() => {
+                onZoomFitWidth();
+                setShowZoomPopup(false);
+              }}
+              className="px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/80 transition-colors whitespace-nowrap"
+              title="Fit Document to Screen Width"
+            >
+              Fit Width
+            </button>
+          )}
           <button
             type="button"
             onClick={onZoomIn}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors"
             title="Zoom In"
           >
             <ZoomIn className="w-4 h-4" />

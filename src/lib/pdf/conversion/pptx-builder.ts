@@ -56,15 +56,19 @@ export async function buildPptxFromLayout(
   const firstPage = layout.pages[0];
   const isPortrait = Boolean(firstPage && firstPage.height > firstPage.width);
 
+  // In Smart Presentation Mode (default), always generate 16:9 widescreen presentation slides!
+  // In Exact Mode on portrait, preserve page aspect ratio for coordinate mapping.
+  const isExactMode = mode === 'exact' || (!options.mode && isPortrait);
+
   let slideWidthEmu = 9144000;  // 10 inches (16:9 standard)
   let slideHeightEmu = 5143500; // 5.625 inches
   let slideType = 'screen16x9';
 
-  if (isPortrait) {
+  if (isExactMode && isPortrait) {
     slideWidthEmu = 6858000;
     slideHeightEmu = 9144000;
     slideType = 'screen4x3';
-  } else if (firstPage && firstPage.width / firstPage.height < 1.45) {
+  } else if (!isPortrait && firstPage && firstPage.width / firstPage.height < 1.45) {
     slideWidthEmu = 9144000;
     slideHeightEmu = 6858000;
     slideType = 'screen4x3';
@@ -75,8 +79,8 @@ export async function buildPptxFromLayout(
 
   for (let pIdx = 0; pIdx < layout.pages.length; pIdx++) {
     const page = layout.pages[pIdx];
-    if (mode === 'exact' || isPortrait) {
-      // 1 slide per page directly
+    if (isExactMode) {
+      // 1 slide per page directly with coordinate mapping
       const titleCandidate = findPageTitle(page);
       preparedSlides.push({
         title: titleCandidate || `Slide ${pIdx + 1}`,
@@ -85,7 +89,7 @@ export async function buildPptxFromLayout(
         rawBlocks: page.blocks,
       });
     } else {
-      // Smart Presentation Mode: chunk dense pages to avoid overloaded slides
+      // Smart Presentation Mode: chunk dense pages into structured 16:9 presentation slides
       const pageSlides = decomposePageIntoSlides(page, pIdx + 1);
       preparedSlides.push(...pageSlides);
     }
@@ -632,8 +636,40 @@ function renderSmartSlideShapes(
   const cardBg = isDark ? '1E293B' : 'F8FAFC';
   const cardBorder = isDark ? '334155' : 'E2E8F0';
 
-  // 1. Slide Title
   const cleanTitle = escapeXml(slide.title);
+
+  // 1. Category Eyebrow Pill
+  shapes.push(`
+    <p:sp>
+      <p:nvSpPr>
+        <p:cNvPr id="${shapeId++}" name="Slide Eyebrow"/>
+        <p:cNvSpPr txBox="1"/>
+        <p:nvPr/>
+      </p:nvSpPr>
+      <p:spPr>
+        <a:xfrm>
+          <a:off x="685800" y="320040"/>
+          <a:ext cx="7772400" cy="182880"/>
+        </a:xfrm>
+        <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+        <a:noFill/>
+      </p:spPr>
+      <p:txBody>
+        <a:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0"/>
+        <a:lstStyle/>
+        <a:p>
+          <a:r>
+            <a:rPr lang="en-US" sz="950" b="1">
+              <a:solidFill><a:srgbClr val="4F46E5"/></a:solidFill>
+              <a:latin typeface="Calibri"/>
+            </a:rPr>
+            <a:t xml:space="preserve">SECTION ${slide.sourcePageNumber}  •  PRESENTATION SLIDE ${slideNumber}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    </p:sp>`);
+
+  // 2. Slide Title
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -643,8 +679,8 @@ function renderSmartSlideShapes(
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="685800" y="457200"/>
-          <a:ext cx="7772400" cy="685800"/>
+          <a:off x="685800" y="520000"/>
+          <a:ext cx="7772400" cy="580000"/>
         </a:xfrm>
         <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
         <a:noFill/>
@@ -664,7 +700,7 @@ function renderSmartSlideShapes(
       </p:txBody>
     </p:sp>`);
 
-  // 2. Indigo Accent Line
+  // 3. Indigo Accent Line
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -674,7 +710,7 @@ function renderSmartSlideShapes(
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="685800" y="1188720"/>
+          <a:off x="685800" y="1143000"/>
           <a:ext cx="1028700" cy="38100"/>
         </a:xfrm>
         <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
@@ -683,7 +719,7 @@ function renderSmartSlideShapes(
       </p:spPr>
     </p:sp>`);
 
-  // 3. Table rendering if present
+  // 4. Table rendering if present
   if (slide.tableBlock && slide.tableBlock.tableData) {
     const tableData = slide.tableBlock.tableData;
     const maxCols = Math.max(1, ...tableData.rows.map((r) => r.length));
@@ -698,6 +734,13 @@ function renderSmartSlideShapes(
       .slice(0, 8)
       .map((row, rIdx) => {
         const isHeader = rIdx === 0;
+        const cellBg = isHeader
+          ? (isDark ? '4F46E5' : '4338CA')
+          : rIdx % 2 === 1
+          ? (isDark ? '1E293B' : 'F1F5F9')
+          : cardBg;
+        const cellTextColor = isHeader ? 'FFFFFF' : bodyTextColor;
+
         const cellsXml = row
           .map((cell) => {
             return `
@@ -708,7 +751,7 @@ function renderSmartSlideShapes(
                   <a:p>
                     <a:r>
                       <a:rPr lang="en-US" sz="1300" b="${isHeader ? '1' : '0'}">
-                        <a:solidFill><a:srgbClr val="${isHeader ? titleColor : bodyTextColor}"/></a:solidFill>
+                        <a:solidFill><a:srgbClr val="${cellTextColor}"/></a:solidFill>
                         <a:latin typeface="Calibri"/>
                       </a:rPr>
                       <a:t xml:space="preserve">${escapeXml(cell || ' ')}</a:t>
@@ -716,7 +759,11 @@ function renderSmartSlideShapes(
                   </a:p>
                 </a:txBody>
                 <a:tcPr>
-                  <a:solidFill><a:srgbClr val="${isHeader ? cardBorder : cardBg}"/></a:solidFill>
+                  <a:solidFill><a:srgbClr val="${cellBg}"/></a:solidFill>
+                  <a:lnL w="9525"><a:solidFill><a:srgbClr val="${cardBorder}"/></a:solidFill></a:lnL>
+                  <a:lnR w="9525"><a:solidFill><a:srgbClr val="${cardBorder}"/></a:solidFill></a:lnR>
+                  <a:lnT w="9525"><a:solidFill><a:srgbClr val="${cardBorder}"/></a:solidFill></a:lnT>
+                  <a:lnB w="9525"><a:solidFill><a:srgbClr val="${cardBorder}"/></a:solidFill></a:lnB>
                 </a:tcPr>
               </a:tc>`;
           })
@@ -920,7 +967,26 @@ function renderSmartSlideShapes(
       </p:sp>`);
   }
 
-  // 4. Footer Placeholder: Doc name (left) + Slide Number (right)
+  // 5. Footer Divider Line
+  shapes.push(`
+    <p:sp>
+      <p:nvSpPr>
+        <p:cNvPr id="${shapeId++}" name="Footer Divider"/>
+        <p:cNvSpPr/>
+        <p:nvPr/>
+      </p:nvSpPr>
+      <p:spPr>
+        <a:xfrm>
+          <a:off x="685800" y="4680000"/>
+          <a:ext cx="7772400" cy="12700"/>
+        </a:xfrm>
+        <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+        <a:solidFill><a:srgbClr val="${cardBorder}"/></a:solidFill>
+        <a:ln><a:noFill/></a:ln>
+      </p:spPr>
+    </p:sp>`);
+
+  // 6. Footer Placeholder: Doc name (left) + Slide Number (right)
   const cleanDocName = escapeXml(docName.replace(/\.pdf$/i, '').replace(/_/g, ' '));
   shapes.push(`
     <p:sp>

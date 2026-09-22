@@ -47,6 +47,8 @@ interface EditorCanvasProps {
   onDeleteObject: (objectId: string) => void;
   onDeleteSelected?: () => void;
   onSwitchTool: (tool: EditorTool) => void;
+  onZoomChange?: (newZoom: number) => void;
+  onZoomFitWidth?: () => void;
   className?: string;
 }
 
@@ -82,11 +84,18 @@ export function EditorCanvas({
   onDeleteObject,
   onDeleteSelected,
   onSwitchTool,
+  onZoomChange,
+  onZoomFitWidth,
   className,
 }: EditorCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
+
+  // Mobile Touch Gestures State (Pinch-to-zoom & Double-tap)
+  const touchDistRef = useRef<number | null>(null);
+  const touchZoomBaseRef = useRef<number>(zoom);
+  const lastTouchTapRef = useRef<number>(0);
 
   // Interaction State
   const [dragMode, setDragMode] = useState<DragMode>('none');
@@ -365,10 +374,48 @@ export function EditorCanvas({
     };
   };
 
+  // Mobile Touch Gestures (Pinch-to-zoom & Double-tap to fit width)
+  const handleCanvasTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchDistRef.current = dist;
+      touchZoomBaseRef.current = zoom;
+    } else if (e.touches.length === 1 && activeTool === 'select') {
+      const now = Date.now();
+      if (now - lastTouchTapRef.current < 280) {
+        if (onZoomFitWidth) {
+          onZoomFitWidth();
+        }
+        lastTouchTapRef.current = 0;
+      } else {
+        lastTouchTapRef.current = now;
+      }
+    }
+  };
+
+  const handleCanvasTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchDistRef.current !== null && onZoomChange) {
+      e.preventDefault();
+      const newDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const scale = newDist / touchDistRef.current;
+      const targetZoom = Math.min(3.0, Math.max(0.25, Number((touchZoomBaseRef.current * scale).toFixed(2))));
+      onZoomChange(targetZoom);
+    }
+  };
+
+  const handleCanvasTouchEnd = () => {
+    touchDistRef.current = null;
+  };
+
   // --- Pointer Down ---
   const handlePointerDown = (e: React.PointerEvent) => {
     const pos = getPointerPos(e);
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
 
     // 1. If 'select' mode: check handles, check objects, or background deselect
     if (activeTool === 'select') {
@@ -379,6 +426,7 @@ export function EditorCanvas({
       );
 
       if (clickedHandle && selectedObject) {
+        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
         setDragMode('resize-handle');
         setActiveHandle(clickedHandle.position);
         setDragStartScreen(pos);
@@ -406,6 +454,7 @@ export function EditorCanvas({
       }
 
       if (hitId) {
+        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
         const isAlreadySelected = selectedObjectIds?.includes(hitId);
         if (e.shiftKey) {
           onSelectObject(hitId, true);
@@ -435,6 +484,7 @@ export function EditorCanvas({
           pos.y <= selectedBox.y + selectedBox.height &&
           selectedObject
         ) {
+          (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
           setDragMode('move-object');
           setDragStartScreen(pos);
           setDragCurrentScreen(pos);
@@ -443,6 +493,7 @@ export function EditorCanvas({
           const targetObjects = activePage.objects.filter((o) => targetIds.includes(o.id));
           setInitialObjectsState(JSON.parse(JSON.stringify(targetObjects)));
         } else {
+          // Touching empty background in select mode — do not capture pointer so native touch pan/scroll is fluid
           onSelectObject(null, false);
         }
       }
@@ -451,6 +502,7 @@ export function EditorCanvas({
 
     // 2. If 'draw' mode: start freehand path
     if (activeTool === 'draw') {
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
       setDragMode('draw');
       setDragStartScreen(pos);
       setLiveDrawingPoints([pos]);
@@ -476,6 +528,7 @@ export function EditorCanvas({
     }
 
     // 4. Shape modes (rectangle, ellipse, highlight, line, arrow)
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     setDragMode('create-shape');
     setDragStartScreen(pos);
     setDragCurrentScreen(pos);
@@ -827,8 +880,14 @@ export function EditorCanvas({
 
   return (
     <div
+      onTouchStart={handleCanvasTouchStart}
+      onTouchMove={handleCanvasTouchMove}
+      onTouchEnd={handleCanvasTouchEnd}
+      style={{
+        touchAction: activeTool === 'select' && dragMode === 'none' ? 'pan-x pan-y' : 'none',
+      }}
       className={cn(
-        'relative flex items-center justify-center p-8 min-h-full overflow-auto bg-slate-100/70 dark:bg-slate-950 select-none',
+        'relative flex items-center justify-start sm:justify-center p-2 sm:p-6 md:p-8 min-h-full overflow-auto bg-slate-100/70 dark:bg-slate-950 select-none w-full',
         className
       )}
     >
@@ -837,12 +896,13 @@ export function EditorCanvas({
         style={{
           width: screenWidth,
           height: screenHeight,
+          touchAction: activeTool === 'select' && dragMode === 'none' ? 'pan-x pan-y' : 'none',
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         className={cn(
-          'relative shadow-2xl rounded-sm bg-white overflow-hidden transition-shadow',
+          'relative shadow-2xl rounded-sm bg-white overflow-hidden transition-shadow shrink-0 m-auto',
           getCursorClass()
         )}
       >

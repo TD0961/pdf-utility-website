@@ -237,6 +237,91 @@ describe('Global PDF Engine & Table of Contents (TOC) Preservation', () => {
     assert.ok(sheet1Xml.includes('<c r="C2"><v>42</v></c>'), 'Count parsed as number');
   });
 
+  it('generates genuine 16:9 widescreen presentation slides for portrait PDFs in smart presentation mode', async () => {
+    const portraitLayout: ConversionDocumentLayout = {
+      fileName: 'ai-study-doc.pdf',
+      fileSizeBytes: 2048,
+      totalPages: 1,
+      medianBodyFontSize: 12,
+      pages: [
+        {
+          pageNumber: 1,
+          width: 595,
+          height: 842,
+          rotation: 0,
+          blocks: [
+            {
+              type: 'heading1',
+              box: { x: 50, y: 50, width: 450, height: 35 },
+              lines: [
+                {
+                  text: 'AI STUDY & DOCUMENTATION',
+                  box: { x: 50, y: 50, width: 450, height: 35 },
+                  spans: [],
+                  dominantFontSize: 18,
+                  isHeadingCandidate: true,
+                },
+              ],
+              text: 'AI STUDY & DOCUMENTATION',
+              fontSize: 18,
+              isBold: true,
+              isItalic: false,
+              alignment: 'left',
+            },
+            {
+              type: 'heading2',
+              box: { x: 50, y: 100, width: 400, height: 25 },
+              lines: [
+                {
+                  text: 'System Reference & Product Concept',
+                  box: { x: 50, y: 100, width: 400, height: 25 },
+                  spans: [],
+                  dominantFontSize: 14,
+                  isHeadingCandidate: true,
+                },
+              ],
+              text: 'System Reference & Product Concept',
+              fontSize: 14,
+              isBold: true,
+              isItalic: false,
+              alignment: 'left',
+            },
+            {
+              type: 'paragraph',
+              box: { x: 50, y: 140, width: 480, height: 40 },
+              lines: [
+                {
+                  text: 'A practical reference for building cross-platform materials.',
+                  box: { x: 50, y: 140, width: 480, height: 20 },
+                  spans: [],
+                  dominantFontSize: 11,
+                  isHeadingCandidate: false,
+                },
+              ],
+              text: 'A practical reference for building cross-platform materials.',
+              fontSize: 11,
+              isBold: false,
+              isItalic: false,
+              alignment: 'left',
+            },
+          ],
+          rawItemCount: 3,
+          hasSelectableText: true,
+        },
+      ],
+    };
+
+    const pptxBytes = await buildPptxFromLayout(portraitLayout, { mode: 'smart' });
+    const zip = await JSZip.loadAsync(pptxBytes);
+    const presXml = await zip.file('ppt/presentation.xml')?.async('text');
+    const slide1Xml = await zip.file('ppt/slides/slide1.xml')?.async('text');
+
+    assert.ok(presXml?.includes('cx="9144000" cy="5143500"'), 'Generates 16:9 widescreen dimensions for smart presentations');
+    assert.ok(slide1Xml?.includes('Slide Eyebrow'), 'Slide contains eyebrow element');
+    assert.ok(slide1Xml?.includes('AI STUDY &amp; DOCUMENTATION'), 'Slide title properly rendered');
+    assert.ok(slide1Xml?.includes('Accent Line'), 'Slide contains accent line');
+  });
+
   it('provides offline CMap and standard font configurations for global multilingual PDFs', async () => {
     const { getPdfLoadingParams } = await import('../src/lib/pdf/pdf-renderer');
     const dummyBytes = new Uint8Array([1, 2, 3, 4]);
@@ -252,3 +337,4 @@ describe('Global PDF Engine & Table of Contents (TOC) Preservation', () => {
     Reflect.deleteProperty(globalThis, 'window');
   });
 });
+
