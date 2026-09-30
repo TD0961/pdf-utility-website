@@ -10,7 +10,6 @@ import { constructMetadata } from '@/lib/seo/metadata';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { NotificationBanner } from '@/components/notifications/NotificationBanner';
-import Script from 'next/script';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
 const geistSans = Geist({
@@ -64,13 +63,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <Script id="theme-init" strategy="beforeInteractive">
-          {themeScript}
-        </Script>
+        <script
+          id="theme-init"
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+          suppressHydrationWarning
+        />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7704232652384788"
           crossOrigin="anonymous"
+          suppressHydrationWarning
         />
       </head>
       <body className="min-h-full flex flex-col bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white">

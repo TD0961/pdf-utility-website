@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { Bell, BellRing, BellOff, Check, X, ShieldCheck, Sparkles } from 'lucide-react';
 import {
-  isNotificationSupported,
   getNotificationPermission,
   requestNotificationPermission,
   sendNotification,
@@ -25,7 +24,7 @@ function getPermissionSnapshot(): NotificationPermissionState {
 }
 
 function getPermissionServerSnapshot(): NotificationPermissionState {
-  return 'unsupported';
+  return 'default';
 }
 
 export function NotificationBell({ className = '' }: NotificationBellProps) {
@@ -54,8 +53,6 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen]);
-
-  if (syncPermission === 'unsupported' && !isNotificationSupported()) return null;
 
   const handleRequestPermission = async () => {
     setIsLoading(true);
@@ -187,6 +184,10 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
             ) : isDenied ? (
               <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300">
                 Notifications are blocked in your browser. Click the lock/settings icon next to the URL to allow notifications.
+              </div>
+            ) : permission === 'unsupported' ? (
+              <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-600 dark:text-slate-400">
+                Web notifications are not supported on this browser or environment.
               </div>
             ) : (
               <button
