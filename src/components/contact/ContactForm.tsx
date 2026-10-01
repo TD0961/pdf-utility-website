@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Send, CheckCircle2, Copy, Check, ExternalLink, Mail, MessageSquare, AlertCircle } from 'lucide-react';
+import { Send, CheckCircle2, Mail, MessageSquare, AlertCircle, RefreshCw } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 
 interface FormState {
@@ -17,7 +17,7 @@ interface FormState {
 const INITIAL_FORM: FormState = {
   name: '',
   email: '',
-  category: 'General Inquiry',
+  category: 'General Inquiry & Feedback',
   subject: '',
   message: '',
 };
@@ -33,8 +33,10 @@ const CATEGORIES = [
 export function ContactForm() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [submittedData, setSubmittedData] = useState<FormState | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const destinationEmail = siteConfig.supportEmail || 'tensaedeme61@gmail.com';
 
@@ -60,106 +62,98 @@ export function ContactForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const getFormattedBody = (): string => {
-    return [
-      `Name: ${form.name.trim()}`,
-      `Email: ${form.email.trim()}`,
-      `Inquiry Category: ${form.category}`,
-      `Website: ${siteConfig.url}`,
-      '',
-      '--- Message ---',
-      form.message.trim(),
-    ].join('\n');
-  };
-
-  const getFullSubject = (): string => {
-    return `[PDFSimplify] [${form.category}] ${form.subject.trim()}`;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+
     if (!validate()) return;
 
-    const fullSubject = getFullSubject();
-    const body = getFormattedBody();
-    const mailtoUrl = `mailto:${destinationEmail}?subject=${encodeURIComponent(fullSubject)}&body=${encodeURIComponent(body)}`;
+    setIsSubmitting(true);
 
-    // Trigger user's default email client
-    if (typeof window !== 'undefined') {
-      window.location.href = mailtoUrl;
-    }
-
-    setIsSubmitted(true);
-  };
-
-  const handleCopy = async () => {
-    const textToCopy = `To: ${destinationEmail}\nSubject: ${getFullSubject()}\n\n${getFormattedBody()}`;
     try {
-      await navigator.clipboard.writeText(textToCopy);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      const response = await fetch(`https://formsubmit.co/ajax/${destinationEmail}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          _subject: `[PDFSimplify] [${form.category}] ${form.subject.trim()}`,
+          category: form.category,
+          subject: form.subject.trim(),
+          message: form.message.trim(),
+          _template: 'table',
+          _captcha: 'false',
+        }),
+      });
+
+      const data = await response.json();
+
+      // FormSubmit returns success "true" or an activation notice which also means accepted
+      if (response.ok && (data.success === 'true' || data.success === true || (data.message && data.message.includes('Activation')))) {
+        setSubmittedData({ ...form });
+        setIsSuccess(true);
+        setForm(INITIAL_FORM);
+      } else {
+        throw new Error(data.message || 'Failed to submit form');
+      }
     } catch {
-      // Fallback
+      // Fallback: If network is blocked by adblocker, offer direct mailto fallback
+      setErrorMessage(
+        'Unable to send automatically via network. You can also send directly using your email client.'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(destinationEmail)}&su=${encodeURIComponent(getFullSubject())}&body=${encodeURIComponent(getFormattedBody())}`;
-
-  if (isSubmitted) {
+  if (isSuccess && submittedData) {
     return (
-      <Card className="p-6 sm:p-8 space-y-6 border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-b from-indigo-50/40 to-white dark:from-indigo-950/20 dark:to-slate-900 shadow-md">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-6 h-6" />
+      <Card className="p-8 sm:p-10 space-y-6 border-emerald-200 dark:border-emerald-900/60 bg-gradient-to-b from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-slate-900 shadow-md text-center">
+        <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+          <CheckCircle2 className="w-9 h-9" />
+        </div>
+
+        <div className="space-y-2 max-w-lg mx-auto">
+          <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+            Message Sent Successfully!
+          </h3>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+            Thank you, <strong className="text-slate-900 dark:text-white">{submittedData.name}</strong>. Your message has been delivered directly to{' '}
+            <strong className="text-indigo-600 dark:text-indigo-400">{destinationEmail}</strong>.
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Our team typically reviews and responds to inquiries within 24 to 48 business hours.
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-left max-w-lg mx-auto text-xs space-y-1.5 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500">
+            <span>Inquiry Topic:</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">{submittedData.category}</span>
           </div>
-          <div className="space-y-1">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-              Message Prepared for {destinationEmail}
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Your default email application was prompted to send your message. If it did not launch automatically, choose an option below:
-            </p>
+          <div className="flex items-center justify-between text-slate-500">
+            <span>Subject:</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">{submittedData.subject}</span>
+          </div>
+          <div className="flex items-center justify-between text-slate-500">
+            <span>From:</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">{submittedData.email}</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-2 text-xs font-mono text-slate-700 dark:text-slate-300 whitespace-pre-wrap max-h-48 overflow-y-auto">
-          <strong>To:</strong> {destinationEmail}
-          <br />
-          <strong>Subject:</strong> {getFullSubject()}
-          <br />
-          <br />
-          {getFormattedBody()}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          <a
-            href={gmailWebUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 text-sm px-4 py-2.5 gap-2 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-600/20"
-          >
-            <ExternalLink className="w-4 h-4" />
-            <span>Open in Gmail Web</span>
-          </a>
-
+        <div className="pt-2">
           <Button
             type="button"
             variant="outline"
             size="md"
-            onClick={handleCopy}
-            leftIcon={copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-          >
-            {copied ? 'Copied to Clipboard' : 'Copy Message Text'}
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="md"
             onClick={() => {
-              setIsSubmitted(false);
-              setForm(INITIAL_FORM);
+              setIsSuccess(false);
+              setSubmittedData(null);
             }}
+            leftIcon={<RefreshCw className="w-4 h-4" />}
           >
             Send Another Message
           </Button>
@@ -182,6 +176,21 @@ export function ContactForm() {
         </p>
       </div>
 
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p>{errorMessage}</p>
+            <a
+              href={`mailto:${destinationEmail}?subject=${encodeURIComponent(form.subject || 'Inquiry')}&body=${encodeURIComponent(form.message || '')}`}
+              className="text-indigo-600 dark:text-indigo-400 underline font-semibold block"
+            >
+              Open email client directly →
+            </a>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Name */}
@@ -192,13 +201,14 @@ export function ContactForm() {
             <input
               id="contact-name"
               type="text"
+              disabled={isSubmitting}
               value={form.name}
               onChange={(e) => {
                 setForm({ ...form, name: e.target.value });
                 if (errors.name) setErrors({ ...errors, name: undefined });
               }}
               placeholder="e.g. Alex Taylor"
-              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 ${
                 errors.name
                   ? 'border-red-500 dark:border-red-500/80'
                   : 'border-slate-200 dark:border-slate-800'
@@ -215,13 +225,14 @@ export function ContactForm() {
             <input
               id="contact-email"
               type="email"
+              disabled={isSubmitting}
               value={form.email}
               onChange={(e) => {
                 setForm({ ...form, email: e.target.value });
                 if (errors.email) setErrors({ ...errors, email: undefined });
               }}
               placeholder="e.g. alex@example.com"
-              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 ${
                 errors.email
                   ? 'border-red-500 dark:border-red-500/80'
                   : 'border-slate-200 dark:border-slate-800'
@@ -239,9 +250,10 @@ export function ContactForm() {
             </label>
             <select
               id="contact-category"
+              disabled={isSubmitting}
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -259,13 +271,14 @@ export function ContactForm() {
             <input
               id="contact-subject"
               type="text"
+              disabled={isSubmitting}
               value={form.subject}
               onChange={(e) => {
                 setForm({ ...form, subject: e.target.value });
                 if (errors.subject) setErrors({ ...errors, subject: undefined });
               }}
               placeholder="Brief summary of your inquiry"
-              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 ${
                 errors.subject
                   ? 'border-red-500 dark:border-red-500/80'
                   : 'border-slate-200 dark:border-slate-800'
@@ -283,13 +296,14 @@ export function ContactForm() {
           <textarea
             id="contact-message"
             rows={5}
+            disabled={isSubmitting}
             value={form.message}
             onChange={(e) => {
               setForm({ ...form, message: e.target.value });
               if (errors.message) setErrors({ ...errors, message: undefined });
             }}
             placeholder="Please detail your question, feedback, or the steps to reproduce an issue..."
-            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed ${
+            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed disabled:opacity-60 ${
               errors.message
                 ? 'border-red-500 dark:border-red-500/80'
                 : 'border-slate-200 dark:border-slate-800'
@@ -302,15 +316,16 @@ export function ContactForm() {
         <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <Mail className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-            <span>Sends directly to {destinationEmail}</span>
+            <span>Delivered directly to {destinationEmail}</span>
           </div>
 
           <Button
             type="submit"
             size="md"
+            isLoading={isSubmitting}
             rightIcon={<Send className="w-4 h-4" />}
           >
-            Send Message
+            {isSubmitting ? 'Sending Message...' : 'Send Message'}
           </Button>
         </div>
       </form>
