@@ -9,7 +9,6 @@ import { getWebsiteSchema } from '@/lib/seo/jsonld';
 import { constructMetadata } from '@/lib/seo/metadata';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
-import { NotificationBanner } from '@/components/notifications/NotificationBanner';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
 const geistSans = Geist({
@@ -84,7 +83,6 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <NotificationBanner />
           <OfflineIndicator />
           <ServiceWorkerRegister />
         </ThemeProvider>

@@ -137,7 +137,23 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 4. Call to Action */}
+      {/* 4. Publisher & Editorial Standards */}
+      <section className="space-y-4 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed border-t border-slate-200 dark:border-slate-800 pt-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+          Publisher & Editorial Standards
+        </h2>
+        <p>
+          PDFSimplify is independently engineered and operated as an educational and functional document productivity resource. All educational guides, technical deep dives, and tool tutorials are authored and reviewed by our software engineering contributors.
+        </p>
+        <p>
+          We maintain strict editorial independence. Utilities are designed around open browser standards, and our operation is supported through compliant, non-intrusive contextual advertising to maintain domain infrastructure and development without paywalls or user data collection. For publisher inquiries or editorial questions, reach out via our{' '}
+          <Link href="/contact" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+            Contact page
+          </Link>.
+        </p>
+      </section>
+
+      {/* 5. Call to Action */}
       <div className="p-8 rounded-3xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800 space-y-4 text-center">
         <h3 className="text-xl font-bold text-slate-900 dark:text-white">
           Experience Private In-Browser Document Processing

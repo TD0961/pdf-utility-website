@@ -77,13 +77,13 @@ export default function ContactPage() {
             For advertising network queries, Google AdSense compliance, and media partnerships:
           </p>
           <a
-            href="mailto:contact@pdfsimplify.com"
+            href={`mailto:${siteConfig.supportEmail}`}
             className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline block pt-2"
           >
-            contact@pdfsimplify.com
+            {siteConfig.supportEmail}
           </a>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-            Operating entity: PDFSimplify Project.
+            Publisher contact: tensaedeme61@gmail.com
           </p>
         </Card>
       </div>

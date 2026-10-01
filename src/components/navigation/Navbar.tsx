@@ -10,7 +10,6 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { ShieldCheck, Menu, X, ChevronDown } from 'lucide-react';
 import { TOOL_CATEGORIES, TOOLS_REGISTRY } from '@/data/tools';
 import { PwaInstallButton } from '@/components/pwa/PwaInstallButton';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -117,7 +116,6 @@ export function Navbar() {
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Zero Server Uploads</span>
             </div>
-            <NotificationBell />
             <ThemeToggle />
             <Link href="/pdf-tools">
               <Button size="sm">Explore Tools</Button>
@@ -126,7 +124,6 @@ export function Navbar() {
 
           {/* Mobile Menu & Theme Toggle */}
           <div className="flex sm:hidden items-center gap-1">
-            <NotificationBell />
             <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

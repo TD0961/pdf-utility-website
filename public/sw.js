@@ -6,7 +6,7 @@
  * Documents and user data are strictly processed in volatile client memory and are NEVER cached.
  */
 
-const CACHE_VERSION = 'v1.2.0';
+const CACHE_VERSION = 'v1.2.1';
 const STATIC_CACHE = `pdfsimplify-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `pdfsimplify-runtime-${CACHE_VERSION}`;
 
@@ -112,6 +112,12 @@ self.addEventListener('fetch', (event) => {
 
   // Ignore non-GET requests, non-HTTP(S) protocols, and browser extensions
   if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Strictly ignore all cross-origin requests (Google AdSense, DoubleClick, ad scripts, analytics, fonts, CDNs)
+  // The service worker only caches and handles first-party application assets
+  if (url.origin !== self.location.origin) {
     return;
   }
 
