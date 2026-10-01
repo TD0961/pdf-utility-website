@@ -18,7 +18,7 @@ export const metadata: Metadata = constructMetadata({
 
 export default function ContactPage() {
   return (
-    <Container size="md" className="py-8 space-y-10">
+    <Container size="lg" className="py-8 space-y-10">
       <Breadcrumbs items={[{ label: 'Contact' }]} />
 
       <header className="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-6">

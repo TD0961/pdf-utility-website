@@ -25,7 +25,7 @@ export const metadata: Metadata = constructMetadata({
 
 export default function AboutPage() {
   return (
-    <Container size="md" className="py-8 space-y-12">
+    <Container size="lg" className="py-8 space-y-12">
       <Breadcrumbs items={[{ label: 'About' }]} />
 
       <header className="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-8">

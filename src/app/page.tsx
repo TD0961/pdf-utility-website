@@ -314,7 +314,7 @@ export default function HomePage() {
 
       {/* FAQ Section */}
       <section className="bg-slate-100/50 dark:bg-slate-900/40 py-16 border-t border-slate-200/80 dark:border-slate-800">
-        <Container size="md" className="space-y-8">
+        <Container className="space-y-8 max-w-5xl">
           <div className="text-center space-y-2">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Frequently Asked Questions
