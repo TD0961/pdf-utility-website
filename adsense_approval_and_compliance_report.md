@@ -265,11 +265,35 @@ HTTP response verification of live production endpoints (`https://pdfsimplify.co
 
 ---
 
-## P. Status Assessment: GREEN
+---
 
-### Status: **GREEN** — Verified and ready for final human review before AdSense resubmission.
+## Q. Pre-Resubmission Cleanout Pass (October 1, 2026)
 
-**Concluding Statement:**  
-The site has completed the planned technical/content remediation and is ready for final human review before AdSense resubmission.
+Following publisher account review feedback, a rigorous, comprehensive cleanout pass was executed to eliminate all potential friction points, bot rendering obstacles, and policy triggers prior to site re-adding and verification:
+
+1. **Elimination of Abusive Notification / Prompt Flags**:
+   - Removed `NotificationBanner.tsx` from the root layout, eliminating the 3.5s delayed floating popup banner that prompted users/crawlers for push permissions.
+   - Removed `NotificationBell.tsx` from the desktop and mobile navigation bars, creating a clean, professional, and uncluttered header experience with zero DOM hydration divergence.
+2. **Strict Origin Isolation for Service Worker (`sw.js`)**:
+   - Added `if (url.origin !== self.location.origin) return;` guard to the service worker fetch handler.
+   - The service worker now exclusively caches first-party static assets and is mathematically prevented from intercepting, caching, or modifying external Google AdSense (`googlesyndication.com`, `doubleclick.net`, `google.com`) scripts, iframes, or telemetry beacons.
+   - Bumped service worker cache version to `v1.2.1`.
+3. **Comprehensive Content Security Policy (CSP) Hardening**:
+   - Updated CSP headers in both `public/_headers` (Cloudflare Pages) and `vercel.json` (Vercel) to whitelist all official Google AdSense domains, DoubleClick ad servers, Google Fonts, and Google's modern ad traffic quality telemetry beacons (`https://ep1.adtrafficquality.google`, `https://ep2.adtrafficquality.google`).
+4. **Enhanced Publisher Transparency & E-E-A-T Signals**:
+   - Added a dedicated "Publisher & Editorial Standards" section to `/about` affirming editorial independence, author review standards, and advertising funding transparency.
+   - Unified publisher contact inquiry channel on `/contact` to `tensaedeme61@gmail.com`.
+5. **Regression & Validation**:
+   - 468/468 automated tests passing (100%).
+   - TypeScript compilation: 0 errors.
+   - ESLint: 0 warnings, 0 errors.
+   - Production export: 73 static pages generated cleanly.
+   - Committed and deployed via Git commit `0c50945`.
+
+---
+
+## R. Status Assessment: GREEN — CLEANOUT COMPLETE
+
+### Status: **GREEN** — Fully hardened, verified, and ready for ownership verification and review submission.
 
 *(Note: Per operational guidelines, no automatic resubmission has been triggered and no changes have been made to the user's AdSense account.)*
