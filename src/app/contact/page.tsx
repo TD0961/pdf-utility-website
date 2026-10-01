@@ -7,11 +7,12 @@ import { Card } from '@/components/ui/Card';
 import { constructMetadata } from '@/lib/seo/metadata';
 import { siteConfig } from '@/config/site';
 import { Mail, ShieldCheck, HelpCircle } from 'lucide-react';
+import { ContactForm } from '@/components/contact/ContactForm';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Contact Us — PDFSimplify',
   description:
-    'Have feedback, feature requests, or questions regarding PDFSimplify? Get in touch with our engineering team.',
+    'Have feedback, feature requests, or questions regarding PDFSimplify? Send a message directly to our team.',
   path: '/contact',
 });
 
@@ -25,9 +26,12 @@ export default function ContactPage() {
           Contact PDFSimplify
         </h1>
         <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-          We welcome bug reports, suggestions, browser compatibility feedback, and privacy inquiries.
+          We welcome bug reports, feature suggestions, browser compatibility feedback, and privacy inquiries. All inquiries are received directly by our publisher and engineering contact.
         </p>
       </header>
+
+      {/* Interactive Contact Form */}
+      <ContactForm />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6 space-y-3">
