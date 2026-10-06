@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/navigation/Navbar';
@@ -66,6 +67,22 @@ export default function RootLayout({
           id="theme-init"
           dangerouslySetInnerHTML={{ __html: themeScript }}
           suppressHydrationWarning
+        />
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-XZ1VE80DQL"
+        />
+        <Script
+          id="google-analytics-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-XZ1VE80DQL');
+            `,
+          }}
         />
         <script
           async
