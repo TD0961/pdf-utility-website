@@ -6,9 +6,9 @@ import { constructMetadata } from '@/lib/seo/metadata';
 import { ShieldCheck, ServerOff, Cookie, Lock, Globe, Mail } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Privacy Policy — Zero-Backend Document Architecture & AdSense Disclosures',
+  title: 'Privacy Policy — Zero-Backend Document Architecture & Advertising Disclosures',
   description:
-    'Comprehensive privacy policy for PDFSimplify detailing client-side WebAssembly execution, zero document retention, Google AdSense third-party cookie disclosures, and user rights.',
+    'Comprehensive privacy policy for PDFSimplify detailing client-side WebAssembly execution, zero document retention, Newor Media and Google programmatic ad partner disclosures, and user rights.',
   path: '/privacy-policy',
 });
 
@@ -85,57 +85,86 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-4">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Cookie className="w-5 h-5 text-indigo-600" />
-            <span>3. Google AdSense & Third-Party Advertising Disclosures</span>
+            <span>3. Programmatic Advertising Partners (Newor Media & Google Ad Manager)</span>
           </h2>
           <p>
-            To keep PDFSimplify free and accessible without subscription fees, we partner with third-party advertising networks, specifically <strong>Google AdSense</strong>.
+            To keep PDFSimplify free and accessible without mandatory subscription fees or account paywalls, we partner with programmatic digital advertising management platforms, primarily <strong>Newor Media Inc.</strong> and <strong>Google Ad Manager</strong>, along with their authorized header bidding exchange partners (including Amazon Publisher Services, OpenX, PubMatic, Sovrn, Rubicon Project, Criteo, and authorized Google AdSense/AdX resellers).
           </p>
-          <div className="p-4 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2 text-xs sm:text-sm">
+          <div className="p-4 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3 text-xs sm:text-sm">
             <p className="font-semibold text-slate-900 dark:text-white">
-              Mandatory Google AdSense Policy Disclosure:
+              Advertising Partner & Data Collection Disclosures:
             </p>
             <ul className="list-disc pl-5 space-y-1.5 text-slate-600 dark:text-slate-400">
               <li>
-                <strong>Third-party vendor notice:</strong> Third-party vendors, including Google, use cookies to serve ads based on a user&apos;s prior visits to PDFSimplify or other websites across the internet.
+                <strong>Third-Party Vendors & Demand Partners:</strong> Third-party advertising networks, including Newor Media and Google, use cookies, web beacons, and mobile device identifiers to collect non-personally identifiable diagnostic information (such as browser type, approximate geographic region based on IP, operating system, and interaction timestamps) to serve, target, and evaluate relevant advertisements across websites.
               </li>
               <li>
-                <strong>Advertising cookies:</strong> Google&apos;s use of advertising cookies enables it and its partners to serve ads to our users based on their visits to our site and/or other sites on the Internet.
+                <strong>Personalized & Contextual Advertising:</strong> Advertising partners may use browsing data across the web to serve personalized advertisements based on user interests, or contextual advertisements related to general website content.
               </li>
               <li>
-                <strong>Opt-out options:</strong> Users may opt out of personalized advertising at any time by visiting{' '}
+                <strong>Newor Media Privacy Standards:</strong> You can review the comprehensive data privacy and cookie practices of our ad management partner at{' '}
                 <a
-                  href="https://www.google.com/settings/ads"
+                  href="https://newormedia.com/privacy-policy/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
                 >
-                  Google Ads Settings
+                  Newor Media Privacy Policy
                 </a>.
               </li>
               <li>
-                Alternatively, you can opt out of a third-party vendor&apos;s use of cookies for personalized advertising by visiting{' '}
-                <a
-                  href="https://www.aboutads.info/choices/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
-                >
-                  www.aboutads.info
-                </a>{' '}
-                or the Network Advertising Initiative opt-out page at{' '}
-                <a
-                  href="https://optout.networkadvertising.org/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
-                >
-                  optout.networkadvertising.org
-                </a>.
+                <strong>User Opt-Out Mechanisms:</strong> You may control or opt out of personalized ad tracking through any of the following industry portals:
+                <ul className="list-circle pl-5 mt-1 space-y-1">
+                  <li>
+                    Google Advertising Preferences:{' '}
+                    <a
+                      href="https://www.google.com/settings/ads"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 dark:text-indigo-400 underline"
+                    >
+                      Google Ads Settings
+                    </a>
+                  </li>
+                  <li>
+                    Digital Advertising Alliance (DAA):{' '}
+                    <a
+                      href="https://www.aboutads.info/choices/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 dark:text-indigo-400 underline"
+                    >
+                      aboutads.info/choices
+                    </a>
+                  </li>
+                  <li>
+                    Network Advertising Initiative (NAI):{' '}
+                    <a
+                      href="https://optout.networkadvertising.org/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 dark:text-indigo-400 underline"
+                    >
+                      optout.networkadvertising.org
+                    </a>
+                  </li>
+                  <li>
+                    European Interactive Digital Advertising Alliance (EDAA):{' '}
+                    <a
+                      href="https://www.youronlinechoices.eu/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 dark:text-indigo-400 underline"
+                    >
+                      youronlinechoices.eu
+                    </a>
+                  </li>
+                </ul>
               </li>
             </ul>
           </div>
           <p>
-            <strong>Strict Firewall:</strong> Advertisements delivered through Google AdSense operate in isolated iframes managed by the browser. Ad networks and advertising scripts have zero programmatic access to the browser memory buffers holding your PDF documents.
+            <strong>Strict Technical Sandboxing:</strong> All third-party advertisements run in isolated, sandboxed iframes enforced by modern browser cross-origin boundaries. Advertising scripts and demand partners have zero technical access to local WebAssembly memory buffers, document bytes, filenames, passwords, or extracted contents processed on PDFSimplify.
           </p>
         </section>
 
@@ -146,7 +175,7 @@ export default function PrivacyPolicyPage() {
           </p>
           <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
             <li><strong>Essential & Functional Storage:</strong> We use browser <code>localStorage</code> solely to remember user interface preferences (such as your chosen light or dark theme).</li>
-            <li><strong>Advertising Cookies:</strong> As detailed in Section 3, Google and approved advertising partners may set cookies to measure ad performance and combat fraud.</li>
+            <li><strong>Advertising & Header Bidding Cookies:</strong> As detailed in Section 3, Newor Media, Google, and authorized SSP partners may set cookies or HTML5 local storage to measure impression delivery, manage frequency capping, and prevent invalid bot traffic.</li>
           </ul>
           <p>
             You can configure your browser to block or alert you about cookies. Note that disabling cookies will not affect your ability to use our client-side PDF utilities.

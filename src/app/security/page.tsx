@@ -150,14 +150,14 @@ export default function SecurityPage() {
           4. Advertising & Network Transparency
         </h2>
         <p>
-          PDFSimplify is supported by digital advertising, including Google AdSense. It is important to distinguish between document data and advertising network traffic:
+          PDFSimplify is supported by digital advertising through partners including Newor Media and Google Ad Manager. It is important to distinguish between document data and advertising network traffic:
         </p>
         <ul className="list-disc pl-5 space-y-1.5 text-sm">
           <li>
-            <strong>Your PDF files are never sent to advertisers:</strong> Document contents, page text, form fields, and images are completely segregated in local memory and are never transmitted to Google AdSense or any ad partner.
+            <strong>Your PDF files are never sent to advertisers:</strong> Document contents, page text, form fields, and images are completely segregated in local memory and are never transmitted to Newor Media, Google Ad Manager, or any advertising partner.
           </li>
           <li>
-            <strong>Standard Web Advertising:</strong> Google and other third-party vendors use cookies to serve ads based on prior visits to this and other websites across the Internet. For full details on managing your ad preferences, see our <Link href="/privacy-policy" className="text-indigo-600 dark:text-indigo-400 underline font-medium">Privacy Policy</Link> and <Link href="/cookie-policy" className="text-indigo-600 dark:text-indigo-400 underline font-medium">Cookie Policy</Link>.
+            <strong>Standard Web Advertising:</strong> Google, Newor Media, and third-party SSP vendors use cookies and diagnostics to serve and measure ads based on visits across the web. For full details on managing your ad preferences, see our <Link href="/privacy-policy" className="text-indigo-600 dark:text-indigo-400 underline font-medium">Privacy Policy</Link> and <Link href="/cookie-policy" className="text-indigo-600 dark:text-indigo-400 underline font-medium">Cookie Policy</Link>.
           </li>
         </ul>
       </section>

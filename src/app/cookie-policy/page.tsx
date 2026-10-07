@@ -38,27 +38,55 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">3. Third-Party Cookies (Advertising)</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">3. Third-Party Cookies (Advertising & Header Bidding)</h2>
           <p>
-            Third-party advertising partners such as Google AdSense may place cookies or web beacons to serve relevant advertisements based on visits to this and other websites across the internet. You may manage your ad preferences via{' '}
-            <a
-              href="https://www.google.com/settings/ads"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
-            >
-              Google Ads Settings
-            </a>{' '}
-            or through industry opt-out portals such as{' '}
-            <a
-              href="https://www.aboutads.info/choices/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
-            >
-              AboutAds.info Choices
-            </a>.
+            To keep PDFSimplify free without subscriptions, our monetization partners—primarily <strong>Newor Media Inc.</strong> and <strong>Google Ad Manager</strong>, alongside authorized header bidding demand partners (e.g. Amazon Publisher Services, OpenX, PubMatic, Sovrn, Rubicon Project, Criteo)—may place cookies or web beacons on your browser.
           </p>
+          <p>
+            These cookies are used to measure advertisement delivery, prevent fraudulent bot traffic, and serve contextual or interest-based advertisements. You may manage your preferences or opt out of targeted advertising at any time via:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
+            <li>
+              <a
+                href="https://www.google.com/settings/ads"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+              >
+                Google Ads Settings
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.aboutads.info/choices/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+              >
+                AboutAds.info Choices (DAA)
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://optout.networkadvertising.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+              >
+                Network Advertising Initiative (NAI)
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://newormedia.com/privacy-policy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+              >
+                Newor Media Privacy Policy
+              </a>
+            </li>
+          </ul>
         </section>
 
         <section className="space-y-2">
