@@ -10,6 +10,7 @@ import {
   getReservedMinHeight,
   AD_FORMAT_DIMENSIONS,
 } from '@/lib/ads/ad-strategy';
+import { BuyMeACoffee } from '@/components/support/BuyMeACoffee';
 
 export interface AdSlotProps {
   slotId?: string;
@@ -17,6 +18,7 @@ export interface AdSlotProps {
   placement?: AdPlacement;
   format?: AdFormat;
   className?: string;
+  showSupporterFallback?: boolean;
 }
 
 export function AdSlot({
@@ -25,6 +27,7 @@ export function AdSlot({
   placement,
   format = 'auto',
   className,
+  showSupporterFallback = true,
 }: AdSlotProps) {
   const isAdSenseEnabled = process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true';
   const isTestMode = process.env.NEXT_PUBLIC_ADSENSE_TEST_MODE === 'true';
@@ -54,9 +57,17 @@ export function AdSlot({
     }
   }, [isEligible, isAdSenseEnabled, adClient]);
 
-  // 1. Centralized Policy & Production Disabled Check
-  if (!isEligible) {
+  // 1. Centralized Policy Check: strictly prohibit placements forbidden by policy
+  if (!isPlacementAllowed) {
     return null;
+  }
+
+  // 2. Production Ad Network Disabled Fallback: render respectful supporter banner on allowed content slots
+  if (!isEligible) {
+    if (!showSupporterFallback || placement === 'anchor') {
+      return null;
+    }
+    return <BuyMeACoffee variant="banner" className={className} />;
   }
 
   const minHeight = getReservedMinHeight(format);

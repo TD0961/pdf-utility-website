@@ -2,7 +2,9 @@ import React from 'react';
 import Link from 'next/link';
 import { Container } from './Container';
 import { BrandLogo } from '@/components/ui/BrandLogo';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Coffee } from 'lucide-react';
+import { BuyMeACoffee } from '@/components/support/BuyMeACoffee';
+import { BUY_ME_A_COFFEE_URL } from '@/config/site';
 
 export function Footer() {
   return (
@@ -18,6 +20,9 @@ export function Footer() {
             <div className="flex items-center gap-2.5 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-100/60 dark:bg-emerald-950/60 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 max-w-sm">
               <ShieldCheck className="w-4 h-4 shrink-0" />
               <span>Zero-backend architecture: documents are processed locally in your browser.</span>
+            </div>
+            <div className="pt-1">
+              <BuyMeACoffee variant="button" />
             </div>
           </div>
 
@@ -79,11 +84,20 @@ export function Footer() {
 
         <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-4">
           <p>© {new Date().getFullYear()} PDFSimplify. Simple PDF tools. Private by design.</p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-end">
             <Link href="/about" className="hover:underline">About</Link>
             <Link href="/guides" className="hover:underline">Guides</Link>
             <Link href="/resources" className="hover:underline">Resources</Link>
             <Link href="/contact" className="hover:underline">Contact</Link>
+            <a
+              href={BUY_ME_A_COFFEE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+            >
+              <Coffee className="w-3.5 h-3.5 fill-amber-500/20" />
+              <span>Buy me a coffee</span>
+            </a>
           </div>
         </div>
       </Container>

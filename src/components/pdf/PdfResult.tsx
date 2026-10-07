@@ -7,6 +7,7 @@ import { ResetButton } from './ResetButton';
 import { CheckCircle2, FileCheck, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
 import { formatBytes } from '@/lib/utils';
 import { ProcessResult } from '@/types/pdf';
+import { BuyMeACoffee } from '@/components/support/BuyMeACoffee';
 
 export interface NextStepTool {
   slug: string;
@@ -68,6 +69,9 @@ export function PdfResult({
         />
         <ResetButton onReset={onReset} className="w-full sm:w-auto" />
       </div>
+
+      {/* Creator Support Card */}
+      <BuyMeACoffee variant="card" />
 
       {/* Next Steps Workflow Recommendations */}
       {nextSteps && nextSteps.length > 0 && (

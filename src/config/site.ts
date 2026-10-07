@@ -16,6 +16,7 @@ export interface SiteConfig {
   privacyEmail: string;
   copyrightYear: number;
   companyName: string;
+  buyMeACoffeeUrl: string;
   social: {
     github?: string;
     twitter?: string;
@@ -35,6 +36,7 @@ export const siteConfig: SiteConfig = {
     'Edit, convert, organize, protect, and manage PDFs directly in your browser. Zero backend file processing — private, client-side document utilities.',
   supportEmail: 'tensaedeme61@gmail.com',
   privacyEmail: `privacy@${DEFAULT_DOMAIN}`,
+  buyMeACoffeeUrl: process.env.NEXT_PUBLIC_BUYMEACOFFEE_URL || 'https://buymeacoffee.com/Tensae',
   copyrightYear: 2026,
   companyName: 'PDFSimplify',
   social: {
@@ -48,3 +50,4 @@ export const SITE_URL = siteConfig.url;
 export const SITE_DOMAIN = siteConfig.domain;
 export const SITE_TAGLINE = siteConfig.tagline;
 export const SITE_DESCRIPTION = siteConfig.description;
+export const BUY_ME_A_COFFEE_URL = siteConfig.buyMeACoffeeUrl;
