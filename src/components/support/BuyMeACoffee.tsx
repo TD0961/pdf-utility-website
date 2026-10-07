@@ -60,7 +60,7 @@ export function BuyMeACoffee({
             <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5 justify-center sm:justify-start">
               <span>Free, Private & In-Browser</span>
               <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200">
-                <Sparkles className="w-2.5 h-2.5" /> Ad-Free
+                <Sparkles className="w-2.5 h-2.5" /> 100% Client-Side
               </span>
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
@@ -114,7 +114,7 @@ export function BuyMeACoffee({
 
           <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
             PDFSimplify is 100% free and runs entirely on your device without server custody or subscriptions.
-            If this tool saved your deadline or helped your workflow, buying Tensae a coffee keeps the tools ad-free and actively maintained!
+            If this tool saved your deadline or helped your workflow, buying Tensae a coffee supports independent development and keeps the tools free for everyone!
           </p>
 
           <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
