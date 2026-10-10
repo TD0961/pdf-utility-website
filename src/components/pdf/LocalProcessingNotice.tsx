@@ -12,13 +12,13 @@ export function LocalProcessingNotice({ className, compact = false }: LocalProce
     return (
       <div
         className={cn(
-          'flex items-center gap-2 text-xs text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 px-3 py-1.5 rounded-xl',
+          'inline-flex items-center gap-2 text-xs font-mono text-stone-700 dark:text-stone-300 bg-stone-100/90 dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 px-3.5 py-1.5 rounded-xl shadow-2xs',
           className
         )}
       >
         <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
         <span>
-          <strong>Your PDF is processed locally in your browser.</strong> No files are uploaded to our servers.
+          <strong className="font-semibold text-stone-900 dark:text-stone-100">Local In-Browser RAM:</strong> Zero server uploads.
         </span>
       </div>
     );
@@ -27,19 +27,19 @@ export function LocalProcessingNotice({ className, compact = false }: LocalProce
   return (
     <div
       className={cn(
-        'rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 p-4 text-emerald-900 dark:text-emerald-200 flex items-start sm:items-center gap-3.5',
+        'rounded-2xl paper-sheet bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 p-4 text-stone-700 dark:text-stone-300 flex items-start sm:items-center gap-3.5 shadow-2xs',
         className
       )}
     >
-      <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-300 shrink-0 mt-0.5 sm:mt-0">
+      <div className="w-9 h-9 rounded-xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5 sm:mt-0">
         <ShieldCheck className="w-5 h-5" />
       </div>
       <div className="text-xs sm:text-sm">
-        <p className="font-semibold text-emerald-950 dark:text-emerald-100">
-          Your PDF is processed locally in your browser.
+        <p className="font-bold text-stone-900 dark:text-stone-100">
+          Your document is processed locally in browser memory.
         </p>
-        <p className="text-emerald-800/90 dark:text-emerald-300/80 text-xs mt-0.5">
-          PDFSimplify processes documents on your device using client-side WebAssembly and Web Workers. No document data is transmitted to our servers or external cloud services during processing.
+        <p className="text-stone-500 dark:text-stone-400 text-xs mt-0.5 leading-relaxed font-sans">
+          PDFSimplify processes documents on your device using client-side WebAssembly. No document bytes are transmitted to our servers or external cloud endpoints.
         </p>
       </div>
     </div>

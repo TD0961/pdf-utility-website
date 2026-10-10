@@ -133,14 +133,16 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
     <div className="w-full space-y-6">
       <LocalProcessingNotice />
 
-      {/* State: IDLE */}
+      {/* State: IDLE (The Launchpad: Dropzone) */}
       {status === 'idle' && (
-        <PdfDropzone
-          onFilesSelected={handleFilesSelected}
-          acceptsMultiple={tool.acceptsMultiple}
-          acceptedTypes={tool.acceptedFileTypes}
-          title={tool.acceptsMultiple ? 'Select PDF files' : 'Select PDF file'}
-        />
+        <div className="space-y-4">
+          <PdfDropzone
+            onFilesSelected={handleFilesSelected}
+            acceptsMultiple={tool.acceptsMultiple}
+            acceptedTypes={tool.acceptedFileTypes}
+            title={tool.acceptsMultiple ? 'Select PDF files' : 'Select PDF file'}
+          />
+        </div>
       )}
 
       {/* State: LOADED (Files picked, ready to configure / process) */}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { constructMetadata } from '@/lib/seo/metadata';
@@ -12,103 +13,110 @@ export const metadata: Metadata = constructMetadata({
 
 export default function CookiePolicyPage() {
   return (
-    <Container size="lg" className="py-8 space-y-8">
-      <Breadcrumbs items={[{ label: 'Cookie Policy' }]} />
+    <Container className="py-10 max-w-3xl">
+      <div className="space-y-12">
+        <Breadcrumbs items={[{ label: 'Cookie Policy' }]} />
 
-      <header className="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-6">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Cookie Policy
-        </h1>
-        <p className="text-sm text-slate-500">Last updated: September 2026</p>
-      </header>
+        {/* Minimalist Header */}
+        <header className="space-y-4 border-b border-stone-200/80 dark:border-stone-800/80 pb-8">
+          <div className="flex items-center justify-between text-xs font-mono text-stone-400 dark:text-stone-500">
+            <span>STORAGE POLICY</span>
+            <span>UPDATED SEPTEMBER 2026</span>
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 font-sans">
+            Cookie Policy
+          </h1>
+          <p className="text-base sm:text-lg text-stone-600 dark:text-stone-300 leading-relaxed font-normal">
+            Detailed disclosure regarding cookie usage, browser local storage, and third-party advertising measurements on PDFSimplify.
+          </p>
+        </header>
 
-      <div className="space-y-6 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-        <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">1. What Are Cookies?</h2>
-          <p>
-            Cookies are small text files stored on your computer by web browsers when visiting websites. They help websites remember preferences or provide essential functionality.
-          </p>
-        </section>
+        {/* Sections */}
+        <div className="space-y-8 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">1. What Are Cookies?</h2>
+            <p>
+              Cookies are small text files placed on your device by web browsers when accessing websites. They help websites remember preferences, facilitate security, and measure traffic.
+            </p>
+          </section>
 
-        <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">2. How PDFSimplify Uses Cookies</h2>
-          <p>
-            PDFSimplify itself does not use tracking cookies to identify individual users or document contents. Our core PDF tools operate without requiring cookies, accounts, or persistent session tokens.
-          </p>
-        </section>
+          <section className="space-y-2 border-t border-stone-200/80 dark:border-stone-800/80 pt-6">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">2. How PDFSimplify Uses Cookies</h2>
+            <p>
+              PDFSimplify itself does not deploy tracking cookies to profile individual users or inspect document contents. Our core PDF tools operate without requiring cookies, user accounts, or persistent session identifiers.
+            </p>
+          </section>
 
-        <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">3. Third-Party Cookies (Advertising & Header Bidding)</h2>
-          <p>
-            To keep PDFSimplify free without subscriptions, our monetization partners—primarily <strong>Newor Media Inc.</strong> and <strong>Google Ad Manager</strong>, alongside authorized header bidding demand partners (e.g. Amazon Publisher Services, OpenX, PubMatic, Sovrn, Rubicon Project, Criteo)—may place cookies or web beacons on your browser.
-          </p>
-          <p>
-            These cookies are used to measure advertisement delivery, prevent fraudulent bot traffic, and serve contextual or interest-based advertisements. You may manage your preferences or opt out of targeted advertising at any time via:
-          </p>
-          <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
-            <li>
+          <section className="space-y-2 border-t border-stone-200/80 dark:border-stone-800/80 pt-6">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">3. Third-Party Advertising & Measurement Cookies</h2>
+            <p>
+              To maintain PDFSimplify as a free service without subscription fees, advertising partners (including Newor Media and Google Ad Manager) and authorized exchange demand partners may set cookies or web beacons in your browser.
+            </p>
+            <p className="text-sm text-stone-600 dark:text-stone-400">
+              These cookies measure ad impressions, prevent invalid bot fraud, and serve contextual or targeted ads. You may manage your ad preferences via:
+            </p>
+            <div className="flex flex-wrap gap-4 text-xs font-mono pt-1">
               <a
                 href="https://www.google.com/settings/ads"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
               >
-                Google Ads Settings
+                Google Ads Settings &rarr;
               </a>
-            </li>
-            <li>
               <a
                 href="https://www.aboutads.info/choices/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
               >
-                AboutAds.info Choices (DAA)
+                DAA Choices &rarr;
               </a>
-            </li>
-            <li>
               <a
                 href="https://optout.networkadvertising.org/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
+                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
               >
-                Network Advertising Initiative (NAI)
+                NAI Opt-Out &rarr;
               </a>
-            </li>
-            <li>
-              <a
-                href="https://newormedia.com/privacy-policy/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 underline font-semibold"
-              >
-                Newor Media Privacy Policy
-              </a>
-            </li>
-          </ul>
-        </section>
+            </div>
+          </section>
 
-        <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">4. Local & Session Storage</h2>
-          <p>
-            We may use browser LocalStorage or SessionStorage strictly for functional UI preferences (such as remembering your dark mode preference or tool UI configurations). No document files or extracted document contents are ever stored in persistent LocalStorage or IndexedDB databases.
-          </p>
-        </section>
+          <section className="space-y-2 border-t border-stone-200/80 dark:border-stone-800/80 pt-6">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">4. Local & Session Storage</h2>
+            <p>
+              We use browser <code className="font-mono text-xs bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded text-stone-800 dark:text-stone-200">localStorage</code> strictly for functional interface preferences (such as remembering your dark or light theme choice). No document files or extracted document contents are ever stored in persistent LocalStorage or IndexedDB databases.
+            </p>
+          </section>
 
-        <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">5. Service Worker & Cache Storage</h2>
-          <p>
-            PDFSimplify includes an optional Service Worker and utilizes browser Cache Storage strictly to cache static application code (HTML, CSS, JavaScript bundles, WebAssembly binaries, and web fonts). This allows the application interface to load quickly on repeat visits. User document files are never placed into Cache Storage.
-          </p>
-        </section>
+          <section className="space-y-2 border-t border-stone-200/80 dark:border-stone-800/80 pt-6">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">5. Managing & Disabling Cookies</h2>
+            <p>
+              You can configure your browser to block or alert you about cookies. Because our core PDF utilities operate via in-memory WebAssembly, disabling cookies will not impair tool functionality.
+            </p>
+          </section>
 
-        <section className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">6. Managing and Disabling Cookies</h2>
-          <p>
-            Most modern web browsers allow you to view, manage, and delete cookies through your browser settings. You can configure your browser to block third-party cookies or alert you when cookies are set. Note that blocking functional storage may affect theme settings, but core in-browser PDF utilities will continue to operate.
-          </p>
-        </section>
+          <section className="space-y-2 border-t border-stone-200/80 dark:border-stone-800/80 pt-6">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">6. Contact</h2>
+            <p>
+              If you have questions regarding our cookie practices, reach out to{' '}
+              <a href="mailto:tensaedeme61@gmail.com" className="font-mono font-semibold underline text-stone-900 dark:text-stone-100">
+                tensaedeme61@gmail.com
+              </a>.
+            </p>
+          </section>
+        </div>
+
+        {/* Outro */}
+        <div className="pt-8 border-t border-stone-200/80 dark:border-stone-800/80 flex items-center justify-between text-xs font-mono text-stone-500">
+          <Link href="/privacy-policy" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
+            &larr; Privacy Policy
+          </Link>
+          <Link href="/terms" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
+            Terms of Service &rarr;
+          </Link>
+        </div>
       </div>
     </Container>
   );

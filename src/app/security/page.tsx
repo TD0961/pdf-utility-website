@@ -3,19 +3,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
-import { Button } from '@/components/ui/Button';
 import { constructMetadata } from '@/lib/seo/metadata';
-import {
-  ShieldCheck,
-  Lock,
-  Cpu,
-  Globe,
-  AlertTriangle,
-  Mail,
-  ArrowRight,
-  ServerOff,
-  CheckCircle2,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Security & Architecture — PDFSimplify Document Utilities',
@@ -26,174 +15,157 @@ export const metadata: Metadata = constructMetadata({
 
 export default function SecurityPage() {
   return (
-    <Container size="lg" className="py-8 space-y-12">
-      <Breadcrumbs items={[{ label: 'Security' }]} />
+    <Container className="py-10 max-w-3xl">
+      <div className="space-y-12">
+        <Breadcrumbs items={[{ label: 'Security' }]} />
 
-      <header className="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Security Architecture & Trust Disclosures</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Security & Processing Model
-        </h1>
-        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-          PDFSimplify is engineered to process supported PDF files directly within your web browser rather than transferring document content to remote conversion servers. This page outlines our technical architecture, transport security, and practical security boundaries.
-        </p>
-      </header>
+        {/* Minimalist Header */}
+        <header className="space-y-4 border-b border-stone-200/80 dark:border-stone-800/80 pb-8">
+          <span className="text-xs font-mono uppercase tracking-widest text-stone-400 dark:text-stone-500 block">
+            SECURITY • ARCHITECTURAL DISCLOSURE
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 font-sans">
+            Client-side execution model.
+          </h1>
+          <p className="text-base sm:text-lg text-stone-600 dark:text-stone-300 leading-relaxed font-normal">
+            PDFSimplify processes PDF documents directly within your browser session rather than uploading files to remote conversion queues. Here is how our memory sandbox, network boundaries, and transport security work.
+          </p>
+        </header>
 
-      {/* 1. In-Browser Document Processing */}
-      <section className="space-y-4 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <ServerOff className="w-6 h-6 text-indigo-600" />
-          <span>1. In-Browser Execution Model</span>
-        </h2>
-        <p>
-          Traditional web-based document utilities require users to upload confidential files over HTTP to a multi-tenant cloud server. The remote server stores the file on disk, places it into an asynchronous queue, runs a server-side engine (such as Ghostscript or Poppler), and streams the converted document back.
-        </p>
-        <p>
-          PDFSimplify departs fundamentally from this model. Supported PDF workflows—including merging, splitting, rotating, extracting, compressing, visual signing, and client-side OCR—execute entirely on your device using client-side JavaScript, HTML5 Canvas, and WebAssembly (WASM).
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-white">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>No Document Uploads</span>
+        {/* 01 / In-Browser Execution Model */}
+        <section className="space-y-4 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>01</span>
+            <span>/</span>
+            <span>In-Browser Execution Model</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            No Document Uploads
+          </h2>
+          <p>
+            Traditional document web services require uploading confidential PDFs over HTTP to remote servers. The remote server stores the file on disk, runs worker scripts, and streams the result back.
+          </p>
+          <p>
+            PDFSimplify executes all supported PDF operations—merging, splitting, rotating, extracting, compressing, visual signing, and client-side OCR—locally on your machine via JavaScript, HTML5 Canvas, and WebAssembly (WASM).
+          </p>
+          <div className="p-4 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/40 text-xs sm:text-sm space-y-2 font-mono">
+            <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+              <span>MEMORY SANDBOX</span>
+              <span>EPHEMERAL RAM</span>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Files selected for supported tools are parsed directly in local RAM. Our hosting servers do not receive or store your document files.
+            <p className="font-sans text-stone-700 dark:text-stone-300 text-xs leading-relaxed">
+              Byte arrays and document objects reside only in temporary browser memory. Reloading or closing the tab immediately flushes all in-memory buffers. Our web hosting servers never receive or store your document bytes.
             </p>
           </div>
+        </section>
 
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-white">
-              <Cpu className="w-4 h-4 text-indigo-600" />
-              <span>Local WebAssembly & JS</span>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Engines like pdf-lib, Mozilla PDF.js, and Tesseract.js compile to browser runtimes to execute transformations on your local CPU.
-            </p>
+        {/* 02 / Transport Security */}
+        <section className="space-y-4 border-t border-stone-200/80 dark:border-stone-800/80 pt-8 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>02</span>
+            <span>/</span>
+            <span>Transport & Delivery</span>
           </div>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            TLS & Content Security
+          </h2>
+          <p>
+            While document processing occurs locally, our static application assets (HTML, CSS, JavaScript bundles, WebAssembly binaries, and web fonts) are distributed across globally authenticated Content Delivery Networks over encrypted HTTPS.
+          </p>
+          <ul className="space-y-2 text-xs sm:text-sm pt-1">
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 font-bold">•</span>
+              <span><strong>Modern TLS:</strong> All web traffic is strictly encrypted in transit with HTTP Strict Transport Security (HSTS).</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 font-bold">•</span>
+              <span><strong>Static Zero-Database Architecture:</strong> Because PDFSimplify is statically exported, there are no dynamic server-side database endpoints or user document storage repositories that could be subjected to server-side SQL injection or credential leaks.</span>
+            </li>
+          </ul>
+        </section>
 
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-white">
-              <Lock className="w-4 h-4 text-violet-600" />
-              <span>Ephemeral Memory</span>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Byte arrays and document objects reside only in session memory. Reloading or closing the tab immediately drops all in-memory buffers.
-            </p>
+        {/* 03 / Practical Boundaries */}
+        <section className="space-y-4 border-t border-stone-200/80 dark:border-stone-800/80 pt-8 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>03</span>
+            <span>/</span>
+            <span>Practical Boundaries & Limitations</span>
           </div>
-        </div>
-      </section>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            Responsible Security Boundaries
+          </h2>
+          <p>
+            We believe responsible engineering requires stating realistic boundaries clearly rather than making untruthful &quot;100% unhackable&quot; marketing claims:
+          </p>
+          <ul className="space-y-3 pt-1 text-xs sm:text-sm">
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 font-bold shrink-0">A.</span>
+              <span><strong>Device Security & Extensions:</strong> Because processing runs inside your browser, rogue extensions or malware installed on your computer could inspect page memory. Keep your browser updated and use extensions from trusted sources.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 font-bold shrink-0">B.</span>
+              <span><strong>Visual Signatures vs PKI:</strong> Our Sign PDF tool places visual stamp signatures onto documents. It does not issue qualified electronic signatures (QES) or cryptographic X.509 PKI certificates.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 font-bold shrink-0">C.</span>
+              <span><strong>Zero Document Custody Means No Server Backups:</strong> Because we never store copies of your files, we cannot recover or restore documents once closed. Retain your original files before modifications.</span>
+            </li>
+          </ul>
+        </section>
 
-      {/* 2. Transport & Delivery Security */}
-      <section className="space-y-4 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <Globe className="w-6 h-6 text-indigo-600" />
-          <span>2. HTTPS & Transport Security</span>
-        </h2>
-        <p>
-          While document processing occurs locally, our static web assets (HTML, CSS, JavaScript bundles, WebAssembly binaries, and web fonts) are distributed across globally authenticated Content Delivery Networks over encrypted HTTPS.
-        </p>
-        <ul className="list-disc pl-5 space-y-1.5 text-sm">
-          <li>
-            <strong>Transport Layer Security (TLS):</strong> Modern TLS encryption protocols are enforced for all static asset traffic to prevent tampering or man-in-the-middle attacks.
-          </li>
-          <li>
-            <strong>Strict Content Security Policy:</strong> Security headers (including <code className="text-xs px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">X-Content-Type-Options: nosniff</code> and frame-ancestors restrictions) help ensure scripts load only from authorized origins.
-          </li>
-          <li>
-            <strong>Static Architecture:</strong> Because PDFSimplify is statically exported, there are no dynamic server-side database endpoints or user document storage repositories that could be subjected to server-side SQL injection or database credential breaches.
-          </li>
-        </ul>
-      </section>
-
-      {/* 3. Practical Boundaries & Limitations */}
-      <section className="space-y-4 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <AlertTriangle className="w-6 h-6 text-amber-600" />
-          <span>3. Practical Security Boundaries & Limitations</span>
-        </h2>
-        <p>
-          Responsible engineering requires stating practical boundaries clearly. We do not make absolute, untruthful security claims such as &quot;100% unhackable&quot; or &quot;zero risk.&quot; Users should understand the following browser-level realities:
-        </p>
-
-        <div className="space-y-3 pt-1">
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm space-y-1">
-            <h4 className="font-bold text-slate-900 dark:text-white">Local Device Environment & Extensions</h4>
-            <p className="text-slate-600 dark:text-slate-400">
-              Because code runs inside your local browser tab, malicious browser extensions, keyloggers, or spyware installed on your personal device could potentially inspect page memory or DOM elements. Maintain an updated browser and install extensions only from trusted sources.
-            </p>
+        {/* 04 / Advertising & Network Transparency */}
+        <section className="space-y-4 border-t border-stone-200/80 dark:border-stone-800/80 pt-8 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>04</span>
+            <span>/</span>
+            <span>Data Isolation</span>
           </div>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            Advertising Segregation
+          </h2>
+          <p>
+            PDFSimplify is supported by digital advertising through Google and publisher ad networks. Your document contents, page text, form fields, and images are completely segregated in local memory and are never transmitted to any advertising partners.
+          </p>
+          <p className="text-xs text-stone-500">
+            Standard web diagnostics and cookies are handled separately according to our{' '}
+            <Link href="/privacy-policy" className="underline hover:text-stone-900 dark:hover:text-stone-100">
+              Privacy Policy
+            </Link>{' '}
+            and{' '}
+            <Link href="/cookie-policy" className="underline hover:text-stone-900 dark:hover:text-stone-100">
+              Cookie Policy
+            </Link>.
+          </p>
+        </section>
 
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm space-y-1">
-            <h4 className="font-bold text-slate-900 dark:text-white">Visual Signatures vs Cryptographic PKI Certificates</h4>
-            <p className="text-slate-600 dark:text-slate-400">
-              Our Sign PDF utility allows drawing or placing visual signature stamps onto PDF pages. It does not issue qualified electronic signatures (QES) or cryptographic X.509 PKI certificates. For legal proceedings requiring cryptographic non-repudiation certificates, utilize dedicated PKI software.
-            </p>
+        {/* 05 / Contact & Disclosure */}
+        <section className="space-y-4 border-t border-stone-200/80 dark:border-stone-800/80 pt-8 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>05</span>
+            <span>/</span>
+            <span>Responsible Disclosure</span>
           </div>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            Security Contact
+          </h2>
+          <p>
+            If you are a security researcher with questions about our client-side architecture or wish to report a static asset issue, please contact us directly at{' '}
+            <a href="mailto:tensaedeme61@gmail.com" className="font-mono font-semibold underline text-stone-900 dark:text-stone-100">
+              tensaedeme61@gmail.com
+            </a>.
+          </p>
+        </section>
 
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm space-y-1">
-            <h4 className="font-bold text-slate-900 dark:text-white">Zero Document Custody Means No Recovery</h4>
-            <p className="text-slate-600 dark:text-slate-400">
-              Because we never store copies of your documents on any server, we cannot recover or retrieve files you modify, compress, or protect. Always retain your original source files before running modifications.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Advertising & Network Transparency */}
-      <section className="space-y-4 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          4. Advertising & Network Transparency
-        </h2>
-        <p>
-          PDFSimplify is supported by digital advertising through partners including Newor Media and Google Ad Manager. It is important to distinguish between document data and advertising network traffic:
-        </p>
-        <ul className="list-disc pl-5 space-y-1.5 text-sm">
-          <li>
-            <strong>Your PDF files are never sent to advertisers:</strong> Document contents, page text, form fields, and images are completely segregated in local memory and are never transmitted to Newor Media, Google Ad Manager, or any advertising partner.
-          </li>
-          <li>
-            <strong>Standard Web Advertising:</strong> Google, Newor Media, and third-party SSP vendors use cookies and diagnostics to serve and measure ads based on visits across the web. For full details on managing your ad preferences, see our <Link href="/privacy-policy" className="text-indigo-600 dark:text-indigo-400 underline font-medium">Privacy Policy</Link> and <Link href="/cookie-policy" className="text-indigo-600 dark:text-indigo-400 underline font-medium">Cookie Policy</Link>.
-          </li>
-        </ul>
-      </section>
-
-      {/* 5. Contact & Responsible Disclosure */}
-      <section className="p-6 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 space-y-3">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <Mail className="w-5 h-5 text-indigo-600" />
-          <span>Responsible Disclosure & Technical Questions</span>
-        </h2>
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-          If you are a security researcher, developer, or user with technical questions about our client-side architecture or discover an issue with our static deployment, please contact us at:
-        </p>
-        <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-          <a href="mailto:tensaedeme61@gmail.com" className="hover:underline">
-            tensaedeme61@gmail.com
-          </a>
-        </p>
-      </section>
-
-      {/* CTA */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-        <p className="text-xs text-slate-500">
-          Last reviewed for architectural accuracy: September 2026.
-        </p>
-        <div className="flex items-center gap-3">
-          <Link href="/pdf-tools">
-            <Button size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-              Explore Tools
-            </Button>
+        {/* Minimalist Outro Navigation */}
+        <div className="pt-8 border-t border-stone-200/80 dark:border-stone-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono">
+          <Link
+            href="/pdf-tools"
+            className="font-bold text-stone-900 dark:text-stone-100 hover:underline flex items-center gap-1.5"
+          >
+            <span>Explore all PDF tools</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
-          <Link href="/about">
-            <Button variant="outline" size="sm">
-              About Project
-            </Button>
-          </Link>
+          <span className="text-stone-400">Archival Specification • Updated September 2026</span>
         </div>
       </div>
     </Container>

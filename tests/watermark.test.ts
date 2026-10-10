@@ -8,7 +8,7 @@ import {
 import { createTestPdf } from './test-helpers';
 import { validatePdfOutput } from '@/lib/pdf/output-validator';
 import { PDFDocument, degrees } from 'pdf-lib';
-import { getPdfJs } from '@/lib/pdf/pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from '@/lib/pdf/pdf-renderer';
 
 interface PdfJsTextItem {
   str?: string;
@@ -38,7 +38,7 @@ describe('Watermark PDF Engine', () => {
 
     // Verify text presence with PDF.js
     const pdfjs = await getPdfJs();
-    const pdfDoc = await pdfjs.getDocument({ data: new Uint8Array(result.uint8Array) }).promise;
+    const pdfDoc = await pdfjs.getDocument(getPdfLoadingParams(result.uint8Array)).promise;
 
     for (let i = 1; i <= 3; i++) {
       const page = await pdfDoc.getPage(i);
@@ -64,7 +64,7 @@ describe('Watermark PDF Engine', () => {
     assert.strictEqual(val.valid, true);
 
     const pdfjs = await getPdfJs();
-    const pdfDoc = await pdfjs.getDocument({ data: new Uint8Array(result.uint8Array) }).promise;
+    const pdfDoc = await pdfjs.getDocument(getPdfLoadingParams(result.uint8Array)).promise;
     const p1 = await pdfDoc.getPage(1);
     const tc1 = await p1.getTextContent();
     assert.ok(hasTextItem(tc1.items, (str) => str.includes('DRAFT COPY')));
@@ -125,7 +125,7 @@ describe('Watermark PDF Engine', () => {
     });
 
     const pdfjs = await getPdfJs();
-    const pdfDoc = await pdfjs.getDocument({ data: new Uint8Array(result.uint8Array) }).promise;
+    const pdfDoc = await pdfjs.getDocument(getPdfLoadingParams(result.uint8Array)).promise;
 
     // Page 1 should NOT contain CONFIDENTIAL
     const p1 = await pdfDoc.getPage(1);

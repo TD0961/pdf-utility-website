@@ -9,7 +9,7 @@ import {
 import { createTestPdf } from './test-helpers';
 import { validatePdfOutput } from '@/lib/pdf/output-validator';
 import { PDFDocument, degrees } from 'pdf-lib';
-import { getPdfJs } from '@/lib/pdf/pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from '@/lib/pdf/pdf-renderer';
 
 interface PdfJsTextItem {
   str?: string;
@@ -40,7 +40,7 @@ describe('Add Page Numbers Engine', () => {
 
     // Verify text content using PDF.js
     const pdfjs = await getPdfJs();
-    const pdfDoc = await (pdfjs.getDocument({ data: new Uint8Array(result.uint8Array) })).promise;
+    const pdfDoc = await (pdfjs.getDocument(getPdfLoadingParams(result.uint8Array))).promise;
 
     for (let i = 1; i <= 3; i++) {
       const page = await pdfDoc.getPage(i);
@@ -90,7 +90,7 @@ describe('Add Page Numbers Engine', () => {
     });
 
     const pdfjs = await getPdfJs();
-    const pdfDoc = await (pdfjs.getDocument({ data: new Uint8Array(result.uint8Array) })).promise;
+    const pdfDoc = await (pdfjs.getDocument(getPdfLoadingParams(result.uint8Array))).promise;
 
     const p1 = await pdfDoc.getPage(1);
     const tc1 = await p1.getTextContent();
@@ -106,7 +106,7 @@ describe('Add Page Numbers Engine', () => {
     });
 
     const pdfjs = await getPdfJs();
-    const pdfDoc = await (pdfjs.getDocument({ data: new Uint8Array(result.uint8Array) })).promise;
+    const pdfDoc = await (pdfjs.getDocument(getPdfLoadingParams(result.uint8Array))).promise;
 
     const p1 = await pdfDoc.getPage(1);
     const tc1 = await p1.getTextContent();
@@ -126,7 +126,7 @@ describe('Add Page Numbers Engine', () => {
     });
 
     const pdfjs = await getPdfJs();
-    const pdfDoc = await (pdfjs.getDocument({ data: new Uint8Array(result.uint8Array) })).promise;
+    const pdfDoc = await (pdfjs.getDocument(getPdfLoadingParams(result.uint8Array))).promise;
 
     // Page 1 should NOT have page number 1
     const p1 = await pdfDoc.getPage(1);

@@ -3,18 +3,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
-import { Button } from '@/components/ui/Button';
 import { constructMetadata } from '@/lib/seo/metadata';
-import {
-  ShieldCheck,
-  Zap,
-  ArrowRight,
-  Code2,
-  Lock,
-  Cpu,
-  Users,
-  Terminal,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
   title: 'About Us — Simple PDF Tools, Private by Design',
@@ -25,152 +15,139 @@ export const metadata: Metadata = constructMetadata({
 
 export default function AboutPage() {
   return (
-    <Container size="lg" className="py-8 space-y-12">
-      <Breadcrumbs items={[{ label: 'About' }]} />
+    <Container className="py-10 max-w-3xl">
+      <div className="space-y-12">
+        <Breadcrumbs items={[{ label: 'About' }]} />
 
-      <header className="space-y-4 border-b border-slate-200 dark:border-slate-800 pb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>The Open-Web Document Initiative</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          About PDFSimplify
-        </h1>
-        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-          We built PDFSimplify around a simple conviction: you should never have to upload your confidential files to an unknown server just to merge two pages, compress a contract, or sign an agreement.
-        </p>
-      </header>
+        {/* Minimalist Editorial Header */}
+        <header className="space-y-4 border-b border-stone-200/80 dark:border-stone-800/80 pb-8">
+          <span className="text-xs font-mono uppercase tracking-widest text-stone-400 dark:text-stone-500 block">
+            ABOUT • PLATFORM MANIFESTO
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 font-sans">
+            Documents without cloud custody.
+          </h1>
+          <p className="text-base sm:text-lg text-stone-600 dark:text-stone-300 leading-relaxed font-normal">
+            PDFSimplify was built around a singular conviction: you should never have to upload confidential documents to an external server just to merge two sheets, compress a file, or sign a contract.
+          </p>
+        </header>
 
-      {/* 1. Architectural Philosophy */}
-      <section className="space-y-4 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          Our Architectural Philosophy
-        </h2>
-        <p>
-          Most online PDF converters were designed over a decade ago when web browsers had limited processing capability. The legacy model was simple: users uploaded private files over HTTP to cloud servers, remote worker queues processed them, and the resulting documents were downloaded back.
-        </p>
-        <p>
-          Today, personal computers, tablets, and smartphones have extraordinary computing power. Modern browser capabilities—specifically <strong>WebAssembly (WASM)</strong>, <strong>HTML5 Canvas</strong>, and multi-threaded <strong>Web Workers</strong>—enable complex vector parsing, image decompression, and cryptographic hashing directly on the user’s local hardware.
-        </p>
-        <p>
-          PDFSimplify was engineered from day one as a <strong>100% client-side platform</strong>. When you use our utilities, our web servers only serve static application assets (HTML, CSS, and compiled WebAssembly binaries). Once loaded, every single document operation executes completely within your browser’s local sandboxed memory.
-        </p>
-      </section>
-
-      {/* 2. Open Source Technologies */}
-      <section className="space-y-5">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <Code2 className="w-6 h-6 text-indigo-600" />
-          <span>Open-Source Standards & Technology Stack</span>
-        </h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-          PDFSimplify stands on the shoulders of battle-tested open-source projects and open web standards. We believe in transparency and reproducibility:
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-indigo-600" />
-              <span>Mozilla PDF.js & pdf-lib</span>
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              We leverage Mozilla’s PDF.js rendering pipeline alongside pdf-lib for deterministic vector manipulation, page tree reorganizations, and cross-reference stream generation.
-            </p>
+        {/* 01 / Architectural Philosophy */}
+        <section className="space-y-4 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>01</span>
+            <span>/</span>
+            <span>Architectural Philosophy</span>
           </div>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            Local Execution over Remote Queues
+          </h2>
+          <p>
+            Traditional online PDF converters were conceived when web browsers had minimal computational bandwidth. The legacy paradigm required transferring private files over HTTP to multi-tenant servers, storing them on remote disks, and returning converted assets minutes later.
+          </p>
+          <p>
+            Modern devices possess immense local computing capability. Through <strong>WebAssembly (WASM)</strong>, HTML5 Canvas, and multi-threaded Web Workers, complex vector parsing, image decompression, and cryptographic hashing run instantaneously on your physical device.
+          </p>
+          <p>
+            PDFSimplify was engineered as a <strong>100% client-side platform</strong>. Our servers host only static, pre-rendered application assets. Once loaded in your browser, every document transformation occurs entirely within local, sandboxed memory.
+          </p>
+        </section>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-indigo-600" />
-              <span>Tesseract OCR in WebAssembly</span>
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Optical Character Recognition runs locally inside your browser using Tesseract compiled to WebAssembly, converting scanned documents into searchable text without remote transmission.
-            </p>
+        {/* 02 / Open-Source Foundation */}
+        <section className="space-y-4 border-t border-stone-200/80 dark:border-stone-800/80 pt-8 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>02</span>
+            <span>/</span>
+            <span>Technology Foundation</span>
           </div>
-        </div>
-      </section>
-
-      {/* 3. Core Principles */}
-      <section className="space-y-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          Our Four Core Commitments
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4" />
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            Open Standards & Trusted Engines
+          </h2>
+          <p>
+            We build exclusively on battle-tested open standards and transparent open-source libraries:
+          </p>
+          <div className="space-y-3 pt-2">
+            <div className="p-4 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/40">
+              <h3 className="font-bold text-stone-900 dark:text-stone-100 text-sm">
+                Mozilla PDF.js & pdf-lib
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
+                Vector parsing, page tree reorganizations, font embedding, and cross-reference stream generation executed directly in browser memory.
+              </p>
             </div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-base">Privacy by Architecture</h3>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              We do not promise to delete your files after 2 hours because we never receive them in the first place. Zero document custody is the ultimate privacy safeguard.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-              <Zap className="w-4 h-4" />
+            <div className="p-4 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/40">
+              <h3 className="font-bold text-stone-900 dark:text-stone-100 text-sm">
+                Tesseract WebAssembly OCR
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
+                Optical Character Recognition compiled to WebAssembly, converting scanned documents into searchable text without transmitting a single byte over the wire.
+              </p>
             </div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-base">Zero Upload Latency</h3>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              No waiting for 100MB files to upload over slow connections. Document processing begins instantaneously in your local computer RAM.
-            </p>
           </div>
+        </section>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-              <Lock className="w-4 h-4" />
-            </div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-base">No Paywalls or Accounts</h3>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Every tool is accessible without forced registrations, credit cards, or daily quotas. We support platform maintenance with unobtrusive, compliant advertising.
-            </p>
+        {/* 03 / Core Commitments */}
+        <section className="space-y-4 border-t border-stone-200/80 dark:border-stone-800/80 pt-8 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>03</span>
+            <span>/</span>
+            <span>Commitments</span>
           </div>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            Four Engineering Principles
+          </h2>
+          <ul className="space-y-3 pt-1 text-xs sm:text-sm">
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 dark:text-stone-500 font-bold shrink-0">01.</span>
+              <span><strong className="text-stone-900 dark:text-stone-100">Privacy by Architecture:</strong> We don&apos;t promise to delete files after 2 hours because we never receive them in the first place.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 dark:text-stone-500 font-bold shrink-0">02.</span>
+              <span><strong className="text-stone-900 dark:text-stone-100">Zero Upload Latency:</strong> Document processing begins immediately in your device RAM without waiting for large uploads over slow networks.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 dark:text-stone-500 font-bold shrink-0">03.</span>
+              <span><strong className="text-stone-900 dark:text-stone-100">Zero Paywalls or Mandatory Accounts:</strong> All utilities remain freely accessible without forced account creation or credit card walls.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="font-mono text-stone-400 dark:text-stone-500 font-bold shrink-0">04.</span>
+              <span><strong className="text-stone-900 dark:text-stone-100">Engineering Transparency:</strong> Standards-compliant ISO 32000 PDF outputs with deterministic cross-browser compatibility.</span>
+            </li>
+          </ul>
+        </section>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <Users className="w-4 h-4" />
-            </div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-base">Engineering Transparency</h3>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Our code and architectural decisions prioritize document fidelity, memory management, and browser compatibility across Chrome, Safari, Firefox, and Edge.
-            </p>
+        {/* 04 / Publisher & Editorial Standards */}
+        <section className="space-y-4 border-t border-stone-200/80 dark:border-stone-800/80 pt-8 text-stone-700 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+            <span>04</span>
+            <span>/</span>
+            <span>Editorial & Publisher Disclosure</span>
           </div>
-        </div>
-      </section>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-stone-100">
+            Independent Technical Publishing
+          </h2>
+          <p>
+            PDFSimplify is an independently operated educational and functional document platform. All educational guides, technical whitepapers, and step-by-step tutorials are authored and maintained by our engineering team.
+          </p>
+          <p>
+            Platform hosting and continuous open-source maintenance are sustained through non-intrusive contextual advertising, allowing tools to remain free without user data collection.
+          </p>
+        </section>
 
-      {/* 4. Publisher & Editorial Standards */}
-      <section className="space-y-4 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed border-t border-slate-200 dark:border-slate-800 pt-8">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          Publisher & Editorial Standards
-        </h2>
-        <p>
-          PDFSimplify is independently engineered and operated as an educational and functional document productivity resource. All educational guides, technical deep dives, and tool tutorials are authored and reviewed by our software engineering contributors.
-        </p>
-        <p>
-          We maintain strict editorial independence. Utilities are designed around open browser standards, and our operation is supported through compliant, non-intrusive contextual advertising to maintain domain infrastructure and development without paywalls or user data collection. For publisher inquiries or editorial questions, reach out via our{' '}
-          <Link href="/contact" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
-            Contact page
-          </Link>.
-        </p>
-      </section>
-
-      {/* 5. Call to Action */}
-      <div className="p-8 rounded-3xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800 space-y-4 text-center">
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-          Experience Private In-Browser Document Processing
-        </h3>
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-lg mx-auto">
-          Explore our complete suite of 30+ client-side utilities and take full control over your documents without cloud exposure.
-        </p>
-        <div className="pt-2 flex flex-wrap justify-center gap-3">
-          <Link href="/pdf-tools">
-            <Button size="md" rightIcon={<ArrowRight className="w-4 h-4" />}>
-              Explore All Tools
-            </Button>
+        {/* Minimalist Outro Navigation */}
+        <div className="pt-8 border-t border-stone-200/80 dark:border-stone-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono">
+          <Link
+            href="/pdf-tools"
+            className="font-bold text-stone-900 dark:text-stone-100 hover:underline flex items-center gap-1.5"
+          >
+            <span>Explore all 30 PDF tools</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
-          <Link href="/contact">
-            <Button variant="outline" size="md">
-              Contact Engineering
-            </Button>
+          <Link
+            href="/contact"
+            className="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+          >
+            Contact Engineering &rarr;
           </Link>
         </div>
       </div>

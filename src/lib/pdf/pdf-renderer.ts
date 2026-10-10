@@ -47,7 +47,16 @@ export function getPdfLoadingParams(data: Uint8Array | ArrayBuffer): {
     };
   }
 
-  return { data: bytes };
+  // Node.js test runner environment: provide local standard_fonts path if present
+  const localFontsDir =
+    typeof process !== 'undefined' && typeof process.cwd === 'function'
+      ? `${process.cwd().replace(/\\/g, '/')}/public/standard_fonts/`
+      : undefined;
+
+  return {
+    data: bytes,
+    ...(localFontsDir ? { standardFontDataUrl: localFontsDir } : {}),
+  };
 }
 
 /**

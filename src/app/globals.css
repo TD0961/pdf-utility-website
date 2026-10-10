@@ -3,13 +3,21 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #fcfbf9;
+  --foreground: #12151a;
+  --paper-white: #ffffff;
+  --paper-ivory: #faf8f5;
+  --paper-shadow: 0 20px 45px -15px rgba(18, 21, 26, 0.08), 0 2px 6px rgba(18, 21, 26, 0.04);
+  --paper-border: rgba(18, 21, 26, 0.08);
 }
 
 .dark {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #0b0e14;
+  --foreground: #f4f5f7;
+  --paper-white: #161b24;
+  --paper-ivory: #1a202c;
+  --paper-shadow: 0 24px 50px -15px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --paper-border: rgba(255, 255, 255, 0.09);
 }
 
 @theme inline {
@@ -20,8 +28,21 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
+  background-image: 
+    linear-gradient(to right, rgba(18, 21, 26, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(18, 21, 26, 0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.dark body {
+  background-color: var(--background);
+  color: var(--foreground);
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 /* Crucial: Prevent PDF Document Canvases from being recolored or inverted */
@@ -31,4 +52,106 @@ canvas.pdf-canvas,
   background-color: #ffffff !important;
   color: #000000 !important;
   filter: none !important;
+}
+
+/* --- Tactile Editorial Paper & Architectural Utility Design System --- */
+
+/* Tactile Physical Paper Sheet Surface */
+.paper-sheet {
+  background-color: var(--paper-white);
+  border: 1px solid var(--paper-border);
+  box-shadow: var(--paper-shadow);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.paper-sheet:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 28px 56px -16px rgba(18, 21, 26, 0.12), 0 4px 10px rgba(18, 21, 26, 0.05);
+}
+
+.dark .paper-sheet:hover {
+  box-shadow: 0 30px 60px -16px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Archival Multi-Layer Stacking Visual Effect */
+.paper-stack {
+  position: relative;
+}
+
+.paper-stack::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid var(--paper-border);
+  background: var(--paper-ivory);
+  transform: translate(4px, 4px) scale(0.99);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Editorial Minimal Glass Surface (Subtle, non-neon, purely tactile) */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(18, 21, 26, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(18, 21, 26, 0.04);
+}
+
+.dark .glass-panel {
+  background: rgba(18, 22, 30, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+}
+
+/* Interactive Card */
+.interactive-glass-card {
+  position: relative;
+  background: var(--paper-white);
+  border: 1px solid var(--paper-border);
+  box-shadow: 0 4px 20px -4px rgba(18, 21, 26, 0.04);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.interactive-glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px -10px rgba(18, 21, 26, 0.08), 0 2px 6px rgba(18, 21, 26, 0.03);
+  border-color: rgba(18, 21, 26, 0.16);
+}
+
+.dark .interactive-glass-card:hover {
+  box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Editorial Rule & Hairline Dividers */
+.editorial-rule {
+  height: 1px;
+  background-color: var(--paper-border);
+  width: 100%;
+}
+
+/* Monospace Technical Folio Tag */
+.hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  background: rgba(18, 21, 26, 0.03);
+  border: 1px solid rgba(18, 21, 26, 0.08);
+  color: #3f4756;
+}
+
+.dark .hud-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #cbd5e1;
 }

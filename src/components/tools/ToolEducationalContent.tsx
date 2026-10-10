@@ -1,17 +1,6 @@
 import React from 'react';
 import { ToolMetadata } from '@/types/tool';
-import {
-  ShieldCheck,
-  Cpu,
-  Lock,
-  FileCheck2,
-  Briefcase,
-  Scale,
-  GraduationCap,
-  UserCheck,
-  Info,
-  Layers,
-} from 'lucide-react';
+import { Cpu } from 'lucide-react';
 
 interface ToolEducationalContentProps {
   tool: ToolMetadata;
@@ -212,196 +201,57 @@ const TOOL_DEEP_DIVES: Record<string, ToolDeepDive> = {
   },
 };
 
-// Fallback technical profile for other tools
-const DEFAULT_DEEP_DIVE: ToolDeepDive = {
-  title: 'Technical Implementation & Processing Details',
-  engine: 'Client-Side WebAssembly & JavaScript Document Pipeline',
-  aspects: [
-    {
-      heading: 'In-Memory Stream Processing',
-      description:
-        'When you select a document, its raw bytes are parsed into a structured TypedArray in your device’s volatile memory. The application reads and modifies the PDF object tree directly on your CPU.',
-    },
-    {
-      heading: 'Vector & Layout Preservation',
-      description:
-        'Operations are applied to document dictionaries and streams without lossy rasterization. Text characters, vector curves, and color spaces remain true to the original file.',
-    },
-    {
-      heading: 'Ephemeral Memory Lifecycle',
-      description:
-        'Once processing completes and you download the result, resetting the tool or closing the browser tab revokes all object URLs and releases the allocated memory.',
-    },
-  ],
-  considerations: [
-    'Processing occurs locally within your web browser sandbox.',
-    'Files are handled in device memory rather than uploaded to PDFSimplify servers.',
-    'Works seamlessly across modern desktop and mobile browsers.',
-  ],
-};
-
 export function ToolEducationalContent({ tool }: ToolEducationalContentProps) {
-  const isOrganize = tool.category === 'organize';
-  const isSecurity = tool.category === 'secure';
-  const isConvert = tool.category === 'create-convert';
-  const isOptimize = tool.category === 'optimize';
+  const deepDive = TOOL_DEEP_DIVES[tool.slug];
 
-  const deepDive = TOOL_DEEP_DIVES[tool.slug] || DEFAULT_DEEP_DIVE;
+  if (!deepDive) {
+    return null;
+  }
 
   return (
-    <div className="space-y-12 pt-4">
-      {/* 1. Real-World Practical Use Cases */}
-      <section className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-            Practical Use Cases for {tool.name}
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            How professionals, academics, and individuals leverage {tool.name} for secure, high-efficiency document workflows.
-          </p>
+    <section className="paper-sheet bg-white dark:bg-stone-900/90 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-6 sm:p-7 space-y-5">
+      <div className="space-y-1.5 border-b border-stone-100 dark:border-stone-800 pb-4">
+        <div className="inline-flex items-center gap-1.5 text-[11px] font-mono text-stone-500 dark:text-stone-400">
+          <Cpu className="w-3.5 h-3.5 text-stone-700 dark:text-stone-300" />
+          <span>{deepDive.engine}</span>
         </div>
+        <h2 className="text-lg sm:text-xl font-bold text-stone-900 dark:text-stone-100 font-sans">
+          {deepDive.title}
+        </h2>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-              <Briefcase className="w-4 h-4" />
-            </div>
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">Business & Enterprise</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              {isOrganize
-                ? 'Consolidate monthly financial reviews, pitch decks, client proposals, and invoices into unified executive reports.'
-                : isSecurity
-                ? 'Enforce access controls on corporate roadmaps, customer agreements, and internal financial audits.'
-                : isConvert
-                ? 'Transform legacy scans and image receipts into structured, professional documents for accounting archival.'
-                : isOptimize
-                ? 'Reduce file sizes of quarterly presentations for email delivery to stakeholders without hitting attachment limits.'
-                : 'Prepare polished corporate presentations, marketing collateral, and standardized client documentation.'}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {deepDive.aspects.map((aspect, idx) => (
+          <div
+            key={idx}
+            className="p-4 rounded-xl bg-stone-50/60 dark:bg-stone-950/40 border border-stone-200/60 dark:border-stone-800/80 space-y-1.5"
+          >
+            <h3 className="font-bold text-xs sm:text-sm text-stone-900 dark:text-stone-100">
+              {aspect.heading}
+            </h3>
+            <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+              {aspect.description}
             </p>
           </div>
+        ))}
+      </div>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <Scale className="w-4 h-4" />
-            </div>
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">Legal & Compliance</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              {isSecurity
-                ? 'Apply standard encryption and access passwords to non-disclosure agreements and judicial depositions.'
-                : isOrganize
-                ? 'Assemble court exhibits, deposition transcripts, and statutory filings in strict sequential evidentiary order.'
-                : 'Maintain document integrity for contractual annexes, client retainers, and regulatory filings.'}
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-              <GraduationCap className="w-4 h-4" />
-            </div>
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">Academic & Research</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Organize multi-chapter dissertations, scholarly journal submissions, reading packets, and curriculum vitae while preserving original typography and citation footnotes.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <UserCheck className="w-4 h-4" />
-            </div>
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">Personal Administration</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Organize medical summaries, apartment lease applications, tax filings, travel itineraries, and government forms without transmitting personal identity records to external servers.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Tool-Specific Technical Deep Dive */}
-      <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
-            <Cpu className="w-3.5 h-3.5" />
-            <span>{deepDive.engine}</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-            {deepDive.title}
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-            Key architectural details, file structure considerations, and technical mechanics behind this utility.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {deepDive.aspects.map((aspect, idx) => (
-            <div
-              key={idx}
-              className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-2"
-            >
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <Layers className="w-4 h-4 text-indigo-600 shrink-0" />
-                <span>{aspect.heading}</span>
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                {aspect.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Practical Considerations */}
-        <div className="p-5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
-            <Info className="w-3.5 h-3.5" />
-            <span>Practical Considerations & Best Practices</span>
-          </h4>
-          <ul className="space-y-1.5 text-xs text-indigo-950/80 dark:text-indigo-200/80">
+      {deepDive.considerations.length > 0 && (
+        <div className="pt-3 border-t border-stone-100 dark:border-stone-800 text-xs text-stone-600 dark:text-stone-400 space-y-1.5">
+          <span className="font-mono text-[10px] uppercase tracking-wider font-semibold text-stone-500 dark:text-stone-400 block">
+            Technical Notes
+          </span>
+          <ul className="space-y-1">
             {deepDive.considerations.map((item, idx) => (
               <li key={idx} className="flex items-start gap-2">
-                <span className="font-bold text-indigo-600">•</span>
+                <span className="text-stone-400 dark:text-stone-500">•</span>
                 <span>{item}</span>
               </li>
             ))}
           </ul>
         </div>
-      </section>
-
-      {/* 3. Technical Standards & Engine Overview */}
-      <section className="space-y-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          Document Standards & Processing Architecture
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-              <FileCheck2 className="w-4 h-4 text-indigo-600" />
-              <span>PDF Specifications</span>
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Processes documents formatted according to standard PDF specifications (ISO 32000 family) using client-side JavaScript and WebAssembly.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Vector & Font Preservation</span>
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Preserves vector paths, TrueType and OpenType font descriptors, and page content streams without unnecessary rasterization.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-              <Lock className="w-4 h-4 text-violet-600" />
-              <span>Session Memory Lifecycle</span>
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              File data resides in browser memory buffers during your active session and is released upon page reset or navigation.
-            </p>
-          </div>
-        </div>
-      </section>
-    </div>
+      )}
+    </section>
   );
 }
+
