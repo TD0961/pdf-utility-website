@@ -7,9 +7,10 @@ import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { ShieldCheck, Menu, X, ChevronDown, ArrowRight } from 'lucide-react';
+import { Coffee, Menu, X, ChevronDown, ArrowRight } from 'lucide-react';
 import { TOOL_CATEGORIES, TOOLS_REGISTRY } from '@/data/tools';
 import { PwaInstallButton } from '@/components/pwa/PwaInstallButton';
+import { BUY_ME_A_COFFEE_URL } from '@/config/site';
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -115,10 +116,15 @@ export function Navbar() {
           {/* Actions: Theme Switcher, Zero-Upload Pill, CTA */}
           <div className="hidden sm:flex items-center gap-3">
             <PwaInstallButton variant="pill" />
-            <div className="flex items-center gap-1.5 text-xs font-mono text-stone-700 dark:text-stone-300 bg-stone-100/80 dark:bg-stone-900/80 border border-stone-200/80 dark:border-stone-800 px-3 py-1.5 rounded-full font-medium shadow-2xs">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Zero Server Uploads</span>
-            </div>
+            <a
+              href={BUY_ME_A_COFFEE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs font-mono text-stone-700 dark:text-stone-300 bg-stone-100/80 dark:bg-stone-900/80 hover:bg-amber-100 dark:hover:bg-amber-950/40 hover:text-amber-800 dark:hover:text-amber-300 border border-stone-200/80 dark:border-stone-800 hover:border-amber-300 dark:hover:border-amber-700 px-3 py-1.5 rounded-full font-medium shadow-2xs transition-all"
+            >
+              <Coffee className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20" />
+              <span>Buy me a coffee</span>
+            </a>
             <ThemeToggle />
             <Link href="/pdf-tools">
               <Button
@@ -161,10 +167,15 @@ export function Navbar() {
             </div>
 
             <div className="pt-2 border-t border-stone-100 dark:border-stone-800 px-4 space-y-2.5">
-              <div className="flex items-center gap-2 text-xs font-mono text-stone-700 dark:text-stone-300 bg-stone-100/90 dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 p-2.5 rounded-xl font-medium">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span>Zero Server Uploads — Processed in Browser</span>
-              </div>
+              <a
+                href={BUY_ME_A_COFFEE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 text-xs font-mono text-stone-700 dark:text-stone-300 bg-stone-100/90 dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 p-2.5 rounded-xl font-medium hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+              >
+                <Coffee className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+                <span>Buy me a coffee</span>
+              </a>
               <PwaInstallButton className="w-full justify-center py-2.5 text-sm" />
               <Link href="/pdf-tools" onClick={() => setMobileMenuOpen(false)} className="block">
                 <Button className="w-full min-h-[44px] bg-stone-900 text-stone-50 hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-950 font-mono text-xs uppercase tracking-wider">

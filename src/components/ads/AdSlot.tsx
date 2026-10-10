@@ -10,7 +10,6 @@ import {
   getReservedMinHeight,
   AD_FORMAT_DIMENSIONS,
 } from '@/lib/ads/ad-strategy';
-import { BuyMeACoffee } from '@/components/support/BuyMeACoffee';
 
 export interface AdSlotProps {
   slotId?: string;
@@ -27,7 +26,6 @@ export function AdSlot({
   placement,
   format = 'auto',
   className,
-  showSupporterFallback = true,
 }: AdSlotProps) {
   const isAdSenseEnabled = process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true';
   const isTestMode = process.env.NEXT_PUBLIC_ADSENSE_TEST_MODE === 'true';
@@ -62,12 +60,9 @@ export function AdSlot({
     return null;
   }
 
-  // 2. Production Ad Network Disabled Fallback: render respectful supporter banner on allowed content slots
+  // 2. Production Ad Network Disabled: do not render fallback banner to keep pages clean and uncluttered
   if (!isEligible) {
-    if (!showSupporterFallback || placement === 'anchor') {
-      return null;
-    }
-    return <BuyMeACoffee variant="banner" className={className} />;
+    return null;
   }
 
   const minHeight = getReservedMinHeight(format);

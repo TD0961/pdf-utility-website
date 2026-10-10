@@ -237,12 +237,10 @@ export function ExtractWorkspace() {
 
       {/* Dropzone view */}
       {!sourceFile && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
-          <PdfDropzone
-            onFilesSelected={handleFileSelected}
-            acceptsMultiple={false}
-          />
-        </div>
+        <PdfDropzone
+          onFilesSelected={handleFileSelected}
+          acceptsMultiple={false}
+        />
       )}
 
       {/* Workspace view */}

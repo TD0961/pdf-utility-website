@@ -98,8 +98,8 @@ export default function HomePage() {
       {/* 5. Architectural Execution Model: How It Works */}
       <section id="how-it-works" className="bg-stone-100/70 dark:bg-stone-900/40 py-16 sm:py-20 border-y border-stone-200/80 dark:border-stone-800/80 scroll-mt-20">
         <Container className="space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-mono uppercase tracking-widest text-stone-500 dark:text-stone-400">
+          <div className="space-y-3 max-w-2xl">
+            <span className="text-xs font-mono uppercase tracking-widest text-stone-500 dark:text-stone-400 block">
               Technical Principles
             </span>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-stone-900 dark:text-stone-100 font-sans">
@@ -203,8 +203,8 @@ export default function HomePage() {
       {/* 7. Comprehensive FAQ Section (Full SEO Preservation) */}
       <section className="bg-stone-100/50 dark:bg-stone-900/30 py-16 border-t border-stone-200/80 dark:border-stone-800/80">
         <Container className="space-y-10 max-w-4xl">
-          <div className="text-center space-y-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-stone-500 dark:text-stone-400">
+          <div className="space-y-2">
+            <span className="text-xs font-mono uppercase tracking-widest text-stone-500 dark:text-stone-400 block">
               Direct Answers
             </span>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-stone-900 dark:text-stone-100 font-sans">

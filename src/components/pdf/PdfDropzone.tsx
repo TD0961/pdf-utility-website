@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { FileUp, AlertCircle, HardDrive, ShieldCheck } from 'lucide-react';
+import { FileUp, AlertCircle, HardDrive, Coffee } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { BUY_ME_A_COFFEE_URL } from '@/config/site';
 import { validateFileBasics, validatePdfMagicBytes } from '@/lib/validation/file-validator';
 import { toast } from '@/lib/notifications/toast';
 
@@ -145,10 +146,16 @@ export function PdfDropzone({
             Allocated in RAM
           </span>
           <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            Zero Server Uploads
-          </span>
+          <a
+            href={BUY_ME_A_COFFEE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 font-sans font-medium text-stone-600 dark:text-stone-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+          >
+            <Coffee className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20" />
+            <span>Buy me a coffee</span>
+          </a>
         </div>
       </div>
 

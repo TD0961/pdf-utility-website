@@ -6,7 +6,7 @@
  * Documents and user data are strictly processed in volatile client memory and are NEVER cached.
  */
 
-const CACHE_VERSION = 'v1.2.1';
+const CACHE_VERSION = 'v1.3.0';
 const STATIC_CACHE = `pdfsimplify-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `pdfsimplify-runtime-${CACHE_VERSION}`;
 

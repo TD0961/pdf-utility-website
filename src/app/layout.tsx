@@ -92,7 +92,7 @@ export default function RootLayout({
           suppressHydrationWarning
         />
       </head>
-      <body className="min-h-full flex flex-col bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white">
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-indigo-500 selection:text-white">
         <ThemeProvider>
           <JsonLd data={getWebsiteSchema()} />
           <SkipToContent />

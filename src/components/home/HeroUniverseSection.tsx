@@ -50,16 +50,16 @@ function HeroPaperFallback() {
 
 export function HeroUniverseSection() {
   return (
-    <section className="relative min-h-[88vh] sm:min-h-[92vh] flex flex-col justify-center overflow-hidden pt-6 pb-12 sm:pt-8 sm:pb-14">
+    <section className="relative min-h-[82vh] sm:min-h-[88vh] flex flex-col justify-center overflow-hidden pt-4 pb-8 sm:pt-8 sm:pb-14">
       {/* Hero Architectural Grid */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-6 sm:gap-y-8 lg:gap-x-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-4 sm:gap-y-6 lg:gap-x-12 items-center">
           {/* Header Block: Eyebrow + Headline + Statement */}
-          <div className="lg:col-span-7 xl:col-span-6 lg:row-start-1 space-y-4 sm:space-y-6 text-left">
+          <div className="lg:col-span-7 xl:col-span-6 lg:row-start-1 space-y-3 sm:space-y-6 text-left">
             {/* Editorial Eyebrow Tag */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-stone-300/80 dark:border-stone-800 bg-stone-100/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-stone-300/80 dark:border-stone-800 bg-stone-100/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
-              <span className="text-xs font-mono font-medium tracking-wide uppercase text-stone-700 dark:text-stone-300">
+              <span className="text-[11px] sm:text-xs font-mono font-medium tracking-wide uppercase text-stone-700 dark:text-stone-300">
                 Client-Side WebAssembly Architecture
               </span>
             </div>
@@ -74,35 +74,35 @@ export function HeroUniverseSection() {
             </div>
 
             {/* Supporting Statement */}
-            <p className="text-sm sm:text-lg text-stone-600 dark:text-stone-300 max-w-xl font-normal leading-relaxed">
+            <p className="text-xs sm:text-base lg:text-lg text-stone-600 dark:text-stone-300 max-w-xl font-normal leading-relaxed">
               Fast, private PDF tools that execute entirely in your browser memory.
               Zero server uploads. Your confidential files never leave your physical device.
             </p>
           </div>
 
           {/* 3D Document Universe Stage (Row 2 on mobile, Column 2 spanning rows 1-2 on desktop) */}
-          <div className="lg:col-span-5 xl:col-span-6 lg:col-start-8 lg:row-start-1 lg:row-span-2 w-full flex items-center justify-center my-1 sm:my-2 lg:my-0">
-            <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-none h-[250px] sm:h-[300px] lg:h-[540px] xl:h-[600px] rounded-2xl lg:rounded-3xl bg-stone-100/40 dark:bg-stone-900/30 border border-stone-200/60 dark:border-stone-800/60 shadow-inner overflow-hidden flex items-center justify-center">
+          <div className="lg:col-span-5 xl:col-span-6 lg:col-start-8 lg:row-start-1 lg:row-span-2 w-full flex items-center justify-center my-0 sm:my-2 lg:my-0">
+            <div className="relative w-full max-w-[280px] sm:max-w-md lg:max-w-none h-[180px] sm:h-[280px] lg:h-[540px] xl:h-[600px] rounded-2xl lg:rounded-3xl bg-stone-100/40 dark:bg-stone-900/30 border border-stone-200/60 dark:border-stone-800/60 shadow-inner overflow-hidden flex items-center justify-center">
               <DocumentUniverseCanvas phase="hero" interactive={true} className="w-full h-full" />
             </div>
           </div>
 
           {/* Actions & Highlights Block: CTA + Quick Tools + Trust */}
-          <div className="lg:col-span-7 xl:col-span-6 lg:row-start-2 space-y-6 pt-1 text-left">
+          <div className="lg:col-span-7 xl:col-span-6 lg:row-start-2 space-y-4 sm:space-y-6 pt-1 text-left">
             {/* Primary & Secondary Call to Actions */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+            <div className="flex flex-row items-center gap-2.5 sm:gap-3.5">
               <a href="#worlds">
-                <Button size="lg" className="w-full sm:w-auto px-7 py-3.5 text-xs font-mono uppercase tracking-wider font-semibold rounded-xl shadow-md bg-stone-900 text-stone-50 hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-stone-200">
+                <Button size="md" className="px-5 py-2.5 sm:px-7 sm:py-3.5 text-xs font-mono uppercase tracking-wider font-semibold rounded-xl shadow-md bg-stone-900 text-stone-50 hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-stone-200">
                   <span>Explore Tools</span>
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                  <ArrowRight className="w-3.5 h-3.5 ml-1 sm:w-4 sm:h-4 sm:ml-1.5" />
                 </Button>
               </a>
 
               <a href="#how-it-works">
                 <Button
                   variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto px-6 py-3.5 text-xs font-mono uppercase tracking-wider font-semibold rounded-xl border-stone-300 dark:border-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-900"
+                  size="md"
+                  className="px-4 py-2.5 sm:px-6 sm:py-3.5 text-xs font-mono uppercase tracking-wider font-semibold rounded-xl border-stone-300 dark:border-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-900"
                 >
                   How it works
                 </Button>
@@ -110,7 +110,7 @@ export function HeroUniverseSection() {
             </div>
 
             {/* Popular Tools */}
-            <div className="pt-2 flex flex-col sm:flex-row sm:items-center gap-2.5">
+            <div className="pt-1 sm:pt-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5">
               <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400 uppercase tracking-wider shrink-0">
                 Popular Tools:
               </span>
