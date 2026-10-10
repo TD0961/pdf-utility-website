@@ -5,6 +5,7 @@ import { FileUp, AlertCircle, HardDrive, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { validateFileBasics, validatePdfMagicBytes } from '@/lib/validation/file-validator';
+import { toast } from '@/lib/notifications/toast';
 
 export interface PdfDropzoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -40,7 +41,9 @@ export function PdfDropzone({
     for (const file of selectedFiles) {
       const basicValidation = validateFileBasics(file);
       if (!basicValidation.valid) {
-        setValidationError(basicValidation.error || 'Invalid file format.');
+        const errMsg = basicValidation.error || 'Invalid file format.';
+        setValidationError(errMsg);
+        toast.error(errMsg);
         return;
       }
 
@@ -48,7 +51,9 @@ export function PdfDropzone({
       if (file.name.toLowerCase().endsWith('.pdf')) {
         const magicValidation = await validatePdfMagicBytes(file);
         if (!magicValidation.valid) {
-          setValidationError(magicValidation.error || 'Invalid PDF header structure.');
+          const errMsg = magicValidation.error || 'Invalid PDF header structure.';
+          setValidationError(errMsg);
+          toast.error(errMsg);
           return;
         }
       }

@@ -25,6 +25,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { toast } from '@/lib/notifications/toast';
 
 export function SplitWorkspace() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -125,13 +126,16 @@ export function SplitWorkspace() {
         .filter((idx) => idx !== -1);
 
       if (selectedIndices.length === 0) {
-        setErrorMessage('Please select at least one page to extract.');
+        const msg = 'Please select at least one page to extract.';
+        setErrorMessage(msg);
+        toast.error(msg);
         return;
       }
     }
 
     if (mode === 'ranges' && rangeError) {
       setErrorMessage(rangeError);
+      toast.error(rangeError);
       return;
     }
 
@@ -165,10 +169,17 @@ export function SplitWorkspace() {
         fileSize: result.blob.size,
       });
       setIsProcessing(false);
+      toast.success(
+        result.isZip
+          ? `Extracted ${result.fileCount} documents into ZIP archive`
+          : 'PDF pages extracted successfully'
+      );
     } catch (err: unknown) {
       console.error('Split error:', err);
       setIsProcessing(false);
-      setErrorMessage(formatUserFacingPdfError(err, 'splitting document'));
+      const errMsg = formatUserFacingPdfError(err, 'splitting document');
+      setErrorMessage(errMsg);
+      toast.error(errMsg);
     }
   };
 

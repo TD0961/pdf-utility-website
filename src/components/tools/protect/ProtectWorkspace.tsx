@@ -9,6 +9,7 @@ import { protectPdf } from '@/lib/pdf/protect';
 import { getPdfPageCount } from '@/lib/pdf/pdf-renderer';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { toast } from '@/lib/notifications/toast';
 import {
   Download,
   CheckCircle2,
@@ -148,10 +149,13 @@ export function ProtectWorkspace() {
         algorithm: result.algorithm,
       });
       setIsProcessing(false);
+      toast.success('Document encrypted with AES-256');
     } catch (err: unknown) {
       console.error('Protect error:', err);
       setIsProcessing(false);
-      setErrorMessage(formatUserFacingPdfError(err, 'protecting this PDF'));
+      const errMsg = formatUserFacingPdfError(err, 'protecting this PDF');
+      setErrorMessage(errMsg);
+      toast.error(errMsg);
     }
   };
 

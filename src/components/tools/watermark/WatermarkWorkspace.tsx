@@ -14,6 +14,7 @@ import { getPdfPageCount } from '@/lib/pdf/pdf-renderer';
 import { parsePageRanges } from '@/lib/pdf/range-parser';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { toast } from '@/lib/notifications/toast';
 import {
   Download,
   CheckCircle2,
@@ -149,14 +150,18 @@ export function WatermarkWorkspace() {
     if (!sourceFile || isProcessing) return;
 
     if (!watermarkText.trim()) {
-      setErrorMessage('Please enter watermark text.');
+      const msg = 'Please enter watermark text.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
     if (pageRangeMode === 'custom' && customRange.trim()) {
       const validation = parsePageRanges(customRange, totalPages);
       if (!validation.valid) {
-        setRangeError(validation.error || 'Invalid range syntax.');
+        const msg = validation.error || 'Invalid range syntax.';
+        setRangeError(msg);
+        toast.error(msg);
         return;
       }
     }
@@ -190,10 +195,13 @@ export function WatermarkWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      toast.success('Watermark applied successfully');
     } catch (err: unknown) {
       console.error('Watermark error:', err);
       setIsProcessing(false);
-      setErrorMessage(formatUserFacingPdfError(err, 'applying watermark'));
+      const errMsg = formatUserFacingPdfError(err, 'applying watermark');
+      setErrorMessage(errMsg);
+      toast.error(errMsg);
     }
   };
 

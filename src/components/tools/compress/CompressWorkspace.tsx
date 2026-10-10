@@ -7,6 +7,7 @@ import { LocalProcessingNotice } from '@/components/pdf/LocalProcessingNotice';
 import { compressPdf, CompressionLevel, CompressionResult, CompressionProgress } from '@/lib/pdf/compress';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { toast } from '@/lib/notifications/toast';
 import {
   Minimize2,
   Download,
@@ -64,10 +65,15 @@ export function CompressWorkspace() {
       setDownloadUrl(url);
       setResult(compResult);
       setIsProcessing(false);
+      toast.success(
+        `PDF compressed: saved ${compResult.savedPercent.toFixed(0)}% (${formatBytes(compResult.originalSize)} → ${formatBytes(compResult.compressedSize)})`
+      );
     } catch (err: unknown) {
       setIsProcessing(false);
       console.error('Compression error:', err);
-      setErrorMessage(formatUserFacingPdfError(err, 'compressing PDF'));
+      const errMsg = formatUserFacingPdfError(err, 'compressing PDF');
+      setErrorMessage(errMsg);
+      toast.error(errMsg);
     }
   };
 

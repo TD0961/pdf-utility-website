@@ -11,6 +11,7 @@ import { constructMetadata } from '@/lib/seo/metadata';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { ToastContainer } from '@/components/notifications/ToastContainer';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -102,6 +103,7 @@ export default function RootLayout({
           <Footer />
           <OfflineIndicator />
           <ServiceWorkerRegister />
+          <ToastContainer />
         </ThemeProvider>
       </body>
     </html>

@@ -9,6 +9,7 @@ import { unlockPdf } from '@/lib/pdf/unlock';
 import { isEncrypted } from '@pdfsmaller/pdf-decrypt';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { toast } from '@/lib/notifications/toast';
 import {
   Download,
   CheckCircle2,
@@ -125,10 +126,13 @@ export function UnlockWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      toast.success('Document unlocked successfully');
     } catch (err: unknown) {
       console.error('Unlock error:', err);
       setIsProcessing(false);
-      setErrorMessage(formatUserFacingPdfError(err, 'unlocking this PDF'));
+      const errMsg = formatUserFacingPdfError(err, 'unlocking this PDF');
+      setErrorMessage(errMsg);
+      toast.error(errMsg);
     }
   };
 

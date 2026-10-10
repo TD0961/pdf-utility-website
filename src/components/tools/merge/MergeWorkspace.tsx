@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { toast } from '@/lib/notifications/toast';
 
 interface SelectedMergeFile {
   id: string;
@@ -141,7 +142,9 @@ export function MergeWorkspace() {
   const handleMerge = async () => {
     if (isProcessing) return;
     if (files.length < 2) {
-      setErrorMessage('Please select at least 2 PDF files to merge.');
+      const msg = 'Please select at least 2 PDF files to merge.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
@@ -168,10 +171,13 @@ export function MergeWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      toast.success(`Successfully merged ${result.fileCount} PDFs into ${result.totalPages} pages.`);
     } catch (err: unknown) {
       console.error('Merge error:', err);
       setIsProcessing(false);
-      setErrorMessage(formatUserFacingPdfError(err, 'merging documents'));
+      const errMsg = formatUserFacingPdfError(err, 'merging documents');
+      setErrorMessage(errMsg);
+      toast.error(errMsg);
     }
   };
 

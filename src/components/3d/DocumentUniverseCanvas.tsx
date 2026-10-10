@@ -200,58 +200,72 @@ export function DocumentUniverseCanvas({
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
-    // Helper to calculate target resting poses based on viewport width
+    // Helper to calculate target resting poses based on container width
     const getRestingPose = (w: number) => {
-      if (w < 768) {
+      if (w < 640) {
+        // Mobile Viewport (320px - 430px screens)
+        // Perfectly centered, fully unclipped A4 document sheet with companion folio
         return {
-          heroX: 1.38,
-          heroY: 0.90,
-          heroZ: -0.85,
-          heroScale: 0.42,
-          heroRotX: -0.05,
-          heroRotY: -0.26,
-          heroRotZ: 0.04,
-          hero2Visible: false,
+          heroX: 0.0,
+          heroY: 0.04,
+          heroZ: 0.05,
+          heroScale: 0.68,
+          heroRotX: -0.06,
+          heroRotY: -0.20,
+          heroRotZ: 0.03,
+          hero2Visible: true,
+          hero2OffsetX: 0.16,
+          hero2OffsetY: -0.10,
+          hero2OffsetZ: -0.12,
           plinthVisible: false,
-          plinthX: 1.84,
-          plinthY: -1.35,
-          plinthZ: -0.65,
-          cameraZ: 6.2,
-          cameraY: 0.1,
+          plinthX: 0.0,
+          plinthY: -1.2,
+          plinthZ: -0.5,
+          cameraZ: 5.4,
+          cameraY: 0.0,
         };
       } else if (w < 1024) {
+        // Tablet / Small Laptop Viewport
         return {
-          heroX: 1.24,
-          heroY: 0.18,
-          heroZ: 0.20,
-          heroScale: 0.85,
-          heroRotX: -0.05,
+          heroX: 0.0,
+          heroY: 0.04,
+          heroZ: 0.08,
+          heroScale: 0.74,
+          heroRotX: -0.06,
           heroRotY: -0.22,
-          heroRotZ: 0.04,
+          heroRotZ: 0.03,
           hero2Visible: true,
-          plinthVisible: true,
-          plinthX: 1.55,
-          plinthY: -1.40,
-          plinthZ: -0.75,
-          cameraZ: 5.8,
-          cameraY: 0.15,
+          hero2OffsetX: 0.20,
+          hero2OffsetY: -0.12,
+          hero2OffsetZ: -0.14,
+          plinthVisible: false,
+          plinthX: 0.0,
+          plinthY: -1.25,
+          plinthZ: -0.5,
+          cameraZ: 5.4,
+          cameraY: 0.0,
         };
       } else {
+        // Desktop Viewport (1024px+ screens)
+        // Full architectural composition with fanned companions and grounded plinth
         return {
-          heroX: 1.54,
-          heroY: 0.16,
-          heroZ: 0.28,
-          heroScale: 1.0,
-          heroRotX: -0.05,
-          heroRotY: -0.25,
-          heroRotZ: 0.04,
+          heroX: -0.04,
+          heroY: 0.06,
+          heroZ: 0.12,
+          heroScale: 0.82,
+          heroRotX: -0.06,
+          heroRotY: -0.24,
+          heroRotZ: 0.03,
           hero2Visible: true,
+          hero2OffsetX: 0.22,
+          hero2OffsetY: -0.12,
+          hero2OffsetZ: -0.15,
           plinthVisible: true,
-          plinthX: 1.84,
+          plinthX: 0.12,
           plinthY: -1.35,
-          plinthZ: -0.65,
-          cameraZ: 5.8,
-          cameraY: 0.15,
+          plinthZ: -0.55,
+          cameraZ: 5.5,
+          cameraY: 0.05,
         };
       }
     };
@@ -268,8 +282,12 @@ export function DocumentUniverseCanvas({
 
       heroMesh2.visible = pose.hero2Visible;
       if (pose.hero2Visible) {
-        heroMesh2.position.set(pose.heroX + 0.26, pose.heroY - 0.14, pose.heroZ - 0.18);
-        heroMesh2.rotation.set(pose.heroRotX - 0.02, pose.heroRotY - 0.08, pose.heroRotZ - 0.12);
+        heroMesh2.position.set(
+          pose.heroX + pose.hero2OffsetX,
+          pose.heroY + pose.hero2OffsetY,
+          pose.heroZ + pose.hero2OffsetZ
+        );
+        heroMesh2.rotation.set(pose.heroRotX - 0.02, pose.heroRotY - 0.08, pose.heroRotZ - 0.10);
         heroMesh2.scale.set(pose.heroScale, pose.heroScale, pose.heroScale);
       }
 
@@ -322,7 +340,7 @@ export function DocumentUniverseCanvas({
     let targetY = 0;
 
     const handlePointerMove = (e: MouseEvent) => {
-      if (!interactive) return;
+      if (!interactive || !container) return;
       const rect = container.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
@@ -330,8 +348,27 @@ export function DocumentUniverseCanvas({
       targetY = y * 0.16;
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!interactive || !container || !e.touches || e.touches.length === 0) return;
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      const x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -(((touch.clientY - rect.top) / rect.height) * 2 - 1);
+      targetX = Math.max(-0.25, Math.min(0.25, x * 0.22));
+      targetY = Math.max(-0.2, Math.min(0.2, y * 0.16));
+    };
+
+    const handleTouchEnd = () => {
+      targetX = 0;
+      targetY = 0;
+    };
+
     if (interactive && typeof window !== 'undefined') {
       window.addEventListener('mousemove', handlePointerMove, { passive: true });
+      if (container) {
+        container.addEventListener('touchmove', handleTouchMove, { passive: true });
+        container.addEventListener('touchend', handleTouchEnd, { passive: true });
+      }
     }
 
     // Resize Handler
@@ -355,6 +392,7 @@ export function DocumentUniverseCanvas({
     // Animation Loop with high-precision time tracking and calm motion
     let animFrameId: number | null = null;
     let startTime = performance.now();
+    let isIntersecting = true;
 
     const animate = () => {
       animFrameId = requestAnimationFrame(animate);
@@ -380,8 +418,8 @@ export function DocumentUniverseCanvas({
 
       if (pose.hero2Visible) {
         const compBreath = Math.sin(elapsedTime * 0.45 - 0.4) * 0.01;
-        heroMesh2.position.y = pose.heroY - 0.14 + compBreath + mouseY * 0.06;
-        heroMesh2.position.x = pose.heroX + 0.26 + mouseX * 0.1;
+        heroMesh2.position.y = pose.heroY + pose.hero2OffsetY + compBreath + mouseY * 0.06;
+        heroMesh2.position.x = pose.heroX + pose.hero2OffsetX + mouseX * 0.1;
         heroMesh2.rotation.y = pose.heroRotY - 0.08 + mouseX * 0.06;
         heroMesh2.rotation.x = pose.heroRotX - 0.02 - mouseY * 0.04 + gentleTilt * 0.8;
       }
@@ -390,7 +428,7 @@ export function DocumentUniverseCanvas({
     };
 
     const startAnimation = () => {
-      if (animFrameId !== null || isReducedMotion) return;
+      if (animFrameId !== null || isReducedMotion || !isIntersecting || (typeof document !== 'undefined' && document.hidden)) return;
       startTime = performance.now();
       animFrameId = requestAnimationFrame(animate);
     };
@@ -401,6 +439,37 @@ export function DocumentUniverseCanvas({
         animFrameId = null;
       }
     };
+
+    // Viewport Intersection Observer (Battery & CPU conservation when scrolled away)
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== 'undefined' && container) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            isIntersecting = entry.isIntersecting;
+            if (isIntersecting) {
+              startAnimation();
+            } else {
+              stopAnimation();
+            }
+          }
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(container);
+    }
+
+    // Document Visibility Listener (Pause rendering when tab is hidden)
+    const handleDocVisibility = () => {
+      if (document.hidden) {
+        stopAnimation();
+      } else if (isIntersecting && !isReducedMotion) {
+        startAnimation();
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleDocVisibility);
+    }
 
     // Motion preference change listener
     const handleMotionChange = (e: MediaQueryListEvent) => {
@@ -429,11 +498,21 @@ export function DocumentUniverseCanvas({
     // Cleanup
     return () => {
       stopAnimation();
+      if (observer) {
+        observer.disconnect();
+      }
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleDocVisibility);
+      }
       motionMediaQuery.removeEventListener('change', handleMotionChange);
       themeObserver.disconnect();
       window.removeEventListener('resize', handleResize);
       if (interactive) {
         window.removeEventListener('mousemove', handlePointerMove);
+        if (container) {
+          container.removeEventListener('touchmove', handleTouchMove);
+          container.removeEventListener('touchend', handleTouchEnd);
+        }
       }
       heroGeom.dispose();
       heroGeom2.dispose();
@@ -453,15 +532,22 @@ export function DocumentUniverseCanvas({
 
   if (!hasWebGL) {
     return (
-      <div className={`relative flex items-center justify-center ${className}`}>
-        <div className="w-64 h-80 rounded-2xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl p-6 flex flex-col justify-between transform rotate-2">
-          <div className="space-y-3">
-            <div className="w-12 h-1 bg-stone-300 dark:bg-stone-700 rounded-full" />
-            <div className="w-full h-0.5 bg-stone-200 dark:bg-stone-800" />
-            <div className="w-3/4 h-0.5 bg-stone-200 dark:bg-stone-800" />
-            <div className="w-5/6 h-0.5 bg-stone-200 dark:bg-stone-800" />
+      <div className={`relative flex items-center justify-center p-4 ${className}`}>
+        <div className="relative w-44 sm:w-60 lg:w-68 aspect-[1/1.414] rounded-xl sm:rounded-2xl bg-stone-50 dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 shadow-2xl p-4 sm:p-6 flex flex-col justify-between transform -rotate-3">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="w-12 sm:w-16 h-1 bg-stone-300 dark:bg-stone-700 rounded-full" />
+            <div className="w-full h-0.5 bg-stone-200/80 dark:bg-stone-800" />
+            <div className="w-4/5 h-0.5 bg-stone-200/80 dark:bg-stone-800" />
+            <div className="w-5/6 h-0.5 bg-stone-200/80 dark:bg-stone-800" />
           </div>
-          <div className="text-[10px] font-mono text-stone-400">PDFSIMPLIFY ARCHIVAL</div>
+          <div className="space-y-1.5 sm:space-y-2 py-2">
+            <div className="w-full h-0.5 bg-stone-100 dark:bg-stone-800/60" />
+            <div className="w-11/12 h-0.5 bg-stone-100 dark:bg-stone-800/60" />
+          </div>
+          <div className="flex items-center justify-between text-[8px] sm:text-[10px] font-mono text-stone-400 dark:text-stone-500 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+            <span>PAGE 01 / SPEC</span>
+            <span>AIR-GAPPED RAM</span>
+          </div>
         </div>
       </div>
     );
@@ -470,7 +556,7 @@ export function DocumentUniverseCanvas({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full min-h-[420px] pointer-events-auto ${className}`}
+      className={`relative w-full h-full pointer-events-auto ${className}`}
       aria-label="3D Paper and Document Universe Interactive Scene"
     />
   );

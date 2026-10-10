@@ -3,6 +3,7 @@
 import React from 'react';
 import { Button, ButtonProps } from '@/components/ui/Button';
 import { Download } from 'lucide-react';
+import { toast } from '@/lib/notifications/toast';
 
 export interface DownloadButtonProps extends Omit<ButtonProps, 'onClick'> {
   downloadUrl: string;
@@ -25,6 +26,7 @@ export function DownloadButton({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    toast.success(`Downloading ${fileName}`);
     onDownloaded?.();
   };
 

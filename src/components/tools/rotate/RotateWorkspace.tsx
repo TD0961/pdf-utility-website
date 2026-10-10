@@ -10,6 +10,7 @@ import { rotatePdfDocument } from '@/lib/pdf/rotate';
 import { getPdfPageCount } from '@/lib/pdf/pdf-renderer';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { toast } from '@/lib/notifications/toast';
 import {
   RotateCw,
   RotateCcw,
@@ -176,10 +177,13 @@ export function RotateWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      toast.success(`Successfully saved rotation for ${result.totalPages} pages`);
     } catch (err: unknown) {
       console.error('Rotation failed:', err);
       setIsProcessing(false);
-      setErrorMessage(formatUserFacingPdfError(err, 'rotating this PDF'));
+      const errMsg = formatUserFacingPdfError(err, 'rotating this PDF');
+      setErrorMessage(errMsg);
+      toast.error(errMsg);
     }
   };
 
