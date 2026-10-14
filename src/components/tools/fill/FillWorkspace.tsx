@@ -8,6 +8,7 @@ import { LocalProcessingNotice } from '@/components/pdf/LocalProcessingNotice';
 import { inspectInteractiveForm, fillPdfForm, InteractiveFormField } from '@/lib/pdf/fill-form';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileText,
   Download,
@@ -28,6 +29,12 @@ export function FillWorkspace() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'fill-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   useEffect(() => {
     return () => {
@@ -81,6 +88,7 @@ export function FillWorkspace() {
     if (!pdfBytes) return;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
 
@@ -92,8 +100,10 @@ export function FillWorkspace() {
       const url = memoryManager.createTrackedUrl(filled.blob);
       setDownloadUrl(url);
       setIsProcessing(false);
+      completeProcessing('pdf');
     } catch (err) {
       setIsProcessing(false);
+      errorProcessing(err);
       console.error('Error saving filled form:', err);
       setErrorMessage(formatUserFacingPdfError(err, 'saving filled PDF'));
     }
@@ -104,6 +114,7 @@ export function FillWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setPdfBytes(null);
     setFields([]);
@@ -338,6 +349,7 @@ export function FillWorkspace() {
               <a
                 href={downloadUrl}
                 download={sourceFile.name.replace(/\.pdf$/i, '_filled.pdf')}
+                onClick={() => recordDownload('pdf')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="primary" size="sm" className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">

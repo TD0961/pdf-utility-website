@@ -33,15 +33,13 @@ describe('Phase 5.2: Pre-Launch Domain, Search & Monetization Readiness', () => 
   });
 
   describe('Search Engine Readiness & Sitemap Integrity', () => {
-    it('produces exactly 64 indexable canonical URLs (10 core + 30 tools + 24 guides)', () => {
+    it('produces indexable canonical URLs (10 core + 30 tools + guides in registry)', () => {
       const generatedSitemap = sitemap();
-      assert.equal(generatedSitemap.length, 64);
-
-      // Verify breakdown
       assert.equal(TOOLS_REGISTRY.length, 30);
-      assert.equal(GUIDES_REGISTRY.length, 24);
+      assert.equal(GUIDES_REGISTRY.length, 30);
       const coreCount = generatedSitemap.length - TOOLS_REGISTRY.length - GUIDES_REGISTRY.length;
       assert.equal(coreCount, 10);
+      assert.equal(generatedSitemap.length, 70);
     });
 
     it('ensures all sitemap URLs start with siteConfig.url', () => {

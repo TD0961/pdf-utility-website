@@ -42,6 +42,7 @@ import {
   Layers,
   ShieldCheck,
 } from 'lucide-react';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 
 export function PdfEditorWorkspace() {
   const [engine] = useState(() => new PdfEditorEngine());
@@ -58,6 +59,12 @@ export function PdfEditorWorkspace() {
     fileSize: number;
     totalPages: number;
   } | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'pdf-editor',
+      defaultOutputFormat: 'pdf',
+    });
 
   // Modals & File inputs
   const [showSignatureModal, setShowSignatureModal] = useState(false);
@@ -331,6 +338,7 @@ export function PdfEditorWorkspace() {
       }
     }
     engine.reset();
+    resetTracking();
     setDocState(null);
     setSourceFile(null);
     setExportStats(null);
@@ -704,6 +712,7 @@ export function PdfEditorWorkspace() {
       if (!docState) return;
 
       try {
+        startProcessing(1);
         setIsExporting(true);
         setErrorMessage(null);
 
@@ -735,15 +744,18 @@ export function PdfEditorWorkspace() {
         document.body.removeChild(link);
 
         setIsExporting(false);
+        completeProcessing('pdf');
+        recordDownload('pdf');
         syncState();
       } catch (err: unknown) {
         console.error('Error exporting PDF:', err);
         setIsExporting(false);
+        errorProcessing(err);
         setErrorMessage(formatUserFacingPdfError(err, 'exporting the edited PDF'));
         syncState();
       }
     },
-    [docState, engine, syncState]
+    [docState, engine, syncState, startProcessing, completeProcessing, errorProcessing, recordDownload]
   );
 
   const handleExport = () => {
@@ -1062,6 +1074,7 @@ export function PdfEditorWorkspace() {
           <a
             href={downloadUrl}
             download={exportStats.fileName}
+            onClick={() => recordDownload('pdf')}
             className="font-semibold underline hover:text-emerald-900 dark:hover:text-emerald-100 inline-flex items-center gap-1"
           >
             <Download className="w-3.5 h-3.5" /> Download Again

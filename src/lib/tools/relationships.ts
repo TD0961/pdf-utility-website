@@ -140,6 +140,7 @@ export const TOOL_RELATIONSHIPS: Record<string, ToolRelationship> = {
     slug: 'pdf-to-word',
     relatedTools: ['ocr-pdf', 'pdf-to-text', 'compress-pdf', 'pdf-editor'],
     relatedGuides: [
+      'how-to-convert-pdf-to-word',
       'how-to-extract-text-from-a-pdf',
       'what-is-ocr',
     ],
@@ -148,6 +149,7 @@ export const TOOL_RELATIONSHIPS: Record<string, ToolRelationship> = {
     slug: 'pdf-to-ppt',
     relatedTools: ['pdf-to-word', 'extract-pages', 'compress-pdf', 'pdf-editor'],
     relatedGuides: [
+      'how-to-convert-pdf-to-powerpoint',
       'how-to-extract-pages-from-a-pdf',
       'how-browser-based-pdf-processing-works',
     ],
@@ -156,24 +158,27 @@ export const TOOL_RELATIONSHIPS: Record<string, ToolRelationship> = {
     slug: 'pdf-to-excel',
     relatedTools: ['pdf-to-word', 'pdf-to-text', 'extract-pages'],
     relatedGuides: [
+      'how-to-convert-pdf-to-excel',
+      'how-to-convert-pdf-to-csv',
       'how-to-extract-text-from-a-pdf',
-      'how-browser-based-pdf-processing-works',
     ],
   },
   'sign-pdf': {
     slug: 'sign-pdf',
     relatedTools: ['pdf-editor', 'fill-pdf', 'protect-pdf', 'watermark-pdf'],
     relatedGuides: [
+      'how-to-sign-a-pdf',
       'how-to-protect-a-pdf',
       'how-to-edit-a-pdf',
     ],
   },
   'fill-pdf': {
     slug: 'fill-pdf',
-    relatedTools: ['pdf-editor', 'sign-pdf', 'protect-pdf'],
+    relatedTools: ['pdf-editor', 'sign-pdf', 'protect-pdf', 'flatten-pdf'],
     relatedGuides: [
+      'how-to-fill-a-pdf-form',
+      'how-to-flatten-a-fillable-pdf',
       'how-to-edit-a-pdf',
-      'how-to-protect-a-pdf',
     ],
   },
   'crop-pdf': {
@@ -188,6 +193,7 @@ export const TOOL_RELATIONSHIPS: Record<string, ToolRelationship> = {
     slug: 'compare-pdf',
     relatedTools: ['merge-pdf', 'pdf-editor', 'organize-pdf'],
     relatedGuides: [
+      'how-to-compare-two-pdf-files',
       'how-to-merge-pdf-files',
       'how-browser-based-pdf-processing-works',
     ],

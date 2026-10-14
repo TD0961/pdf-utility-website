@@ -9,6 +9,7 @@ import { createCancellationToken } from '@/lib/pdf/conversion/converter';
 import { CancellationToken, ConversionProgress } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Image as ImageIcon,
   Download,
@@ -20,6 +21,8 @@ import {
 } from 'lucide-react';
 
 export function ExtractImagesWorkspace() {
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking('extract-images');
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [targetFormat, setTargetFormat] = useState<'original' | 'png' | 'jpg'>('original');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -44,6 +47,7 @@ export function ExtractImagesWorkspace() {
     setErrorMessage(null);
     const cancelToken = createCancellationToken();
     cancelTokenRef.current = cancelToken;
+    startProcessing(1);
 
     try {
       setIsProcessing(true);
@@ -65,12 +69,14 @@ export function ExtractImagesWorkspace() {
       const zipUrl = memoryManager.createTrackedUrl(extractionResult.zipBlob);
       setZipDownloadUrl(zipUrl);
       setResult(extractionResult);
+      completeProcessing('zip');
       setIsProcessing(false);
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('Image extraction was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('Image extraction error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'extracting images from PDF'));
       }
@@ -91,6 +97,7 @@ export function ExtractImagesWorkspace() {
   };
 
   const handleReset = () => {
+    resetTracking();
     if (zipDownloadUrl) {
       memoryManager.revokeUrl(zipDownloadUrl);
       setZipDownloadUrl(null);
@@ -260,6 +267,7 @@ export function ExtractImagesWorkspace() {
                 <a
                   href={zipDownloadUrl}
                   download="extracted_images.zip"
+                  onClick={() => recordDownload('zip')}
                   className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm transition-colors text-xs"
                 >
                   <Archive className="w-4 h-4 mr-1.5" />
@@ -310,6 +318,7 @@ export function ExtractImagesWorkspace() {
                     <a
                       href={img.blobUrl}
                       download={img.name}
+                      onClick={() => recordDownload(img.format === 'jpg' ? 'jpg' : 'png')}
                       className="w-full py-1.5 text-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors inline-flex items-center justify-center"
                     >
                       <Download className="w-3.5 h-3.5 mr-1" />

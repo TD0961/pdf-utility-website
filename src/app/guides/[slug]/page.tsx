@@ -12,6 +12,7 @@ import { GUIDES_REGISTRY, getGuideBySlug } from '@/data/guides';
 import { getToolBySlug } from '@/data/tools';
 import { constructMetadata, SITE_URL } from '@/lib/seo/metadata';
 import { getArticleSchema } from '@/lib/seo/jsonld';
+import { GuideToolLink } from '@/components/guides/GuideToolLink';
 import { Clock, Calendar, ArrowRight, ShieldCheck, Info, Lightbulb, AlertTriangle } from 'lucide-react';
 
 interface GuidePageProps {
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
   }
 
   return constructMetadata({
-    title: `${guide.title} — PDFSimplify Guides`,
+    title: guide.title,
     description: guide.metaDescription,
     path: `/guides/${guide.slug}`,
   });
@@ -68,7 +69,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
         <Breadcrumbs
           items={[
             { label: 'Guides', href: '/guides' },
-            { label: guide.title },
+            { label: guide.title, href: `/guides/${guide.slug}` },
           ]}
         />
 
@@ -113,11 +114,15 @@ export default async function GuidePage({ params }: GuidePageProps) {
                     Use our in-browser {relatedTool.name} tool with 100% local privacy.
                   </p>
                 </div>
-                <Link href={`/pdf-tools/${relatedTool.slug}`} className="shrink-0">
+                <GuideToolLink
+                  guideSlug={guide.slug}
+                  targetToolSlug={relatedTool.slug}
+                  className="shrink-0"
+                >
                   <Button size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                     Open {relatedTool.name}
                   </Button>
-                </Link>
+                </GuideToolLink>
               </div>
             )}
 
@@ -214,11 +219,15 @@ export default async function GuidePage({ params }: GuidePageProps) {
                     {relatedTool.shortDescription}
                   </p>
                 </div>
-                <Link href={`/pdf-tools/${relatedTool.slug}`} className="block pt-1">
+                <GuideToolLink
+                  guideSlug={guide.slug}
+                  targetToolSlug={relatedTool.slug}
+                  className="block pt-1"
+                >
                   <Button size="sm" className="w-full" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                     Open {relatedTool.name}
                   </Button>
-                </Link>
+                </GuideToolLink>
               </div>
             )}
 

@@ -9,6 +9,7 @@ import { applyVisualSignature, SignaturePlacement } from '@/lib/pdf/sign';
 import { getPdfDocument } from '@/lib/pdf/pdf-renderer';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   PenTool,
   Download,
@@ -41,6 +42,12 @@ export function SignWorkspace() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'sign-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const previewContainerRef = useRef<HTMLDivElement | null>(null);
@@ -159,6 +166,7 @@ export function SignWorkspace() {
     if (!pdfBytes || !signatureDataUrl || !viewportRef.current) return;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
 
@@ -188,8 +196,10 @@ export function SignWorkspace() {
       const url = memoryManager.createTrackedUrl(signed.blob);
       setDownloadUrl(url);
       setIsProcessing(false);
+      completeProcessing('pdf');
     } catch (err) {
       setIsProcessing(false);
+      errorProcessing(err);
       console.error('Error applying signature:', err);
       setErrorMessage(formatUserFacingPdfError(err, 'signing PDF document'));
     }
@@ -200,6 +210,7 @@ export function SignWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setPdfBytes(null);
     setNumPages(0);
@@ -386,6 +397,7 @@ export function SignWorkspace() {
               <a
                 href={downloadUrl}
                 download={sourceFile.name.replace(/\.pdf$/i, '_signed.pdf')}
+                onClick={() => recordDownload('pdf')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="primary" size="sm" className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">

@@ -7,7 +7,7 @@ import { constructMetadata } from '@/lib/seo/metadata';
 import { ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Resources & Technical Architecture — PDFSimplify',
+  title: 'Resources & Technical Architecture',
   description:
     'Explore technical specifications, WebAssembly documentation, and developer architecture for client-side PDF processing.',
   path: '/resources',
@@ -44,7 +44,7 @@ export default function ResourcesPage() {
   return (
     <Container className="py-10 max-w-3xl">
       <div className="space-y-12">
-        <Breadcrumbs items={[{ label: 'Resources' }]} />
+        <Breadcrumbs items={[{ label: 'Resources', href: '/resources' }]} />
 
         {/* Minimalist Header */}
         <header className="space-y-4 border-b border-stone-200/80 dark:border-stone-800/80 pb-8">

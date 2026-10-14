@@ -9,7 +9,7 @@ import { ContactForm } from '@/components/contact/ContactForm';
 import { Mail } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Contact Us — PDFSimplify',
+  title: 'Contact Us',
   description:
     'Have feedback, feature requests, or questions regarding PDFSimplify? Send a message directly to our team.',
   path: '/contact',
@@ -21,7 +21,7 @@ export default function ContactPage() {
   return (
     <Container className="py-10 max-w-2xl">
       <div className="space-y-10">
-        <Breadcrumbs items={[{ label: 'Contact' }]} />
+        <Breadcrumbs items={[{ label: 'Contact', href: '/contact' }]} />
 
         {/* Minimalist Header */}
         <header className="space-y-3 border-b border-stone-200/80 dark:border-stone-800/80 pb-6">

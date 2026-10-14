@@ -8,6 +8,7 @@ import { compressPdf, CompressionLevel, CompressionResult, CompressionProgress }
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
 import { toast } from '@/lib/notifications/toast';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Minimize2,
   Download,
@@ -37,6 +38,12 @@ export function CompressWorkspace() {
   const [result, setResult] = useState<CompressionResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'compress-pdf',
+      defaultOutputFormat: 'pdf',
+    });
+
   useEffect(() => {
     return () => {
       if (downloadUrl) {
@@ -52,6 +59,7 @@ export function CompressWorkspace() {
   ) => {
     setErrorMessage(null);
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setProgress({ percentage: 5, stage: 'Starting local compression...' });
 
@@ -65,11 +73,13 @@ export function CompressWorkspace() {
       setDownloadUrl(url);
       setResult(compResult);
       setIsProcessing(false);
+      completeProcessing('pdf');
       toast.success(
         `PDF compressed: saved ${compResult.savedPercent.toFixed(0)}% (${formatBytes(compResult.originalSize)} → ${formatBytes(compResult.compressedSize)})`
       );
     } catch (err: unknown) {
       setIsProcessing(false);
+      errorProcessing(err);
       console.error('Compression error:', err);
       const errMsg = formatUserFacingPdfError(err, 'compressing PDF');
       setErrorMessage(errMsg);
@@ -90,6 +100,7 @@ export function CompressWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setResult(null);
     setIsProcessing(false);
@@ -355,6 +366,7 @@ export function CompressWorkspace() {
               <a
                 href={downloadUrl}
                 download={getOutputFilename()}
+                onClick={() => recordDownload('pdf')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="primary" size="sm" className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">

@@ -41,6 +41,8 @@ export interface AdStrategyConfig {
   description: string;
 }
 
+export const DEFAULT_ADSENSE_CLIENT_ID = 'ca-pub-7704232652384788';
+
 /**
  * Platform Strategy Configuration Matrix
  * Centralized control: modifying allowed placements here updates all consumers automatically.
@@ -71,12 +73,12 @@ export const AD_STRATEGY: Record<AdPageType, AdStrategyConfig> = {
     description: 'Separated documentation placements.',
   },
   editor: {
-    // STRICT SAFETY: No ads inside the editing canvas, near undo/redo, delete, or download controls.
-    // Only allows a single separated slot at the very bottom of the page far below the workspace.
-    allowedPlacements: ['end-content'],
-    maxAdsPerPage: 1,
-    enableAnchor: false, // Absolutely NO anchor ads on editor to preserve bottom workspace/zoom controls
-    description: 'Strictly isolated bottom slot far below the interactive editor workspace.',
+    // STRICT SAFETY: 100% ad-free safe zone. Zero ads anywhere on the interactive editor route
+    // to preserve drawing/annotation canvas, zoom controls, and undo/redo buttons.
+    allowedPlacements: [],
+    maxAdsPerPage: 0,
+    enableAnchor: false,
+    description: 'Strictly ad-free safe zone protecting the interactive editor canvas and tools.',
   },
   about: {
     allowedPlacements: ['end-content'],

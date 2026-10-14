@@ -17,7 +17,7 @@ export default function AboutPage() {
   return (
     <Container className="py-10 max-w-3xl">
       <div className="space-y-12">
-        <Breadcrumbs items={[{ label: 'About' }]} />
+        <Breadcrumbs items={[{ label: 'About', href: '/about' }]} />
 
         {/* Minimalist Editorial Header */}
         <header className="space-y-4 border-b border-stone-200/80 dark:border-stone-800/80 pb-8">

@@ -9,6 +9,7 @@ import { createCancellationToken } from '@/lib/pdf/conversion/converter';
 import { CancellationToken } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   ScanText,
   Download,
@@ -47,6 +48,12 @@ export function OcrWorkspace() {
   const [copied, setCopied] = useState(false);
   const cancelTokenRef = useRef<CancellationToken | null>(null);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'ocr-pdf',
+      defaultOutputFormat: 'pdf',
+    });
+
   useEffect(() => {
     return () => {
       if (searchablePdfUrl) memoryManager.revokeUrl(searchablePdfUrl);
@@ -60,6 +67,7 @@ export function OcrWorkspace() {
     cancelTokenRef.current = cancelToken;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setProgress({
         currentPage: 0,
@@ -85,11 +93,13 @@ export function OcrWorkspace() {
       setTextDownloadUrl(txtUrl);
       setResult(ocrRes);
       setIsProcessing(false);
+      completeProcessing('pdf');
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('OCR processing was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('OCR error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'performing OCR on document'));
       }
@@ -118,6 +128,7 @@ export function OcrWorkspace() {
       memoryManager.revokeUrl(textDownloadUrl);
       setTextDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setResult(null);
     setIsProcessing(false);
@@ -304,6 +315,7 @@ export function OcrWorkspace() {
               <a
                 href={searchablePdfUrl}
                 download={getOutputFilename('pdf')}
+                onClick={() => recordDownload('pdf')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="primary" size="sm" className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">
@@ -314,6 +326,7 @@ export function OcrWorkspace() {
               <a
                 href={textDownloadUrl}
                 download={getOutputFilename('txt')}
+                onClick={() => recordDownload('txt')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="secondary" size="sm" className="w-full justify-center">

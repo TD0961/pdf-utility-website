@@ -11,6 +11,7 @@ import { getPdfPageCount } from '@/lib/pdf/pdf-renderer';
 import { parsePageRanges } from '@/lib/pdf/range-parser';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Download,
   CheckCircle2,
@@ -45,6 +46,12 @@ export function ExtractWorkspace() {
     fileName: string;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'extract-pages',
+      defaultOutputFormat: 'pdf',
+    });
 
   useEffect(() => {
     return () => {
@@ -156,6 +163,7 @@ export function ExtractWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setPages([]);
     setTotalPages(0);
@@ -172,6 +180,7 @@ export function ExtractWorkspace() {
     if (!sourceFile || selectedCount === 0 || isProcessing) return;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressStage('Extracting selected pages...');
@@ -207,9 +216,11 @@ export function ExtractWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
     } catch (err: unknown) {
       console.error('Extraction failed:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       setErrorMessage(formatUserFacingPdfError(err, 'extracting pages'));
     }
   };
@@ -445,6 +456,7 @@ export function ExtractWorkspace() {
             <a
               href={downloadUrl}
               download={resultStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition-colors"
             >
               <Download className="w-4 h-4 mr-2" />

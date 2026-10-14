@@ -40,7 +40,7 @@ export default function PdfToolsPage() {
     <Container className="py-8 space-y-12">
       {/* Breadcrumbs & Editorial Header */}
       <div className="space-y-4">
-        <Breadcrumbs items={[{ label: 'PDF Tools' }]} />
+        <Breadcrumbs items={[{ label: 'PDF Tools', href: '/pdf-tools' }]} />
 
         <div className="space-y-3 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-stone-200 dark:border-stone-800 bg-stone-100/80 dark:bg-stone-900/80 text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-stone-300">

@@ -9,6 +9,7 @@ import { createCancellationToken } from '@/lib/pdf/conversion/converter';
 import { CancellationToken } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Layers,
   Download,
@@ -20,6 +21,8 @@ import {
 } from 'lucide-react';
 
 export function FlattenWorkspace() {
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking('flatten-pdf');
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [inspection, setInspection] = useState<FlattenInspectionResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -59,6 +62,7 @@ export function FlattenWorkspace() {
     if (!sourceFile) return;
     const cancelToken = createCancellationToken();
     cancelTokenRef.current = cancelToken;
+    startProcessing(1);
 
     try {
       setIsProcessing(true);
@@ -73,12 +77,14 @@ export function FlattenWorkspace() {
       const url = memoryManager.createTrackedUrl(blob);
       setDownloadUrl(url);
       setResult(flattenRes);
+      completeProcessing('pdf');
       setIsProcessing(false);
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('Flattening was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('Flatten PDF error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'flattening PDF form fields'));
       }
@@ -92,6 +98,7 @@ export function FlattenWorkspace() {
   };
 
   const handleReset = () => {
+    resetTracking();
     if (downloadUrl) {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
@@ -245,6 +252,7 @@ export function FlattenWorkspace() {
             <a
               href={downloadUrl}
               download={sourceFile ? `flattened_${sourceFile.name}` : 'flattened.pdf'}
+              onClick={() => recordDownload('pdf')}
               className="flex-1 inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm transition-colors text-sm"
             >
               <Download className="w-4 h-4 mr-2" />

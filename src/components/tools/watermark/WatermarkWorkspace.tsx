@@ -15,6 +15,7 @@ import { parsePageRanges } from '@/lib/pdf/range-parser';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
 import { toast } from '@/lib/notifications/toast';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Download,
   CheckCircle2,
@@ -75,6 +76,12 @@ export function WatermarkWorkspace() {
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'watermark-pdf',
+      defaultOutputFormat: 'pdf',
+    });
+
   useEffect(() => {
     return () => {
       if (downloadUrl) {
@@ -131,6 +138,7 @@ export function WatermarkWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setTotalPages(0);
     setWatermarkText('CONFIDENTIAL');
@@ -167,6 +175,7 @@ export function WatermarkWorkspace() {
     }
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressStage('Applying vector watermark overlay...');
@@ -195,10 +204,12 @@ export function WatermarkWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
       toast.success('Watermark applied successfully');
     } catch (err: unknown) {
       console.error('Watermark error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       const errMsg = formatUserFacingPdfError(err, 'applying watermark');
       setErrorMessage(errMsg);
       toast.error(errMsg);
@@ -665,6 +676,7 @@ export function WatermarkWorkspace() {
             <a
               href={downloadUrl}
               download={resultStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all text-sm"
             >
               <Download className="w-4 h-4" />

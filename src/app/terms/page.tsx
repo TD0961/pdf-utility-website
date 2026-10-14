@@ -6,7 +6,7 @@ import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { constructMetadata } from '@/lib/seo/metadata';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Terms of Service — PDFSimplify Document Utilities',
+  title: 'Terms of Service',
   description: 'Terms and conditions governing the use of PDFSimplify client-side tools, website, and services.',
   path: '/terms',
 });
@@ -15,7 +15,7 @@ export default function TermsPage() {
   return (
     <Container className="py-10 max-w-3xl">
       <div className="space-y-12">
-        <Breadcrumbs items={[{ label: 'Terms of Service' }]} />
+        <Breadcrumbs items={[{ label: 'Terms of Service', href: '/terms' }]} />
 
         {/* Minimalist Header */}
         <header className="space-y-4 border-b border-stone-200/80 dark:border-stone-800/80 pb-8">

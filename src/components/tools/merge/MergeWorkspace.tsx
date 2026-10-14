@@ -26,6 +26,7 @@ import {
 
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
 import { toast } from '@/lib/notifications/toast';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 
 interface SelectedMergeFile {
   id: string;
@@ -48,6 +49,12 @@ export function MergeWorkspace() {
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'merge-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   useEffect(() => {
     return () => {
@@ -131,6 +138,7 @@ export function MergeWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setFiles([]);
     setMergedStats(null);
     setIsProcessing(false);
@@ -149,6 +157,7 @@ export function MergeWorkspace() {
     }
 
     try {
+      startProcessing(files.length);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressPct(5);
@@ -171,10 +180,12 @@ export function MergeWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
       toast.success(`Successfully merged ${result.fileCount} PDFs into ${result.totalPages} pages.`);
     } catch (err: unknown) {
       console.error('Merge error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       const errMsg = formatUserFacingPdfError(err, 'merging documents');
       setErrorMessage(errMsg);
       toast.error(errMsg);
@@ -436,6 +447,7 @@ export function MergeWorkspace() {
             <a
               href={downloadUrl}
               download={mergedStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="w-full sm:w-auto"
             >
               <Button

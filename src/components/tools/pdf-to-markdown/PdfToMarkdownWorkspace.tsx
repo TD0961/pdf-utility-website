@@ -9,6 +9,7 @@ import { createCancellationToken } from '@/lib/pdf/conversion/converter';
 import { CancellationToken, ConversionProgress } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileCode,
   Download,
@@ -23,6 +24,8 @@ import {
 import Link from 'next/link';
 
 export function PdfToMarkdownWorkspace() {
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking('pdf-to-markdown');
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<ConversionProgress | null>(null);
@@ -49,6 +52,7 @@ export function PdfToMarkdownWorkspace() {
 
     const cancelToken = createCancellationToken();
     cancelTokenRef.current = cancelToken;
+    startProcessing(1);
 
     try {
       setIsProcessing(true);
@@ -69,12 +73,14 @@ export function PdfToMarkdownWorkspace() {
       const url = memoryManager.createTrackedUrl(convResult.outputBlob);
       setDownloadUrl(url);
       setResult(convResult);
+      completeProcessing('md');
       setIsProcessing(false);
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('Conversion was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('PDF to Markdown error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'converting PDF to Markdown'));
       }
@@ -99,6 +105,7 @@ export function PdfToMarkdownWorkspace() {
   };
 
   const handleReset = () => {
+    resetTracking();
     if (downloadUrl) {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
@@ -249,6 +256,7 @@ export function PdfToMarkdownWorkspace() {
             <a
               href={downloadUrl}
               download={result.outputFileName}
+              onClick={() => recordDownload('md')}
               className="flex-1 inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm transition-colors text-sm"
             >
               <Download className="w-4 h-4 mr-2" />

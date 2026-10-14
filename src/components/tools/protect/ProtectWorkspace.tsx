@@ -10,6 +10,7 @@ import { getPdfPageCount } from '@/lib/pdf/pdf-renderer';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
 import { toast } from '@/lib/notifications/toast';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Download,
   CheckCircle2,
@@ -55,6 +56,12 @@ export function ProtectWorkspace() {
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'protect-pdf',
+      defaultOutputFormat: 'pdf',
+    });
+
   // Security lifecycle cleanup: Revoke object URLs
   useEffect(() => {
     return () => {
@@ -95,6 +102,7 @@ export function ProtectWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setTotalPages(0);
     setUserPassword('');
@@ -118,6 +126,7 @@ export function ProtectWorkspace() {
     if (!sourceFile || !canProtect) return;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressStage('Initializing Web Crypto AES-256 cipher...');
@@ -149,10 +158,12 @@ export function ProtectWorkspace() {
         algorithm: result.algorithm,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
       toast.success('Document encrypted with AES-256');
     } catch (err: unknown) {
       console.error('Protect error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       const errMsg = formatUserFacingPdfError(err, 'protecting this PDF');
       setErrorMessage(errMsg);
       toast.error(errMsg);
@@ -424,6 +435,7 @@ export function ProtectWorkspace() {
             <a
               href={downloadUrl}
               download={resultStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all text-sm"
             >
               <Download className="w-4 h-4" />

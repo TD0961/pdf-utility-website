@@ -7,7 +7,7 @@ import { constructMetadata } from '@/lib/seo/metadata';
 import { ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Security & Architecture — PDFSimplify Document Utilities',
+  title: 'Security & Architecture',
   description:
     'Detailed overview of PDFSimplify security architecture: local in-browser document processing, HTTPS transport, memory lifecycle, and practical browser security boundaries.',
   path: '/security',
@@ -17,7 +17,7 @@ export default function SecurityPage() {
   return (
     <Container className="py-10 max-w-3xl">
       <div className="space-y-12">
-        <Breadcrumbs items={[{ label: 'Security' }]} />
+        <Breadcrumbs items={[{ label: 'Security', href: '/security' }]} />
 
         {/* Minimalist Header */}
         <header className="space-y-4 border-b border-stone-200/80 dark:border-stone-800/80 pb-8">

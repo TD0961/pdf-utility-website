@@ -26,6 +26,7 @@ import {
   Square,
 } from 'lucide-react';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 
 interface OrganizePageState {
   id: string;
@@ -49,6 +50,12 @@ export function OrganizeWorkspace() {
     fileName: string;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'organize-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   useEffect(() => {
     return () => {
@@ -208,6 +215,7 @@ export function OrganizeWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setPages(initialPages);
     setOrganizedStats(null);
     setErrorMessage(null);
@@ -218,6 +226,7 @@ export function OrganizeWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setPages([]);
     setInitialPages([]);
@@ -232,6 +241,7 @@ export function OrganizeWorkspace() {
     if (!sourceFile || pages.length === 0) return;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressPct(10);
@@ -262,9 +272,11 @@ export function OrganizeWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
     } catch (err: unknown) {
       console.error('Organize save error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       setErrorMessage(formatUserFacingPdfError(err, 'organizing pages'));
     }
   };
@@ -569,6 +581,7 @@ export function OrganizeWorkspace() {
             <a
               href={downloadUrl}
               download={organizedStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="w-full sm:w-auto"
             >
               <Button

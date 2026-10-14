@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { LocalProcessingNotice } from '@/components/pdf/LocalProcessingNotice';
 import { comparePdfDocuments, DocumentComparisonResult } from '@/lib/pdf/compare';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileDiff,
   Upload,
@@ -22,6 +23,12 @@ export function CompareWorkspace() {
   const [isComparing, setIsComparing] = useState(false);
   const [result, setResult] = useState<DocumentComparisonResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, resetTracking } =
+    useToolTracking({
+      toolSlug: 'compare-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   const handleFileAChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -41,20 +48,24 @@ export function CompareWorkspace() {
     if (!fileA || !fileB) return;
 
     try {
+      startProcessing(2);
       setIsComparing(true);
       setErrorMessage(null);
 
       const compResult = await comparePdfDocuments(fileA, fileB);
       setResult(compResult);
       setIsComparing(false);
+      completeProcessing('pdf');
     } catch (err) {
       setIsComparing(false);
+      errorProcessing(err);
       console.error('Comparison error:', err);
       setErrorMessage(formatUserFacingPdfError(err, 'comparing documents'));
     }
   };
 
   const handleReset = () => {
+    resetTracking();
     setFileA(null);
     setFileB(null);
     setResult(null);

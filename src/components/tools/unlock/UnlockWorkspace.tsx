@@ -10,6 +10,7 @@ import { isEncrypted } from '@pdfsmaller/pdf-decrypt';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
 import { toast } from '@/lib/notifications/toast';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Download,
   CheckCircle2,
@@ -44,6 +45,12 @@ export function UnlockWorkspace() {
     fileName: string;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'unlock-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   // Clean up object URLs
   useEffect(() => {
@@ -88,6 +95,7 @@ export function UnlockWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setIsDocEncrypted(null);
     setEncAlgorithm(null);
@@ -101,6 +109,7 @@ export function UnlockWorkspace() {
     if (!sourceFile || isProcessing || !password.trim()) return;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressStage('Authenticating and decrypting document...');
@@ -126,10 +135,12 @@ export function UnlockWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
       toast.success('Document unlocked successfully');
     } catch (err: unknown) {
       console.error('Unlock error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       const errMsg = formatUserFacingPdfError(err, 'unlocking this PDF');
       setErrorMessage(errMsg);
       toast.error(errMsg);
@@ -330,6 +341,7 @@ export function UnlockWorkspace() {
             <a
               href={downloadUrl}
               download={resultStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all text-sm"
             >
               <Download className="w-4 h-4" />

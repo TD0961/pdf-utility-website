@@ -39,6 +39,7 @@ import { GrayscaleWorkspace } from '@/components/tools/grayscale/GrayscaleWorksp
 import { HeaderFooterWorkspace } from '@/components/tools/header-footer/HeaderFooterWorkspace';
 import { ToolEducationalContent } from '@/components/tools/ToolEducationalContent';
 import { ToolWorkspaceIntro } from '@/components/tools/ToolWorkspaceIntro';
+import { ToolPageTracker } from '@/components/tools/ToolPageTracker';
 import { TOOLS_REGISTRY, getToolBySlug, getRelatedTools, getRelatedGuidesForTool } from '@/data/tools';
 import { GUIDES_REGISTRY } from '@/data/guides';
 import { constructMetadata, SITE_URL } from '@/lib/seo/metadata';
@@ -108,13 +109,14 @@ export default async function ToolPage({ params }: ToolPageProps) {
     <div className="pb-20 space-y-12 relative overflow-hidden">
       <JsonLd data={jsonLdToolData} />
       {jsonLdFaqData && <JsonLd data={jsonLdFaqData} />}
+      <ToolPageTracker toolSlug={tool.slug} />
 
       <Container className="pt-6 space-y-6">
         {/* 1. Breadcrumbs */}
         <Breadcrumbs
           items={[
             { label: 'PDF Tools', href: '/pdf-tools' },
-            { label: tool.name },
+            { label: tool.name, href: `/pdf-tools/${tool.slug}` },
           ]}
         />
 

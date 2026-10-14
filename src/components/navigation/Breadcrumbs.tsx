@@ -18,7 +18,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 
   const schemaItems = allItems.map((item) => ({
     name: item.label,
-    url: item.href || '/',
+    url: item.href,
   }));
 
   return (

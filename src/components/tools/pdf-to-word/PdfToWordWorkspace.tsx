@@ -8,6 +8,7 @@ import { convertPdfToWord, createCancellationToken } from '@/lib/pdf/conversion/
 import { ConversionResult, ConversionProgress, CancellationToken } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileText,
   Download,
@@ -38,6 +39,12 @@ export function PdfToWordWorkspace() {
 
   const cancelTokenRef = useRef<CancellationToken | null>(null);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'pdf-to-word',
+      defaultOutputFormat: 'docx',
+    });
+
   useEffect(() => {
     return () => {
       if (downloadUrl) {
@@ -52,6 +59,7 @@ export function PdfToWordWorkspace() {
     cancelTokenRef.current = cancelToken;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setProgress({
         stage: 'initializing',
@@ -77,11 +85,13 @@ export function PdfToWordWorkspace() {
       setDownloadUrl(url);
       setResult(convResult);
       setIsProcessing(false);
+      completeProcessing('docx');
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('Conversion was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('PDF to Word conversion error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'converting PDF to Word'));
       }
@@ -124,6 +134,7 @@ export function PdfToWordWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setResult(null);
     setIsProcessing(false);
@@ -281,6 +292,7 @@ export function PdfToWordWorkspace() {
                 <a
                   href={downloadUrl}
                   download={result.fileName}
+                  onClick={() => recordDownload('docx')}
                   className="flex-1 sm:flex-initial"
                 >
                   <Button

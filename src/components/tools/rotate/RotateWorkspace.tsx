@@ -11,6 +11,7 @@ import { getPdfPageCount } from '@/lib/pdf/pdf-renderer';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
 import { toast } from '@/lib/notifications/toast';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   RotateCw,
   RotateCcw,
@@ -46,6 +47,12 @@ export function RotateWorkspace() {
     fileName: string;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'rotate-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   useEffect(() => {
     return () => {
@@ -140,6 +147,7 @@ export function RotateWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setPages([]);
     setResultStats(null);
@@ -150,6 +158,7 @@ export function RotateWorkspace() {
     if (!sourceFile || pages.length === 0 || isProcessing) return;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressStage('Applying permanent rotation...');
@@ -177,10 +186,12 @@ export function RotateWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
       toast.success(`Successfully saved rotation for ${result.totalPages} pages`);
     } catch (err: unknown) {
       console.error('Rotation failed:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       const errMsg = formatUserFacingPdfError(err, 'rotating this PDF');
       setErrorMessage(errMsg);
       toast.error(errMsg);
@@ -464,6 +475,7 @@ export function RotateWorkspace() {
             <a
               href={downloadUrl}
               download={resultStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition-colors"
             >
               <Download className="w-4 h-4 mr-2" />

@@ -9,6 +9,7 @@ import { createCancellationToken } from '@/lib/pdf/conversion/converter';
 import { ConversionResult, ConversionProgress, CancellationToken } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileSpreadsheet,
   Download,
@@ -31,6 +32,12 @@ export function PdfToExcelWorkspace() {
   const [oneSheetPerPage, setOneSheetPerPage] = useState(false);
   const cancelTokenRef = useRef<CancellationToken | null>(null);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'pdf-to-excel',
+      defaultOutputFormat: 'xlsx',
+    });
+
   useEffect(() => {
     return () => {
       if (downloadUrl) {
@@ -49,6 +56,7 @@ export function PdfToExcelWorkspace() {
     cancelTokenRef.current = cancelToken;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setProgress({
         stage: 'initializing',
@@ -68,11 +76,13 @@ export function PdfToExcelWorkspace() {
       setDownloadUrl(url);
       setResult(convResult);
       setIsProcessing(false);
+      completeProcessing('xlsx');
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('Conversion was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('PDF to Excel conversion error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'converting PDF to Excel'));
       }
@@ -90,6 +100,7 @@ export function PdfToExcelWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setResult(null);
     setIsProcessing(false);
@@ -240,6 +251,7 @@ export function PdfToExcelWorkspace() {
               <a
                 href={downloadUrl}
                 download={result.fileName}
+                onClick={() => recordDownload('xlsx')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="primary" size="sm" className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">

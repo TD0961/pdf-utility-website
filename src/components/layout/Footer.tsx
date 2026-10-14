@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Container } from './Container';
@@ -25,8 +27,17 @@ export function Footer() {
             <Link href="/guides" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
               Guides
             </Link>
+            <Link href="/resources" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
+              Resources
+            </Link>
+            <Link href="/security" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
+              Security
+            </Link>
             <Link href="/about" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
               About
+            </Link>
+            <Link href="/contact" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
+              Contact
             </Link>
             <Link href="/privacy-policy" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
               Privacy
@@ -34,9 +45,21 @@ export function Footer() {
             <Link href="/terms" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
               Terms
             </Link>
-            <Link href="/contact" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
-              Contact
+            <Link href="/cookie-policy" className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
+              Cookies
             </Link>
+            <button
+              id="footer-cookie-settings-btn"
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('open_cookie_preferences'));
+                }
+              }}
+              className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors cursor-pointer text-left"
+            >
+              Cookie Settings
+            </button>
             <a
               href={BUY_ME_A_COFFEE_URL}
               target="_blank"

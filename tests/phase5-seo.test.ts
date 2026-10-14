@@ -20,8 +20,8 @@ describe('Phase 5: SEO Architecture & Content Footprint', () => {
     }
   });
 
-  it('contains exactly 24 comprehensive guides in the guides registry with reciprocal tool links', () => {
-    assert.equal(GUIDES_REGISTRY.length, 24);
+  it('contains comprehensive guides in the guides registry with reciprocal tool links', () => {
+    assert.ok(GUIDES_REGISTRY.length >= 24);
 
     for (const guide of GUIDES_REGISTRY) {
       assert.ok(guide.slug);

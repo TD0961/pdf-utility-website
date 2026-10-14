@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/navigation/Navbar';
@@ -12,6 +11,8 @@ import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ToastContainer } from '@/components/notifications/ToastContainer';
+import { ConsentScriptLoader } from '@/components/consent/ConsentScriptLoader';
+import { ConsentBanner } from '@/components/consent/ConsentBanner';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -69,31 +70,27 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: themeScript }}
           suppressHydrationWarning
         />
-        <Script
-          strategy="afterInteractive"
-          src="https://www.googletagmanager.com/gtag/js?id=G-XZ1VE80DQL"
-        />
-        <Script
-          id="google-analytics-init"
-          strategy="afterInteractive"
+        <script
+          id="google-consent-default"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-XZ1VE80DQL');
+              gtag('consent', 'default', {
+                'analytics_storage': 'denied',
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'wait_for_update': 500
+              });
             `,
           }}
-        />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7704232652384788"
-          crossOrigin="anonymous"
           suppressHydrationWarning
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-indigo-500 selection:text-white">
         <ThemeProvider>
+          <ConsentScriptLoader />
           <JsonLd data={getWebsiteSchema()} />
           <SkipToContent />
           <Navbar />
@@ -101,6 +98,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <ConsentBanner />
           <OfflineIndicator />
           <ServiceWorkerRegister />
           <ToastContainer />

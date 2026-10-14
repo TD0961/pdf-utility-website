@@ -378,14 +378,35 @@ export async function buildPptxFromLayout(
     const shapesXml: string[] = [];
 
     if (slide.rawBlocks && slide.rawBlocks.length > 0) {
-      // Exact positional mode
+      // Page Partition Presentation Template Mode
+      const template = renderPagePartitionTemplateShapes(
+        slide,
+        slideNumber,
+        totalSlides,
+        slideWidthEmu,
+        slideHeightEmu,
+        isDark,
+        layout.fileName
+      );
+      shapesXml.push(...template.shapes);
+
       const page = layout.pages.find((p) => p.pageNumber === slide.sourcePageNumber) || layout.pages[0];
-      const scaleX = page && page.width > 0 ? slideWidthEmu / (page.width * PT_TO_EMU) : 1;
-      const scaleY = page && page.height > 0 ? slideHeightEmu / (page.height * PT_TO_EMU) : 1;
+      const scaleX = page && page.width > 0 ? template.cardBox.w / (page.width * PT_TO_EMU) : 1;
+      const scaleY = page && page.height > 0 ? template.cardBox.h / (page.height * PT_TO_EMU) : 1;
 
       for (let sIdx = 0; sIdx < slide.rawBlocks.length; sIdx++) {
         const block = slide.rawBlocks[sIdx];
-        shapesXml.push(renderBlockToPptxShape(block, sIdx + 2, scaleX, scaleY, isDark));
+        shapesXml.push(
+          renderBlockToPptxShape(
+            block,
+            sIdx + 300,
+            scaleX,
+            scaleY,
+            isDark,
+            template.cardBox.x,
+            template.cardBox.y
+          )
+        );
       }
     } else {
       // Smart Presentation Mode
@@ -1022,17 +1043,202 @@ function renderSmartSlideShapes(
 }
 
 /**
- * Exact mode block renderer preserving raw PDF bounding boxes with scalable typography
+ * Renders presentation slide template frame for page-partitioned slides:
+ * Top Eyebrow pill, Slide Title, Indigo Accent line, Content Partition Card, and Slide Footer.
+ */
+export function renderPagePartitionTemplateShapes(
+  slide: PreparedSlide,
+  slideNumber: number,
+  totalSlides: number,
+  slideWidthEmu: number,
+  slideHeightEmu: number,
+  isDark: boolean,
+  docName: string = 'presentation.pdf'
+): { shapes: string[]; cardBox: { x: number; y: number; w: number; h: number } } {
+  const shapes: string[] = [];
+  let shapeId = 200;
+
+  const titleColor = isDark ? 'FFFFFF' : '0F172A';
+  const subtitleColor = isDark ? '94A3B8' : '64748B';
+  const cardBg = isDark ? '1E293B' : 'F8FAFC';
+  const cardBorder = isDark ? '334155' : 'E2E8F0';
+
+  const cleanTitle = escapeXml(slide.title);
+  const leftMargin = Math.round(slideWidthEmu * 0.075);
+  const contentWidth = Math.round(slideWidthEmu * 0.85);
+
+  const eyebrowY = Math.round(slideHeightEmu * 0.04);
+  const eyebrowH = Math.round(slideHeightEmu * 0.04);
+
+  const titleY = Math.round(slideHeightEmu * 0.08);
+  const titleH = Math.round(slideHeightEmu * 0.08);
+
+  const accentY = Math.round(slideHeightEmu * 0.165);
+  const accentW = Math.round(slideWidthEmu * 0.12);
+
+  const cardY = Math.round(slideHeightEmu * 0.185);
+  const cardH = Math.round(slideHeightEmu * 0.72);
+
+  const footerY = Math.round(slideHeightEmu * 0.93);
+  const footerH = Math.round(slideHeightEmu * 0.04);
+
+  // 1. Eyebrow Pill
+  shapes.push(`
+    <p:sp>
+      <p:nvSpPr>
+        <p:cNvPr id="${shapeId++}" name="Slide Eyebrow"/>
+        <p:cNvSpPr txBox="1"/>
+        <p:nvPr/>
+      </p:nvSpPr>
+      <p:spPr>
+        <a:xfrm>
+          <a:off x="${leftMargin}" y="${eyebrowY}"/>
+          <a:ext cx="${contentWidth}" cy="${eyebrowH}"/>
+        </a:xfrm>
+        <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+        <a:noFill/>
+      </p:spPr>
+      <p:txBody>
+        <a:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0"/>
+        <a:lstStyle/>
+        <a:p>
+          <a:r>
+            <a:rPr lang="en-US" sz="950" b="1">
+              <a:solidFill><a:srgbClr val="4F46E5"/></a:solidFill>
+              <a:latin typeface="Calibri"/>
+            </a:rPr>
+            <a:t xml:space="preserve">PAGE ${slide.sourcePageNumber} PARTITION  •  SLIDE ${slideNumber} OF ${totalSlides}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    </p:sp>`);
+
+  // 2. Slide Title
+  shapes.push(`
+    <p:sp>
+      <p:nvSpPr>
+        <p:cNvPr id="${shapeId++}" name="Slide Title"/>
+        <p:cNvSpPr txBox="1"/>
+        <p:nvPr/>
+      </p:nvSpPr>
+      <p:spPr>
+        <a:xfrm>
+          <a:off x="${leftMargin}" y="${titleY}"/>
+          <a:ext cx="${contentWidth}" cy="${titleH}"/>
+        </a:xfrm>
+        <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+        <a:noFill/>
+      </p:spPr>
+      <p:txBody>
+        <a:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0"/>
+        <a:lstStyle/>
+        <a:p>
+          <a:r>
+            <a:rPr lang="en-US" sz="2400" b="1">
+              <a:solidFill><a:srgbClr val="${titleColor}"/></a:solidFill>
+              <a:latin typeface="Calibri"/>
+            </a:rPr>
+            <a:t xml:space="preserve">${cleanTitle}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    </p:sp>`);
+
+  // 3. Accent Line
+  shapes.push(`
+    <p:sp>
+      <p:nvSpPr>
+        <p:cNvPr id="${shapeId++}" name="Accent Line"/>
+        <p:cNvSpPr/>
+        <p:nvPr/>
+      </p:nvSpPr>
+      <p:spPr>
+        <a:xfrm>
+          <a:off x="${leftMargin}" y="${accentY}"/>
+          <a:ext cx="${accentW}" cy="38100"/>
+        </a:xfrm>
+        <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+        <a:solidFill><a:srgbClr val="4F46E5"/></a:solidFill>
+        <a:ln><a:noFill/></a:ln>
+      </p:spPr>
+    </p:sp>`);
+
+  // 4. Content Card Partition Frame
+  shapes.push(`
+    <p:sp>
+      <p:nvSpPr>
+        <p:cNvPr id="${shapeId++}" name="Content Partition Card"/>
+        <p:cNvSpPr/>
+        <p:nvPr/>
+      </p:nvSpPr>
+      <p:spPr>
+        <a:xfrm>
+          <a:off x="${leftMargin}" y="${cardY}"/>
+          <a:ext cx="${contentWidth}" cy="${cardH}"/>
+        </a:xfrm>
+        <a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val 12000"/></a:avLst></a:prstGeom>
+        <a:solidFill><a:srgbClr val="${cardBg}"/></a:solidFill>
+        <a:ln w="12700"><a:solidFill><a:srgbClr val="${cardBorder}"/></a:solidFill></a:ln>
+      </p:spPr>
+    </p:sp>`);
+
+  // 5. Slide Footer
+  const cleanDocName = escapeXml(docName.replace(/\.pdf$/i, '').replace(/_/g, ' '));
+  shapes.push(`
+    <p:sp>
+      <p:nvSpPr>
+        <p:cNvPr id="${shapeId++}" name="Slide Footer"/>
+        <p:cNvSpPr txBox="1"/>
+        <p:nvPr/>
+      </p:nvSpPr>
+      <p:spPr>
+        <a:xfrm>
+          <a:off x="${leftMargin}" y="${footerY}"/>
+          <a:ext cx="${contentWidth}" cy="${footerH}"/>
+        </a:xfrm>
+        <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+        <a:noFill/>
+      </p:spPr>
+      <p:txBody>
+        <a:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0"/>
+        <a:lstStyle/>
+        <a:p>
+          <a:r>
+            <a:rPr lang="en-US" sz="850">
+              <a:solidFill><a:srgbClr val="${subtitleColor}"/></a:solidFill>
+              <a:latin typeface="Calibri"/>
+            </a:rPr>
+            <a:t xml:space="preserve">${cleanDocName}  •  Slide ${slideNumber} of ${totalSlides}</a:t>
+          </a:r>
+        </a:p>
+      </p:txBody>
+    </p:sp>`);
+
+  return {
+    shapes,
+    cardBox: {
+      x: leftMargin + 180000,
+      y: cardY + 180000,
+      w: contentWidth - 360000,
+      h: cardH - 360000,
+    },
+  };
+}
+
+/**
+ * Exact mode block renderer preserving raw PDF bounding boxes with scalable typography inside template card
  */
 function renderBlockToPptxShape(
   block: TextBlock,
   shapeId: number,
   scaleX: number,
   scaleY: number,
-  isDark: boolean
+  isDark: boolean,
+  offsetX: number = 0,
+  offsetY: number = 0
 ): string {
-  const xEmu = Math.round(block.box.x * PT_TO_EMU * scaleX);
-  const yEmu = Math.round(block.box.y * PT_TO_EMU * scaleY);
+  const xEmu = Math.round(block.box.x * PT_TO_EMU * scaleX + offsetX);
+  const yEmu = Math.round(block.box.y * PT_TO_EMU * scaleY + offsetY);
   const wEmu = Math.max(914400, Math.round(block.box.width * PT_TO_EMU * scaleX));
   const hEmu = Math.max(365760, Math.round((block.box.height + 10) * PT_TO_EMU * scaleY));
 

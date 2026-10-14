@@ -3,10 +3,11 @@ import PrivacyPolicyPage from '../privacy-policy/page';
 import { constructMetadata } from '@/lib/seo/metadata';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Privacy Policy — Zero-Backend Document Architecture & AdSense Disclosures',
+  title: 'Privacy Policy',
   description:
-    'Comprehensive privacy policy for PDFSimplify detailing client-side WebAssembly execution, zero document retention, Google AdSense third-party cookie disclosures, and user rights.',
+    'Comprehensive privacy policy for PDFSimplify detailing client-side WebAssembly execution, zero document retention, and user rights.',
   path: '/privacy-policy',
+  noIndex: true,
 });
 
 export default PrivacyPolicyPage;

@@ -21,7 +21,7 @@ export function Navbar() {
     { label: 'Tools', href: '/pdf-tools', hasDropdown: true },
     { label: 'Guides', href: '/guides' },
     { label: 'About', href: '/about' },
-    { label: 'Privacy', href: '/privacy' },
+    { label: 'Privacy', href: '/privacy-policy' },
   ];
 
   return (

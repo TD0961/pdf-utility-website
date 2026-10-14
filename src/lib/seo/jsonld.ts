@@ -43,16 +43,30 @@ export function getToolSoftwareSchema({
   };
 }
 
-export function getBreadcrumbSchema(items: { name: string; url: string }[]) {
+export function getBreadcrumbSchema(items: { name: string; url?: string }[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: item.name,
-      item: item.url.startsWith('http') ? item.url : `${SITE_URL}${item.url}`,
-    })),
+    itemListElement: items.map((item, index) => {
+      const listItem: {
+        '@type': 'ListItem';
+        position: number;
+        name: string;
+        item?: string;
+      } = {
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+      };
+
+      if (item.url && item.url.trim() !== '') {
+        listItem.item = item.url.startsWith('http')
+          ? item.url
+          : `${SITE_URL}${item.url.startsWith('/') ? item.url : `/${item.url}`}`;
+      }
+
+      return listItem;
+    }),
   };
 }
 

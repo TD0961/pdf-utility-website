@@ -8,6 +8,7 @@ import { convertPdfToPpt, createCancellationToken } from '@/lib/pdf/conversion/c
 import { ConversionResult, ConversionProgress, CancellationToken } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Presentation,
   Download,
@@ -41,6 +42,12 @@ export function PdfToPptWorkspace() {
 
   const cancelTokenRef = useRef<CancellationToken | null>(null);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'pdf-to-ppt',
+      defaultOutputFormat: 'pptx',
+    });
+
   useEffect(() => {
     return () => {
       if (downloadUrl) {
@@ -59,6 +66,7 @@ export function PdfToPptWorkspace() {
     cancelTokenRef.current = cancelToken;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setProgress({
         stage: 'initializing',
@@ -83,11 +91,13 @@ export function PdfToPptWorkspace() {
       setDownloadUrl(url);
       setResult(convResult);
       setIsProcessing(false);
+      completeProcessing('pptx');
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('Conversion was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('PDF to PowerPoint conversion error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'converting PDF to PowerPoint'));
       }
@@ -137,6 +147,7 @@ export function PdfToPptWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setResult(null);
     setIsProcessing(false);
@@ -330,6 +341,7 @@ export function PdfToPptWorkspace() {
                 <a
                   href={downloadUrl}
                   download={result.fileName}
+                  onClick={() => recordDownload('pptx')}
                   className="flex-1 sm:flex-initial"
                 >
                   <Button

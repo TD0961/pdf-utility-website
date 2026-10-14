@@ -39,12 +39,12 @@ describe('Phase 5: Launch Readiness & Zero-Backend Invariants', () => {
     assert.ok(manifestContent.includes("export const dynamic = 'force-static'"));
   });
 
-  it('has complete reciprocal tool-guide coverage across all 30 tools and 24 guides', () => {
+  it('has complete reciprocal tool-guide coverage across all tools and guides', () => {
     const toolSlugs = new Set(TOOLS_REGISTRY.map((t) => t.slug));
     assert.equal(toolSlugs.size, 30);
 
     const guideSlugs = new Set(GUIDES_REGISTRY.map((g) => g.slug));
-    assert.equal(guideSlugs.size, 24);
+    assert.equal(guideSlugs.size, GUIDES_REGISTRY.length);
 
     for (const guide of GUIDES_REGISTRY) {
       assert.ok(guide.relatedToolSlug);

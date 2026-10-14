@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
   return (
     <Container className="py-10 max-w-3xl">
       <div className="space-y-12">
-        <Breadcrumbs items={[{ label: 'Privacy Policy' }]} />
+        <Breadcrumbs items={[{ label: 'Privacy Policy', href: '/privacy-policy' }]} />
 
         {/* Minimalist Header */}
         <header className="space-y-4 border-b border-stone-200/80 dark:border-stone-800/80 pb-8">

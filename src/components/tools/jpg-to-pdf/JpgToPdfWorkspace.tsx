@@ -14,6 +14,7 @@ import {
 } from '@/lib/pdf/jpg-to-pdf';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileImage,
   ArrowRight,
@@ -55,6 +56,12 @@ export function JpgToPdfWorkspace() {
     fileName: string;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'jpg-to-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -151,6 +158,7 @@ export function JpgToPdfWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     // Revoke all preview URLs
     for (const img of images) {
       memoryManager.revokeUrl(img.previewUrl);
@@ -171,6 +179,7 @@ export function JpgToPdfWorkspace() {
     }
 
     try {
+      startProcessing(images.length);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressPct(5);
@@ -196,9 +205,11 @@ export function JpgToPdfWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
     } catch (err: unknown) {
       console.error('JPG to PDF error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       setErrorMessage(formatUserFacingPdfError(err, 'converting images to PDF'));
     }
   };
@@ -506,6 +517,7 @@ export function JpgToPdfWorkspace() {
             <a
               href={downloadUrl}
               download={resultStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="w-full sm:w-auto inline-block"
             >
               <Button

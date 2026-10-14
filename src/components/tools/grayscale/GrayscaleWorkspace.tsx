@@ -9,6 +9,7 @@ import { createCancellationToken } from '@/lib/pdf/conversion/converter';
 import { CancellationToken, ConversionProgress } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Moon,
   Download,
@@ -19,6 +20,8 @@ import {
 } from 'lucide-react';
 
 export function GrayscaleWorkspace() {
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking('grayscale-pdf');
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [dpiScale, setDpiScale] = useState<number>(2.0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,6 +49,7 @@ export function GrayscaleWorkspace() {
     if (!sourceFile) return;
     const cancelToken = createCancellationToken();
     cancelTokenRef.current = cancelToken;
+    startProcessing(1);
 
     try {
       setIsProcessing(true);
@@ -69,12 +73,14 @@ export function GrayscaleWorkspace() {
       const url = memoryManager.createTrackedUrl(blob);
       setDownloadUrl(url);
       setResult(res);
+      completeProcessing('pdf');
       setIsProcessing(false);
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('Grayscale conversion was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('Grayscale conversion error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'converting PDF to grayscale'));
       }
@@ -88,6 +94,7 @@ export function GrayscaleWorkspace() {
   };
 
   const handleReset = () => {
+    resetTracking();
     if (downloadUrl) {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
@@ -257,6 +264,7 @@ export function GrayscaleWorkspace() {
             <a
               href={downloadUrl}
               download={sourceFile ? `grayscale_${sourceFile.name}` : 'grayscale.pdf'}
+              onClick={() => recordDownload('pdf')}
               className="flex-1 inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm transition-colors text-sm"
             >
               <Download className="w-4 h-4 mr-2" />

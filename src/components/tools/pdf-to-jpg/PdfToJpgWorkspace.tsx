@@ -10,6 +10,7 @@ import { getPdfPageCount } from '@/lib/pdf/pdf-renderer';
 import { parsePageRanges } from '@/lib/pdf/range-parser';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileText,
   FileImage,
@@ -42,6 +43,12 @@ export function PdfToJpgWorkspace() {
     fileSize: number;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'pdf-to-jpg',
+      defaultOutputFormat: 'jpg',
+    });
 
   // Live range validation
   const parsedRangeResult =
@@ -89,6 +96,7 @@ export function PdfToJpgWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setTotalPages(0);
     setResultStats(null);
@@ -108,6 +116,7 @@ export function PdfToJpgWorkspace() {
     }
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressPct(5);
@@ -132,9 +141,11 @@ export function PdfToJpgWorkspace() {
         fileSize: result.blob.size,
       });
       setIsProcessing(false);
+      completeProcessing(result.isZip ? 'zip' : 'jpg');
     } catch (err: unknown) {
       console.error('PDF to JPG error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       setErrorMessage(formatUserFacingPdfError(err, 'converting PDF to JPG'));
     }
   };
@@ -401,6 +412,7 @@ export function PdfToJpgWorkspace() {
             <a
               href={downloadUrl}
               download={resultStats.fileName}
+              onClick={() => recordDownload(resultStats.isZip ? 'zip' : 'jpg')}
               className="w-full sm:w-auto inline-block"
             >
               <Button

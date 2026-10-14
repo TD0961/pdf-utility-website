@@ -17,6 +17,7 @@ import { getPdfPageCount } from '@/lib/pdf/pdf-renderer';
 import { parsePageRanges } from '@/lib/pdf/range-parser';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Download,
   CheckCircle2,
@@ -51,6 +52,12 @@ export function PageNumbersWorkspace() {
     fileName: string;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'add-page-numbers',
+      defaultOutputFormat: 'pdf',
+    });
 
   useEffect(() => {
     return () => {
@@ -108,6 +115,7 @@ export function PageNumbersWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setTotalPages(0);
     setPosition('bottom-center');
@@ -132,6 +140,7 @@ export function PageNumbersWorkspace() {
     }
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressStage('Adding page number layers...');
@@ -160,9 +169,11 @@ export function PageNumbersWorkspace() {
         fileName: result.fileName,
       });
       setIsProcessing(false);
+      completeProcessing('pdf');
     } catch (err: unknown) {
       console.error('Page numbering failed:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       setErrorMessage(formatUserFacingPdfError(err, 'adding page numbers'));
     }
   };
@@ -601,6 +612,7 @@ export function PageNumbersWorkspace() {
             <a
               href={downloadUrl}
               download={resultStats.fileName}
+              onClick={() => recordDownload('pdf')}
               className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition-colors"
             >
               <Download className="w-4 h-4 mr-2" />

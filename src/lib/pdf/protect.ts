@@ -50,7 +50,7 @@ export async function protectPdf({
   outputFileName,
   onProgress,
 }: ProtectPdfOptions): Promise<ProtectPdfResult> {
-  if (!userPassword || userPassword.length === 0) {
+  if (!userPassword || userPassword.trim().length === 0) {
     throw new Error('Please enter a password to protect your PDF.');
   }
 

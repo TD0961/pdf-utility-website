@@ -1,0 +1,4 @@
+# Cloudflare Pages Redirect Rules
+# Permanent 301 redirects to canonical legal URLs
+/privacy /privacy-policy 301
+/terms-of-service /terms 301

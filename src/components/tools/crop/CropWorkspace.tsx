@@ -8,6 +8,7 @@ import { cropPdfDocument, CropScope, CropBoxPoints } from '@/lib/pdf/crop';
 import { getPdfDocument } from '@/lib/pdf/pdf-renderer';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   Crop,
   Download,
@@ -40,6 +41,12 @@ export function CropWorkspace() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'crop-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const previewContainerRef = useRef<HTMLDivElement | null>(null);
@@ -158,6 +165,7 @@ export function CropWorkspace() {
     if (!pdfBytes || !viewportRef.current) return;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
 
@@ -182,8 +190,10 @@ export function CropWorkspace() {
       const url = memoryManager.createTrackedUrl(cropped.blob);
       setDownloadUrl(url);
       setIsProcessing(false);
+      completeProcessing('pdf');
     } catch (err) {
       setIsProcessing(false);
+      errorProcessing(err);
       console.error('Error cropping PDF:', err);
       setErrorMessage(formatUserFacingPdfError(err, 'cropping PDF'));
     }
@@ -194,6 +204,7 @@ export function CropWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setPdfBytes(null);
     setNumPages(0);
@@ -377,6 +388,7 @@ export function CropWorkspace() {
               <a
                 href={downloadUrl}
                 download={sourceFile.name.replace(/\.pdf$/i, '_cropped.pdf')}
+                onClick={() => recordDownload('pdf')}
                 className="flex-1 sm:flex-none"
               >
                 <Button variant="primary" size="sm" className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">

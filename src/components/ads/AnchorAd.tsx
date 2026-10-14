@@ -1,8 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import { AdPageType, isAnchorAllowed } from '@/lib/ads/ad-strategy';
+import {
+  AdPageType,
+  isAnchorAllowed,
+  DEFAULT_ADSENSE_CLIENT_ID,
+} from '@/lib/ads/ad-strategy';
+import { useConsent } from '@/lib/consent/useConsent';
+import {
+  trackAdSlotEligible,
+  trackAdSlotRequestInitiated,
+  trackAdSlotError,
+  trackAdSlotExcluded,
+} from '@/lib/analytics/events';
 
 export interface AnchorAdProps {
   pageType: AdPageType;
@@ -11,19 +22,70 @@ export interface AnchorAdProps {
 
 export function AnchorAd({ pageType, slotId = 'anchor-ad-bottom' }: AnchorAdProps) {
   const [dismissed, setDismissed] = useState(false);
+  const { consent, isMounted } = useConsent();
+  const eligibleTrackedRef = useRef(false);
+  const pushedRef = useRef(false);
+  const adRef = useRef<HTMLModElement>(null);
 
   // 1. Policy Guard: Strictly disallow on editor, legal, and disabled page types
-  if (!isAnchorAllowed(pageType) || dismissed) {
-    return null;
-  }
+  const isPlacementAllowed = isAnchorAllowed(pageType);
 
   const isAdSenseEnabled = process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true';
   const isTestMode = process.env.NEXT_PUBLIC_ADSENSE_TEST_MODE === 'true';
   const adClient =
     process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID ||
-    process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+    process.env.NEXT_PUBLIC_ADSENSE_CLIENT ||
+    DEFAULT_ADSENSE_CLIENT_ID;
 
-  if (!isAdSenseEnabled && !isTestMode) {
+  // 2. Monetization Eligibility: Render anchor ad for all visitors on eligible pages
+  const isEligible =
+    isPlacementAllowed &&
+    !dismissed &&
+    (isAdSenseEnabled || isTestMode);
+
+  // 3. Track placement exclusion or eligibility
+  useEffect(() => {
+    if (!isMounted) return;
+
+    if (!isPlacementAllowed) {
+      trackAdSlotExcluded(slotId, pageType, 'anchor_policy_forbidden');
+      return;
+    }
+
+    if (isEligible && !eligibleTrackedRef.current) {
+      eligibleTrackedRef.current = true;
+      trackAdSlotEligible(slotId, pageType);
+    }
+  }, [isMounted, isPlacementAllowed, isEligible, slotId, pageType]);
+
+  // 4. Initialize tag safely
+  useEffect(() => {
+    if (!isMounted || !isEligible || !isAdSenseEnabled || !adClient || !adRef.current) {
+      return;
+    }
+
+    if (!pushedRef.current) {
+      try {
+        if (typeof window !== 'undefined') {
+          if (adRef.current.innerHTML.trim() === '') {
+            trackAdSlotRequestInitiated(slotId, pageType, Boolean(consent.advertising));
+            const adsWindow = window as unknown as {
+              adsbygoogle?: (unknown[] & { requestNonPersonalizedAds?: number });
+            };
+            adsWindow.adsbygoogle = adsWindow.adsbygoogle || [];
+            // Official Google AdSense API to request non-personalized ads (NPA)
+            adsWindow.adsbygoogle.requestNonPersonalizedAds = consent.advertising ? 0 : 1;
+            adsWindow.adsbygoogle.push({});
+            pushedRef.current = true;
+          }
+        }
+      } catch {
+        trackAdSlotError(slotId, pageType, 'init_exception');
+      }
+    }
+  }, [isMounted, isEligible, isAdSenseEnabled, adClient, consent.advertising, slotId, pageType]);
+
+  if (!isMounted || !isPlacementAllowed || dismissed || !isEligible) {
     return null;
   }
 
@@ -50,6 +112,7 @@ export function AnchorAd({ pageType, slotId = 'anchor-ad-bottom' }: AnchorAdProp
       <div className="w-full max-w-3xl min-h-[50px] sm:min-h-[90px] flex items-center justify-center pb-2 px-4">
         {isAdSenseEnabled && adClient ? (
           <ins
+            ref={adRef}
             className="adsbygoogle"
             style={{ display: 'inline-block', width: '100%', height: '50px' }}
             data-ad-client={adClient}

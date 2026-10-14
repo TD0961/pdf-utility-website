@@ -9,6 +9,7 @@ import { createCancellationToken } from '@/lib/pdf/conversion/converter';
 import { CancellationToken, ConversionProgress } from '@/lib/pdf/conversion/types';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileSpreadsheet,
   Download,
@@ -32,6 +33,12 @@ export function PdfToCsvWorkspace() {
   const [pageRange] = useState('all');
   const cancelTokenRef = useRef<CancellationToken | null>(null);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'pdf-to-csv',
+      defaultOutputFormat: 'csv',
+    });
+
   useEffect(() => {
     return () => {
       if (downloadUrl) {
@@ -50,6 +57,7 @@ export function PdfToCsvWorkspace() {
     cancelTokenRef.current = cancelToken;
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setProgress({
         stage: 'initializing',
@@ -70,11 +78,13 @@ export function PdfToCsvWorkspace() {
       setDownloadUrl(url);
       setResult(convResult);
       setIsProcessing(false);
+      completeProcessing('csv');
     } catch (err: unknown) {
       setIsProcessing(false);
       if (cancelToken.isCancelled) {
         setErrorMessage('Extraction was cancelled.');
       } else {
+        errorProcessing(err);
         console.error('PDF to CSV extraction error:', err);
         setErrorMessage(formatUserFacingPdfError(err, 'extracting tables to CSV'));
       }
@@ -92,6 +102,7 @@ export function PdfToCsvWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setResult(null);
     setIsProcessing(false);
@@ -249,6 +260,7 @@ export function PdfToCsvWorkspace() {
             <a
               href={downloadUrl}
               download={result.outputFileName}
+              onClick={() => recordDownload('csv')}
               className="flex-1 inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm transition-colors text-sm"
             >
               <Download className="w-4 h-4 mr-2" />

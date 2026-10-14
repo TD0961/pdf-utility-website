@@ -7,6 +7,7 @@ import { LocalProcessingNotice } from '@/components/pdf/LocalProcessingNotice';
 import { extractTextFromPdfDocument, PdfToTextResult } from '@/lib/pdf/pdf-to-text';
 import { memoryManager } from '@/lib/pdf/memory-manager';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 import {
   FileText,
   Copy,
@@ -31,6 +32,12 @@ export function PdfToTextWorkspace() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'pdf-to-text',
+      defaultOutputFormat: 'txt',
+    });
+
   useEffect(() => {
     return () => {
       if (downloadUrl) {
@@ -47,6 +54,7 @@ export function PdfToTextWorkspace() {
     setCopied(false);
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setProgressStage('Extracting text content streams...');
       setProgressPct(10);
@@ -63,9 +71,11 @@ export function PdfToTextWorkspace() {
       setDownloadUrl(url);
       setTextResult(result);
       setIsProcessing(false);
+      completeProcessing('txt');
     } catch (err: unknown) {
       console.error('PDF to Text error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       setSourceFile(null);
       setErrorMessage(formatUserFacingPdfError(err, 'extracting text from PDF'));
     }
@@ -76,6 +86,7 @@ export function PdfToTextWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setTextResult(null);
     setIsProcessing(false);
@@ -196,7 +207,11 @@ export function PdfToTextWorkspace() {
               </Button>
 
               {downloadUrl && (
-                <a href={downloadUrl} download={textResult.fileName}>
+                <a
+                  href={downloadUrl}
+                  download={textResult.fileName}
+                  onClick={() => recordDownload('txt')}
+                >
                   <Button
                     variant="primary"
                     size="sm"

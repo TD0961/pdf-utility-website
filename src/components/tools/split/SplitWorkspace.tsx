@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { formatUserFacingPdfError } from '@/lib/validation/file-validator';
 import { toast } from '@/lib/notifications/toast';
+import { useToolTracking } from '@/lib/analytics/useToolTracking';
 
 export function SplitWorkspace() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -44,6 +45,12 @@ export function SplitWorkspace() {
     fileSize: number;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { startProcessing, completeProcessing, errorProcessing, recordDownload, resetTracking } =
+    useToolTracking({
+      toolSlug: 'split-pdf',
+      defaultOutputFormat: 'pdf',
+    });
 
   // Derived range validation state
   const parsedRangeResult =
@@ -107,6 +114,7 @@ export function SplitWorkspace() {
       memoryManager.revokeUrl(downloadUrl);
       setDownloadUrl(null);
     }
+    resetTracking();
     setSourceFile(null);
     setTotalPages(0);
     setSelectedPages([]);
@@ -140,6 +148,7 @@ export function SplitWorkspace() {
     }
 
     try {
+      startProcessing(1);
       setIsProcessing(true);
       setErrorMessage(null);
       setProgressPct(10);
@@ -169,6 +178,7 @@ export function SplitWorkspace() {
         fileSize: result.blob.size,
       });
       setIsProcessing(false);
+      completeProcessing(result.isZip ? 'zip' : 'pdf');
       toast.success(
         result.isZip
           ? `Extracted ${result.fileCount} documents into ZIP archive`
@@ -177,6 +187,7 @@ export function SplitWorkspace() {
     } catch (err: unknown) {
       console.error('Split error:', err);
       setIsProcessing(false);
+      errorProcessing(err);
       const errMsg = formatUserFacingPdfError(err, 'splitting document');
       setErrorMessage(errMsg);
       toast.error(errMsg);
@@ -483,6 +494,7 @@ export function SplitWorkspace() {
             <a
               href={downloadUrl}
               download={splitResultStats.fileName}
+              onClick={() => recordDownload(splitResultStats.isZip ? 'zip' : 'pdf')}
               className="w-full sm:w-auto"
             >
               <Button
