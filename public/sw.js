@@ -6,19 +6,7 @@
  * Documents and user data are strictly processed in volatile client memory and are NEVER cached.
  */
 
-// Monetag Push Service Worker Integration
-self.options = {
-  domain: '5gvci.com',
-  zoneId: 12031242,
-};
-self.lary = '';
-try {
-  importScripts('https://5gvci.com/act/files/service-worker.min.js?r=sw');
-} catch (e) {
-  // Gracefully continue offline operation if push script is unreachable
-}
-
-const CACHE_VERSION = 'v1.3.0';
+const CACHE_VERSION = 'v1.3.1';
 const STATIC_CACHE = `pdfsimplify-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `pdfsimplify-runtime-${CACHE_VERSION}`;
 

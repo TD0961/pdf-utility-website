@@ -67,8 +67,8 @@ export default function RootLayout({
       <head>
         <meta name="monetag" content="dee36d45407a6b0764ce2d589c958d40" />
         <script
-          src="https://quge5.com/88/tag.min.js"
-          data-zone="295713"
+          src="https://nap5k.com/tag.min.js"
+          data-zone="12032602"
           async
           data-cfasync="false"
         />
