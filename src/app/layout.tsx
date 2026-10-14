@@ -65,6 +65,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <meta name="monetag" content="dee36d45407a6b0764ce2d589c958d40" />
         <script
           id="theme-init"
           dangerouslySetInnerHTML={{ __html: themeScript }}
