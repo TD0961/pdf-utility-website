@@ -29,38 +29,34 @@ export function ConsentBanner() {
           id="cookie-consent-banner"
           role="dialog"
           aria-label="Privacy and Cookie Preferences"
-          className="fixed bottom-0 left-0 right-0 z-40 p-4 sm:p-6 flex justify-center pointer-events-none animate-in slide-in-from-bottom duration-300"
+          className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-40 max-w-sm sm:max-w-md pointer-events-none animate-in slide-in-from-bottom duration-300"
         >
-          <div className="w-full max-w-4xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl pointer-events-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-            <div className="space-y-1.5 max-w-2xl">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Privacy-First Platform Notice
-                </h3>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                PDFSimplify processes documents 100% locally in your browser with zero file uploads.
-                We use strictly necessary cookies to operate the site, and request your permission for optional
-                anonymous analytics and advertising. See our{' '}
-                <Link href="/privacy-policy" className="underline hover:text-slate-900 dark:hover:text-white">
-                  Privacy Policy
-                </Link>{' '}
-                and{' '}
-                <Link href="/cookie-policy" className="underline hover:text-slate-900 dark:hover:text-white">
-                  Cookie Policy
-                </Link>.
-              </p>
+          <div className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xl pointer-events-auto flex flex-col gap-3">
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <h3 className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white">
+                Privacy-First Platform Notice
+              </h3>
             </div>
+            <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              PDFSimplify processes documents 100% locally in your browser memory. We request permission for optional anonymous analytics and ads. See{' '}
+              <Link href="/privacy-policy" className="underline hover:text-slate-900 dark:hover:text-white">
+                Privacy
+              </Link>{' '}
+              &amp;{' '}
+              <Link href="/cookie-policy" className="underline hover:text-slate-900 dark:hover:text-white">
+                Cookies
+              </Link>.
+            </p>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0 justify-end">
+            <div className="flex items-center gap-2 pt-1 justify-end">
               <Button
                 id="consent-customize-btn"
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsModalOpen(true)}
-                leftIcon={<Settings2 className="w-3.5 h-3.5" />}
-                className="text-xs"
+                leftIcon={<Settings2 className="w-3 h-3" />}
+                className="text-[11px] h-7 px-2"
               >
                 Customize
               </Button>
@@ -69,16 +65,16 @@ export function ConsentBanner() {
                 variant="outline"
                 size="sm"
                 onClick={rejectOptional}
-                className="text-xs"
+                className="text-[11px] h-7 px-2.5"
               >
-                Reject Non-Essential
+                Reject
               </Button>
               <Button
                 id="consent-accept-all-btn"
                 variant="primary"
                 size="sm"
                 onClick={acceptAll}
-                className="text-xs font-semibold"
+                className="text-[11px] h-7 px-3 font-semibold"
               >
                 Accept All
               </Button>
