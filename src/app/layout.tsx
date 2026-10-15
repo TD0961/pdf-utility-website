@@ -73,6 +73,12 @@ export default function RootLayout({
           data-cfasync="false"
         />
         <script
+          src="https://n6wxm.com/vignette.min.js"
+          data-zone="12035717"
+          async
+          data-cfasync="false"
+        />
+        <script
           id="theme-init"
           dangerouslySetInnerHTML={{ __html: themeScript }}
           suppressHydrationWarning
