@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ShieldCheck, BarChart3, Megaphone, Check } from 'lucide-react';
+import { X, ShieldCheck, BarChart3, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useConsent } from '@/lib/consent/useConsent';
 
@@ -18,12 +18,11 @@ export function ConsentModal({ isOpen, onClose }: ConsentModalProps) {
 function ConsentDialogContent({ onClose }: { onClose: () => void }) {
   const { consent, isDnt, updatePreferences } = useConsent();
   const [analyticsEnabled, setAnalyticsEnabled] = useState(consent.analytics);
-  const [advertisingEnabled, setAdvertisingEnabled] = useState(consent.advertising);
 
   const handleSave = () => {
     updatePreferences({
       analytics: analyticsEnabled,
-      advertising: advertisingEnabled,
+      advertising: false,
     });
     onClose();
   };
@@ -31,7 +30,7 @@ function ConsentDialogContent({ onClose }: { onClose: () => void }) {
   const handleAcceptAll = () => {
     updatePreferences({
       analytics: true,
-      advertising: true,
+      advertising: false,
     });
     onClose();
   };
@@ -123,28 +122,6 @@ function ConsentDialogContent({ onClose }: { onClose: () => void }) {
               type="checkbox"
               checked={analyticsEnabled}
               onChange={(e) => setAnalyticsEnabled(e.target.checked)}
-              className="mt-1 w-4 h-4 accent-indigo-600 rounded cursor-pointer"
-            />
-          </div>
-
-          {/* 3. Advertising */}
-          <div className="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                <span className="font-semibold text-sm text-slate-900 dark:text-white">
-                  Contextual Advertising
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Allows Google AdSense units to serve advertisements that keep PDFSimplify free. Ads never overlap document controls or download actions.
-              </p>
-            </div>
-            <input
-              id="advertising-toggle"
-              type="checkbox"
-              checked={advertisingEnabled}
-              onChange={(e) => setAdvertisingEnabled(e.target.checked)}
               className="mt-1 w-4 h-4 accent-indigo-600 rounded cursor-pointer"
             />
           </div>

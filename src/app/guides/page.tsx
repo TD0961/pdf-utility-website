@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
-import { AdSlot } from '@/components/ads/AdSlot';
 import { GUIDES_REGISTRY } from '@/data/guides';
 import { constructMetadata } from '@/lib/seo/metadata';
 import { Clock, ArrowRight, BookOpen } from 'lucide-react';
@@ -70,10 +69,6 @@ export default function GuidesIndexPage() {
             </div>
           </Link>
         ))}
-      </div>
-
-      <div className="py-4">
-        <AdSlot slotId="guides-index-bottom" pageType="guide" placement="in-content" />
       </div>
     </Container>
   );

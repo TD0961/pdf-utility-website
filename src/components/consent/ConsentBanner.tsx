@@ -39,7 +39,7 @@ export function ConsentBanner() {
               </h3>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              PDFSimplify processes documents 100% locally in your browser memory. We request permission for optional anonymous analytics and ads. See{' '}
+              PDFSimplify processes documents 100% locally in your browser memory. We request permission for optional anonymous performance analytics. See{' '}
               <Link href="/privacy-policy" className="underline hover:text-slate-900 dark:hover:text-white">
                 Privacy
               </Link>{' '}

@@ -2,19 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 import { useConsent } from '@/lib/consent/useConsent';
-import { DEFAULT_ADSENSE_CLIENT_ID } from '@/lib/ads/ad-strategy';
-import { trackAdBlockerDetected } from '@/lib/analytics/events';
 
 const GA_MEASUREMENT_ID = 'G-XZ1VE80DQL';
-const ADSENSE_CLIENT_ID =
-  process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID ||
-  process.env.NEXT_PUBLIC_ADSENSE_CLIENT ||
-  DEFAULT_ADSENSE_CLIENT_ID;
 
 export function ConsentScriptLoader() {
   const { consent, isDnt, isMounted } = useConsent();
   const gaLoadedRef = useRef(false);
-  const adsenseLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!isMounted || typeof window === 'undefined') return;
@@ -61,45 +54,7 @@ export function ConsentScriptLoader() {
         analytics_storage: 'denied',
       });
     }
-
-    // 3. Handle Advertising Consent & Script Loading
-    const isAdSenseEnabled = process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true';
-    if (isAdSenseEnabled) {
-      if (consent.advertising) {
-        window.gtag('consent', 'update', {
-          ad_storage: 'granted',
-          ad_user_data: 'granted',
-          ad_personalization: 'granted',
-        });
-      } else {
-        window.gtag('consent', 'update', {
-          ad_storage: 'denied',
-          ad_user_data: 'denied',
-          ad_personalization: 'denied',
-        });
-      }
-
-      // Synchronize official AdSense NPA control on global adsbygoogle array
-      const adsWindow = window as unknown as {
-        adsbygoogle?: (unknown[] & { requestNonPersonalizedAds?: number });
-      };
-      adsWindow.adsbygoogle = adsWindow.adsbygoogle || [];
-      adsWindow.adsbygoogle.requestNonPersonalizedAds = consent.advertising ? 0 : 1;
-
-      if (!adsenseLoadedRef.current && !document.getElementById('adsense-script')) {
-        const adScript = document.createElement('script');
-        adScript.id = 'adsense-script';
-        adScript.async = true;
-        adScript.crossOrigin = 'anonymous';
-        adScript.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`;
-        adScript.onerror = () => {
-          trackAdBlockerDetected('adsense');
-        };
-        document.head.appendChild(adScript);
-        adsenseLoadedRef.current = true;
-      }
-    }
-  }, [consent, isDnt, isMounted]);
+  }, [consent.analytics, isDnt, isMounted]);
 
   return null;
 }

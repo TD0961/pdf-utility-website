@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { Container } from '@/components/layout/Container';
-import { AdSlot } from '@/components/ads/AdSlot';
 import { TOOLS_REGISTRY, TOOL_CATEGORIES } from '@/data/tools';
 import { GUIDES_REGISTRY } from '@/data/guides';
 import { GLOBAL_FAQS } from '@/data/faq';
@@ -18,13 +17,6 @@ export default function HomePage() {
 
       {/* 2. Visual Narrative: The Four Document Worlds (Organize, Optimize, Convert, Protect) */}
       <StoryWorldsSection />
-
-      {/* 3. Monetization Unit (Policy-Compliant, Editorial Framing) */}
-      <Container>
-        <div className="py-2">
-          <AdSlot slotId="home-leaderboard" pageType="home" placement="in-content" />
-        </div>
-      </Container>
 
       {/* 4. Complete Architecture: All 30 Tools Grouped by World */}
       <section id="all-tools" className="scroll-mt-20">

@@ -6,9 +6,9 @@ import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { constructMetadata } from '@/lib/seo/metadata';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Privacy Policy — Zero-Backend Document Architecture & Advertising Disclosures',
+  title: 'Privacy Policy — Zero-Backend Document Architecture & Privacy Guarantees',
   description:
-    'Comprehensive privacy policy for PDFSimplify detailing client-side WebAssembly execution, zero document retention, Newor Media and Google programmatic ad partner disclosures, and user rights.',
+    'Comprehensive privacy policy for PDFSimplify detailing client-side WebAssembly execution, zero document retention, ad-free architecture, and user rights.',
   path: '/privacy-policy',
 });
 
@@ -96,45 +96,16 @@ export default function PrivacyPolicyPage() {
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
               <span>03</span>
               <span>/</span>
-              <span>Monetization Disclosures</span>
+              <span>Advertising & Monetization</span>
             </div>
             <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-              Programmatic Advertising & Cookies
+              Ad-Free Architecture
             </h2>
             <p>
-              To keep PDFSimplify free and accessible without subscription paywalls, we partner with programmatic digital advertising management platforms, including Newor Media and Google Ad Manager, along with authorized demand exchange partners.
+              PDFSimplify is completely ad-free. We do not host commercial display advertisements, popunders, interstitial banners, or third-party programmatic ad networks (such as Google AdSense, Newor Media, Adsterra, or Monetag).
             </p>
             <p className="text-sm text-stone-600 dark:text-stone-400">
-              Third-party advertising networks use cookies and device diagnostics to serve, measure, and evaluate advertisements based on visits across the web. You may manage or opt out of personalized advertising tracking at any time via:
-            </p>
-            <div className="flex flex-wrap gap-4 text-xs font-mono pt-1">
-              <a
-                href="https://www.google.com/settings/ads"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
-              >
-                Google Ads Settings &rarr;
-              </a>
-              <a
-                href="https://www.aboutads.info/choices/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
-              >
-                DAA Choices &rarr;
-              </a>
-              <a
-                href="https://optout.networkadvertising.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
-              >
-                NAI Opt-Out &rarr;
-              </a>
-            </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400 pt-2">
-              <strong>Strict Technical Isolation:</strong> All third-party advertisements execute in isolated, sandboxed iframes. Advertising scripts have zero technical access to local WebAssembly memory buffers, document bytes, filenames, passwords, or extracted contents.
+              Zero advertising tracking beacons, remarketing pixels, or third-party ad profiling cookies are deployed to your device.
             </p>
           </section>
 

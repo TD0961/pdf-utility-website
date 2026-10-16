@@ -268,29 +268,26 @@ describe('Phase 5: Monetization Architecture, Consent Management & Delivery Diag
     });
   });
 
-  describe('5. Provider Separation: Google AdSense vs Newor Media', () => {
-    it('confirms public/ads.txt exists and contains verified publisher declarations for both providers', () => {
+  describe('5. Provider Separation & Ad-Free Invariants', () => {
+    it('confirms public/ads.txt exists and authorizes zero third-party ad networks', () => {
       const adsTxtPath = path.resolve(process.cwd(), 'public/ads.txt');
       assert.ok(fs.existsSync(adsTxtPath), 'public/ads.txt must exist');
 
       const content = fs.readFileSync(adsTxtPath, 'utf-8');
-      // Google AdSense declaration
-      assert.ok(content.includes('google.com, pub-7704232652384788, DIRECT, f08c47fec0942fa0'));
-      // Newor Media header bidding management declarations
-      assert.ok(content.includes('ownerdomain=pdfsimplify.com'));
-      assert.ok(content.includes('managerdomain=newormedia.com'));
-      assert.ok(content.includes('newormedia.com, 6bf2d68f-9055-45b5-85b5-8d6fa3b08fd6, DIRECT'));
+      assert.ok(content.includes('No third-party ad networks'), 'Must declare ad-free policy');
       assert.ok(!content.includes('pub-XXXXXXXXXXXXXXXX'), 'Must not contain placeholder IDs');
+      assert.ok(!content.includes('managerdomain=newormedia.com'), 'Must not contain Newor Media');
     });
 
-    it('verifies that AdSense is the only client-side script in code and no speculative unprovisioned scripts are injected', () => {
+    it('verifies that no third-party ad network scripts are injected into ConsentScriptLoader', () => {
       const scriptLoaderPath = path.resolve(process.cwd(), 'src/components/consent/ConsentScriptLoader.tsx');
       const scriptLoaderContent = fs.readFileSync(scriptLoaderPath, 'utf-8');
 
-      // Confirms official AdSense script URL is used
-      assert.ok(scriptLoaderContent.includes('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'));
-      // Confirms no fake or speculative Newor wrapper script was fabricated in code
+      // Confirms zero ad scripts are loaded
+      assert.ok(!scriptLoaderContent.includes('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'));
       assert.ok(!scriptLoaderContent.includes('ad.newormedia.com'));
+      assert.ok(!scriptLoaderContent.includes('nap5k.com'));
+      assert.ok(!scriptLoaderContent.includes('n6wxm.com'));
     });
   });
 
@@ -354,13 +351,13 @@ describe('Phase 5: Monetization Architecture, Consent Management & Delivery Diag
       assert.ok(!consentManagerContent.includes('tcf_certified: true'));
     });
 
-    it('verifies ConsentScriptLoader guards against duplicate script tags', () => {
+    it('verifies ConsentScriptLoader guards against duplicate script tags and excludes ad scripts', () => {
       const scriptLoaderContent = fs.readFileSync(
         path.resolve(process.cwd(), 'src/components/consent/ConsentScriptLoader.tsx'),
         'utf-8'
       );
-      assert.ok(scriptLoaderContent.includes("!document.getElementById('adsense-script')"));
-      assert.ok(scriptLoaderContent.includes("!document.getElementById('google-analytics-script')"));
+      assert.ok(!scriptLoaderContent.includes("document.getElementById('adsense-script')"), 'AdSense script must not be present');
+      assert.ok(scriptLoaderContent.includes("!document.getElementById('google-analytics-script')"), 'GA script must guard against duplicates');
     });
   });
 });

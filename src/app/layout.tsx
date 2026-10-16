@@ -65,19 +65,6 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <meta name="monetag" content="dee36d45407a6b0764ce2d589c958d40" />
-        <script
-          id="monetag-inpage-push"
-          dangerouslySetInnerHTML={{
-            __html: `(function(s){s.dataset.zone='12032602',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));`,
-          }}
-        />
-        <script
-          id="monetag-vignette"
-          dangerouslySetInnerHTML={{
-            __html: `(function(s){s.dataset.zone='12035717',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));`,
-          }}
-        />
         <script
           id="theme-init"
           dangerouslySetInnerHTML={{ __html: themeScript }}

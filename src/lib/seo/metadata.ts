@@ -101,10 +101,6 @@ export function constructMetadata({
       description,
       images: [resolvedImageUrl],
     },
-    other: {
-      'google-adsense-account': 'ca-pub-7704232652384788',
-      monetag: 'dee36d45407a6b0764ce2d589c958d40',
-    },
     robots: {
       index: !noIndex,
       follow: !noIndex,

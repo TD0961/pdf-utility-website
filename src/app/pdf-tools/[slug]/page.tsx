@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
-import { AdSlot } from '@/components/ads/AdSlot';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ToolClientWorkspace } from './ToolClientWorkspace';
 import { MergeWorkspace } from '@/components/tools/merge/MergeWorkspace';
@@ -44,7 +43,6 @@ import { TOOLS_REGISTRY, getToolBySlug, getRelatedTools, getRelatedGuidesForTool
 import { GUIDES_REGISTRY } from '@/data/guides';
 import { constructMetadata, SITE_URL } from '@/lib/seo/metadata';
 import { getToolSoftwareSchema, getFaqSchema } from '@/lib/seo/jsonld';
-import { AnchorAd } from '@/components/ads/AnchorAd';
 import {
   CheckCircle2,
   HelpCircle,
@@ -187,14 +185,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
             tool.slug !== 'header-footer' && <ToolClientWorkspace tool={tool} />}
         </section>
 
-        {/* 4. Strategic AdSlot (Policy-controlled, strictly excluded on PDF Editor) */}
-        <AdSlot
-          slotId={`tool-${tool.slug}-post-tool`}
-          pageType={pageType}
-          placement="post-tool"
-          format="horizontal"
-        />
-
         {/* Step-by-Step Instructions */}
         <section className="space-y-4">
           <div className="space-y-1">
@@ -312,14 +302,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
           </section>
         )}
 
-        {/* Separated Content Bottom AdSlot */}
-        <AdSlot
-          slotId={`tool-${tool.slug}-end`}
-          pageType={pageType}
-          placement="end-content"
-          format="horizontal"
-        />
-
         {/* Related Tools */}
         {relatedTools.length > 0 && (
           <section className="space-y-3 pt-4 border-t border-stone-200/80 dark:border-stone-800/80">
@@ -386,9 +368,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
           </section>
         )}
       </Container>
-
-      {/* Viewport Bottom Anchor Ad (Automatically excluded on PDF Editor) */}
-      <AnchorAd pageType={pageType} slotId={`tool-${tool.slug}-anchor`} />
     </div>
   );
 }

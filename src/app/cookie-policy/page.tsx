@@ -90,12 +90,6 @@ export default function CookiePolicyPage() {
                     <td className="p-3">Google Analytics (G-XZ1VE80DQL)</td>
                     <td className="p-3 font-sans text-stone-600 dark:text-stone-400">Aggregated usage diagnostics and coarse tool execution duration buckets. Strictly consent-gated. Defaults to denied under Consent Mode v2.</td>
                   </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-stone-900 dark:text-stone-100">__gads, IDE, test_cookie</td>
-                    <td className="p-3 text-blue-600 dark:text-blue-400 font-bold">Optional Advertising</td>
-                    <td className="p-3">Google AdSense / Newor Media</td>
-                    <td className="p-3 font-sans text-stone-600 dark:text-stone-400">Contextual and display advertising delivery to fund free site access. Strictly consent-gated. Never loaded without user opt-in.</td>
-                  </tr>
                 </tbody>
               </table>
             </div>
@@ -106,39 +100,10 @@ export default function CookiePolicyPage() {
           </section>
 
           <section className="space-y-2 border-t border-stone-200/80 dark:border-stone-800/80 pt-6">
-            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">3. Third-Party Advertising & Measurement</h2>
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">3. Third-Party Advertising & Trackers</h2>
             <p>
-              To maintain PDFSimplify as a free service without subscription fees, advertising partners (including Newor Media and Google Ad Manager) and authorized exchange demand partners may set cookies or web beacons in your browser, but only after you have given consent where legally required.
+              PDFSimplify is completely ad-free. We do not load third-party advertising networks, programmatic exchanges, or cross-site tracking beacons.
             </p>
-            <p className="text-sm text-stone-600 dark:text-stone-400">
-              These cookies measure ad impressions, prevent invalid bot fraud, and serve contextual or targeted ads. You may manage your ad preferences via:
-            </p>
-            <div className="flex flex-wrap gap-4 text-xs font-mono pt-1">
-              <a
-                href="https://www.google.com/settings/ads"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
-              >
-                Google Ads Settings &rarr;
-              </a>
-              <a
-                href="https://www.aboutads.info/choices/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
-              >
-                DAA Choices &rarr;
-              </a>
-              <a
-                href="https://optout.networkadvertising.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-stone-900 dark:text-stone-100 hover:text-stone-600"
-              >
-                NAI Opt-Out &rarr;
-              </a>
-            </div>
           </section>
 
           <section className="space-y-2 border-t border-stone-200/80 dark:border-stone-800/80 pt-6">

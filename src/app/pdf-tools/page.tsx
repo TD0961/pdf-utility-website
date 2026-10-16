@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { Container } from '@/components/layout/Container';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
-import { AdSlot } from '@/components/ads/AdSlot';
 import { LocalProcessingNotice } from '@/components/pdf/LocalProcessingNotice';
 import { TOOLS_REGISTRY, TOOL_CATEGORIES } from '@/data/tools';
 import { constructMetadata } from '@/lib/seo/metadata';
@@ -139,10 +138,6 @@ export default function PdfToolsPage() {
             </section>
           );
         })}
-      </div>
-
-      <div className="py-4">
-        <AdSlot slotId="tools-directory-bottom" pageType="tool" placement="in-content" />
       </div>
     </Container>
   );
