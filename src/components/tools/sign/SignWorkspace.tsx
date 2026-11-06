@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   Move,
   FileCheck,
+  Trash2,
 } from 'lucide-react';
 
 export function SignWorkspace() {
@@ -38,7 +39,9 @@ export function SignWorkspace() {
   });
 
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isResizing, setIsResizing] = useState(false);
+  const dragStartRef = useRef<{ clientX: number; clientY: number; startX: number; startY: number }>({ clientX: 0, clientY: 0, startX: 0, startY: 0 });
+  const resizeStartRef = useRef<{ clientX: number; clientY: number; startWidth: number; startHeight: number }>({ clientX: 0, clientY: 0, startWidth: 0, startHeight: 0 });
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -139,26 +142,73 @@ export function SignWorkspace() {
     });
   };
 
-  // Dragging handlers for placed signature
-  const handlePointerDown = (e: React.PointerEvent) => {
+  // Dragging handlers for placed signature with pointer capture
+  const handleDragPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
     setIsDragging(true);
-    setDragOffset({
-      x: e.clientX - sigPosition.x,
-      y: e.clientY - sigPosition.y,
-    });
+    dragStartRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      startX: sigPosition.x,
+      startY: sigPosition.y,
+    };
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
+  const handleDragPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || !canvasRef.current) return;
     const canvas = canvasRef.current;
-    const newX = Math.max(0, Math.min(canvas.width - sigPosition.width, e.clientX - dragOffset.x));
-    const newY = Math.max(0, Math.min(canvas.height - sigPosition.height, e.clientY - dragOffset.y));
+    const dx = e.clientX - dragStartRef.current.clientX;
+    const dy = e.clientY - dragStartRef.current.clientY;
+    const newX = Math.max(0, Math.min(canvas.width - sigPosition.width, dragStartRef.current.startX + dx));
+    const newY = Math.max(0, Math.min(canvas.height - sigPosition.height, dragStartRef.current.startY + dy));
     setSigPosition((prev) => ({ ...prev, x: newX, y: newY }));
   };
 
-  const handlePointerUp = () => {
+  const handleDragPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
     setIsDragging(false);
+  };
+
+  // Resizing handlers for placed signature with aspect ratio preservation
+  const handleResizePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+    setIsResizing(true);
+    resizeStartRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      startWidth: sigPosition.width,
+      startHeight: sigPosition.height,
+    };
+  };
+
+  const handleResizePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isResizing || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const dx = e.clientX - resizeStartRef.current.clientX;
+    const aspect = resizeStartRef.current.startWidth / (resizeStartRef.current.startHeight || 1);
+    const newWidth = Math.max(50, Math.min(canvas.width - sigPosition.x, resizeStartRef.current.startWidth + dx));
+    const newHeight = Math.max(20, Math.min(canvas.height - sigPosition.y, newWidth / aspect));
+    setSigPosition((prev) => ({ ...prev, width: newWidth, height: newHeight }));
+  };
+
+  const handleResizePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
+    setIsResizing(false);
   };
 
   // Burn signature into PDF using native PDF points
@@ -333,17 +383,17 @@ export function SignWorkspace() {
           {/* Interactive Document Preview Container */}
           <div
             ref={previewContainerRef}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
             className="relative bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 overflow-auto flex justify-center shadow-inner min-h-[500px]"
           >
-            <div className="relative shadow-md rounded-lg overflow-hidden bg-white">
+            <div className="relative shadow-md rounded-lg overflow-visible bg-white">
               <canvas ref={canvasRef} className="block select-none" />
 
-              {/* Placed signature draggable element */}
+              {/* Placed signature draggable & resizable element */}
               {signatureDataUrl && (
                 <div
-                  onPointerDown={handlePointerDown}
+                  onPointerDown={handleDragPointerDown}
+                  onPointerMove={handleDragPointerMove}
+                  onPointerUp={handleDragPointerUp}
                   style={{
                     position: 'absolute',
                     left: `${sigPosition.x}px`,
@@ -352,17 +402,44 @@ export function SignWorkspace() {
                     height: `${sigPosition.height}px`,
                     cursor: isDragging ? 'grabbing' : 'grab',
                   }}
-                  className="border-2 border-primary-500 bg-primary-50/20 rounded shadow-md group touch-none select-none flex items-center justify-center"
+                  className="border-2 border-indigo-600 bg-indigo-50/20 rounded shadow-lg group touch-none select-none flex items-center justify-center ring-2 ring-indigo-500/20"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={signatureDataUrl}
                     alt="Placed Signature"
-                    className="w-full h-full object-contain pointer-events-none"
+                    className="w-full h-full object-contain pointer-events-none p-1"
                   />
-                  <div className="absolute -top-6 left-0 bg-primary-600 text-white text-[10px] font-mono px-1.5 py-0.5 rounded shadow flex items-center gap-1 opacity-80 group-hover:opacity-100">
+
+                  {/* Drag Badge */}
+                  <div className="absolute -top-7 left-0 bg-indigo-600 text-white text-[10px] font-mono px-2 py-0.5 rounded shadow flex items-center gap-1 opacity-90 group-hover:opacity-100 whitespace-nowrap">
                     <Move className="w-2.5 h-2.5" />
-                    <span>Drag me</span>
+                    <span>Drag & Position</span>
+                  </div>
+
+                  {/* Remove Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSignatureDataUrl(null);
+                    }}
+                    title="Remove signature"
+                    aria-label="Remove signature"
+                    className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md hover:bg-red-700 transition-transform active:scale-90 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Corner Resize Handle (bottom-right) */}
+                  <div
+                    onPointerDown={handleResizePointerDown}
+                    onPointerMove={handleResizePointerMove}
+                    onPointerUp={handleResizePointerUp}
+                    title="Drag to resize signature"
+                    className="absolute -bottom-2.5 -right-2.5 w-6 h-6 rounded-full bg-indigo-600 border-2 border-white text-white flex items-center justify-center shadow-md hover:scale-110 cursor-nwse-resize active:bg-indigo-700 touch-none"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-white" />
                   </div>
                 </div>
               )}

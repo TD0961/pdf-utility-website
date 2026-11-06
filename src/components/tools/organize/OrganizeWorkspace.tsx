@@ -410,13 +410,13 @@ export function OrganizeWorkspace() {
                 </button>
 
                 {/* Quick actions top-right */}
-                <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-white/90 dark:bg-slate-900/90 rounded-md p-0.5 shadow-xs opacity-90 group-hover:opacity-100">
+                <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-white/95 dark:bg-slate-900/95 rounded-lg p-0.5 shadow-xs opacity-90 group-hover:opacity-100 border border-slate-100 dark:border-slate-800">
                   <button
                     type="button"
                     onClick={() => handleRotatePage(index)}
                     aria-label={`Rotate page ${index + 1}`}
                     title="Rotate 90° clockwise"
-                    className="p-1 hover:text-indigo-600 rounded transition-colors"
+                    className="min-h-[28px] min-w-[28px] flex items-center justify-center p-1 hover:text-indigo-600 rounded-md transition-colors active:scale-95"
                   >
                     <RotateCw className="w-3.5 h-3.5" />
                   </button>
@@ -425,7 +425,7 @@ export function OrganizeWorkspace() {
                     onClick={() => handleDuplicatePage(index)}
                     aria-label={`Duplicate page ${index + 1}`}
                     title="Duplicate page"
-                    className="p-1 hover:text-indigo-600 rounded transition-colors"
+                    className="min-h-[28px] min-w-[28px] flex items-center justify-center p-1 hover:text-indigo-600 rounded-md transition-colors active:scale-95"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
@@ -434,19 +434,22 @@ export function OrganizeWorkspace() {
                     onClick={() => handleDeletePage(index)}
                     aria-label={`Delete page ${index + 1}`}
                     title="Delete page"
-                    className="p-1 hover:text-red-600 rounded transition-colors"
+                    className="min-h-[28px] min-w-[28px] flex items-center justify-center p-1 hover:text-red-600 rounded-md transition-colors active:scale-95"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 {/* Thumbnail Preview with rotation transform */}
-                <div className="mb-2 mt-6 overflow-hidden rounded-xl">
+                <div className="mb-2 mt-6 overflow-hidden rounded-xl p-0.5">
                   <div
                     style={{
-                      transform: `rotate(${item.rotation}deg)`,
+                      transform: `rotate(${item.rotation}deg)${
+                        item.rotation === 90 || item.rotation === 270 ? ' scale(0.75)' : ''
+                      }`,
                       transition: 'transform 0.2s ease',
                     }}
+                    className="origin-center w-full h-full flex items-center justify-center"
                   >
                     <PdfThumbnail file={sourceFile} pageNumber={item.originalIndex + 1} />
                   </div>
@@ -469,9 +472,9 @@ export function OrganizeWorkspace() {
                     disabled={index === 0 || isProcessing}
                     onClick={() => handleMove(index, index - 1)}
                     aria-label={`Move page ${index + 1} left`}
-                    className="p-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:hover:text-slate-400"
+                    className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 active:scale-95 transition-colors"
                   >
-                    <ArrowLeft className="w-3 h-3" />
+                    <ArrowLeft className="w-4 h-4" />
                   </button>
                   <span className="text-[10px] text-slate-400 font-mono">
                     {index + 1} of {pages.length}
@@ -481,9 +484,9 @@ export function OrganizeWorkspace() {
                     disabled={index === pages.length - 1 || isProcessing}
                     onClick={() => handleMove(index, index + 1)}
                     aria-label={`Move page ${index + 1} right`}
-                    className="p-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:hover:text-slate-400"
+                    className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 active:scale-95 transition-colors"
                   >
-                    <ArrowRight className="w-3 h-3" />
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>

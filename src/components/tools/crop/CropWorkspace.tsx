@@ -37,7 +37,13 @@ export function CropWorkspace() {
 
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  type ResizeHandle = 'tl' | 'tr' | 'bl' | 'br' | null;
+  const [activeHandle, setActiveHandle] = useState<ResizeHandle>(null);
+  const dragStartRef = useRef<{ clientX: number; clientY: number; box: { x: number; y: number; width: number; height: number } }>({
+    clientX: 0,
+    clientY: 0,
+    box: { x: 0, y: 0, width: 0, height: 0 },
+  });
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -122,43 +128,99 @@ export function CropWorkspace() {
     }
   }, [pdfBytes, currentPage, numPages, renderPage]);
 
-  // Pointer drag event handlers
-  const handleDragStart = (e: React.PointerEvent) => {
+  // Pointer drag event handlers with pointer capture
+  const handleDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
     setIsDragging(true);
-    setDragOffset({
-      x: e.clientX - cropBox.x,
-      y: e.clientY - cropBox.y,
-    });
+    dragStartRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      box: { ...cropBox },
+    };
   };
 
-  const handleResizeStart = (e: React.PointerEvent) => {
+  const handleDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const dx = e.clientX - dragStartRef.current.clientX;
+    const dy = e.clientY - dragStartRef.current.clientY;
+    const newX = Math.max(0, Math.min(canvas.width - cropBox.width, dragStartRef.current.box.x + dx));
+    const newY = Math.max(0, Math.min(canvas.height - cropBox.height, dragStartRef.current.box.y + dy));
+    setCropBox((prev) => ({ ...prev, x: newX, y: newY }));
+  };
+
+  const handleDragEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
+    setIsDragging(false);
+  };
+
+  const handleResizeStart = (e: React.PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
     e.preventDefault();
     e.stopPropagation();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
     setIsResizing(true);
+    setActiveHandle(handle);
+    dragStartRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      box: { ...cropBox },
+    };
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!canvasRef.current) return;
+  const handleResizeMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isResizing || !canvasRef.current || !activeHandle) return;
     const canvas = canvasRef.current;
+    const dx = e.clientX - dragStartRef.current.clientX;
+    const dy = e.clientY - dragStartRef.current.clientY;
+    const initial = dragStartRef.current.box;
 
-    if (isDragging) {
-      const newX = Math.max(0, Math.min(canvas.width - cropBox.width, e.clientX - dragOffset.x));
-      const newY = Math.max(0, Math.min(canvas.height - cropBox.height, e.clientY - dragOffset.y));
-      setCropBox((prev) => ({ ...prev, x: newX, y: newY }));
-    } else if (isResizing) {
-      const rect = canvas.getBoundingClientRect();
-      const currentX = e.clientX - rect.left;
-      const currentY = e.clientY - rect.top;
-      const newWidth = Math.max(40, Math.min(canvas.width - cropBox.x, currentX - cropBox.x));
-      const newHeight = Math.max(40, Math.min(canvas.height - cropBox.y, currentY - cropBox.y));
-      setCropBox((prev) => ({ ...prev, width: newWidth, height: newHeight }));
+    let newX = initial.x;
+    let newY = initial.y;
+    let newWidth = initial.width;
+    let newHeight = initial.height;
+
+    if (activeHandle === 'br') {
+      newWidth = Math.max(40, Math.min(canvas.width - initial.x, initial.width + dx));
+      newHeight = Math.max(40, Math.min(canvas.height - initial.y, initial.height + dy));
+    } else if (activeHandle === 'bl') {
+      const maxX = initial.x + initial.width - 40;
+      newX = Math.max(0, Math.min(maxX, initial.x + dx));
+      newWidth = initial.x + initial.width - newX;
+      newHeight = Math.max(40, Math.min(canvas.height - initial.y, initial.height + dy));
+    } else if (activeHandle === 'tr') {
+      const maxY = initial.y + initial.height - 40;
+      newY = Math.max(0, Math.min(maxY, initial.y + dy));
+      newHeight = initial.y + initial.height - newY;
+      newWidth = Math.max(40, Math.min(canvas.width - initial.x, initial.width + dx));
+    } else if (activeHandle === 'tl') {
+      const maxX = initial.x + initial.width - 40;
+      const maxY = initial.y + initial.height - 40;
+      newX = Math.max(0, Math.min(maxX, initial.x + dx));
+      newY = Math.max(0, Math.min(maxY, initial.y + dy));
+      newWidth = initial.x + initial.width - newX;
+      newHeight = initial.y + initial.height - newY;
     }
+
+    setCropBox({ x: newX, y: newY, width: newWidth, height: newHeight });
   };
 
-  const handlePointerUp = () => {
-    setIsDragging(false);
+  const handleResizeEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
     setIsResizing(false);
+    setActiveHandle(null);
   };
 
   const handleApplyCrop = async () => {
@@ -325,8 +387,6 @@ export function CropWorkspace() {
           {/* Interactive Document Preview Container with Crop Box */}
           <div
             ref={previewContainerRef}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
             className="relative bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 overflow-auto flex justify-center shadow-inner min-h-[500px]"
           >
             <div className="relative shadow-md rounded-lg overflow-hidden bg-white select-none">
@@ -342,19 +402,51 @@ export function CropWorkspace() {
                   height: `${cropBox.height}px`,
                   boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.45)',
                 }}
-                className="border-2 border-dashed border-primary-500 rounded-sm touch-none pointer-events-auto cursor-move flex items-center justify-center group"
+                className="border-2 border-dashed border-indigo-500 rounded-sm touch-none pointer-events-auto cursor-move flex items-center justify-center group"
                 onPointerDown={handleDragStart}
+                onPointerMove={handleDragMove}
+                onPointerUp={handleDragEnd}
               >
                 {/* Drag handle helper */}
-                <div className="bg-primary-600 text-white text-[10px] font-mono px-2 py-0.5 rounded shadow opacity-75 group-hover:opacity-100 flex items-center gap-1 select-none pointer-events-none">
+                <div className="bg-indigo-600 text-white text-[10px] font-mono px-2 py-0.5 rounded shadow opacity-80 group-hover:opacity-100 flex items-center gap-1 select-none pointer-events-none">
                   <Move className="w-3 h-3" />
-                  <span>Drag Box</span>
+                  <span>Drag Crop Area</span>
                 </div>
 
-                {/* Resize corner handle */}
+                {/* Top-Left Resize Corner */}
                 <div
-                  onPointerDown={handleResizeStart}
-                  className="absolute -bottom-2 -right-2 w-5 h-5 bg-primary-600 rounded-full border-2 border-white shadow cursor-se-resize touch-none flex items-center justify-center"
+                  onPointerDown={(e) => handleResizeStart(e, 'tl')}
+                  onPointerMove={handleResizeMove}
+                  onPointerUp={handleResizeEnd}
+                  title="Resize top-left"
+                  className="absolute -top-2.5 -left-2.5 w-6 h-6 bg-indigo-600 rounded-full border-2 border-white shadow-md cursor-nwse-resize touch-none flex items-center justify-center hover:scale-110 active:bg-indigo-700"
+                />
+
+                {/* Top-Right Resize Corner */}
+                <div
+                  onPointerDown={(e) => handleResizeStart(e, 'tr')}
+                  onPointerMove={handleResizeMove}
+                  onPointerUp={handleResizeEnd}
+                  title="Resize top-right"
+                  className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-indigo-600 rounded-full border-2 border-white shadow-md cursor-nesw-resize touch-none flex items-center justify-center hover:scale-110 active:bg-indigo-700"
+                />
+
+                {/* Bottom-Left Resize Corner */}
+                <div
+                  onPointerDown={(e) => handleResizeStart(e, 'bl')}
+                  onPointerMove={handleResizeMove}
+                  onPointerUp={handleResizeEnd}
+                  title="Resize bottom-left"
+                  className="absolute -bottom-2.5 -left-2.5 w-6 h-6 bg-indigo-600 rounded-full border-2 border-white shadow-md cursor-nesw-resize touch-none flex items-center justify-center hover:scale-110 active:bg-indigo-700"
+                />
+
+                {/* Bottom-Right Resize Corner */}
+                <div
+                  onPointerDown={(e) => handleResizeStart(e, 'br')}
+                  onPointerMove={handleResizeMove}
+                  onPointerUp={handleResizeEnd}
+                  title="Resize bottom-right"
+                  className="absolute -bottom-2.5 -right-2.5 w-6 h-6 bg-indigo-600 rounded-full border-2 border-white shadow-md cursor-nwse-resize touch-none flex items-center justify-center hover:scale-110 active:bg-indigo-700"
                 />
               </div>
             </div>

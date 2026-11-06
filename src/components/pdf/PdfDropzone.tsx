@@ -14,6 +14,7 @@ export interface PdfDropzoneProps {
   acceptedTypes?: string[];
   title?: string;
   subtitle?: string;
+  buttonText?: string;
   disabled?: boolean;
   className?: string;
 }
@@ -24,6 +25,7 @@ export function PdfDropzone({
   acceptedTypes = ['.pdf', 'application/pdf'],
   title = 'Select PDF document',
   subtitle = 'or drop your document here to load into local browser memory',
+  buttonText,
   disabled = false,
   className,
 }: PdfDropzoneProps) {
@@ -110,7 +112,10 @@ export function PdfDropzone({
           multiple={acceptsMultiple}
           accept={acceptedTypes.join(',')}
           className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
+          onChange={(e) => {
+            handleFiles(e.target.files);
+            e.target.value = '';
+          }}
           aria-hidden="true"
         />
 
@@ -130,13 +135,20 @@ export function PdfDropzone({
         <Button
           type="button"
           size="md"
-          className="px-6 py-3 rounded-xl shadow-md font-semibold text-sm"
+          className="px-6 py-3 rounded-xl shadow-md font-semibold text-sm cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             fileInputRef.current?.click();
           }}
         >
-          {acceptsMultiple ? 'Choose PDF Files' : 'Choose PDF Document'}
+          {buttonText ||
+            (acceptedTypes.some((t) => t.includes('image')) && !acceptedTypes.some((t) => t.includes('pdf'))
+              ? acceptsMultiple
+                ? 'Choose Image Files'
+                : 'Choose Image File'
+              : acceptsMultiple
+              ? 'Choose PDF Files'
+              : 'Choose PDF Document')}
         </Button>
 
         {/* Archival Security Readout */}

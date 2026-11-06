@@ -100,9 +100,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
   const allFaqs = tool.faqs;
   const jsonLdFaqData = allFaqs.length > 0 ? getFaqSchema(allFaqs) : null;
 
-  const isEditor = tool.slug === 'pdf-editor';
-  const pageType = isEditor ? 'editor' : 'tool';
-
   return (
     <div className="pb-20 space-y-12 relative overflow-hidden">
       <JsonLd data={jsonLdToolData} />

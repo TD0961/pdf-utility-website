@@ -353,10 +353,14 @@ export function RotateWorkspace() {
                 </div>
 
                 {/* Rotating preview container */}
-                <div className="w-full aspect-[3/4] overflow-hidden flex items-center justify-center relative bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                <div className="w-full aspect-[3/4] overflow-hidden flex items-center justify-center relative bg-slate-50 dark:bg-slate-800/40 rounded-xl p-1">
                   <div
-                    style={{ transform: `rotate(${page.userDelta}deg)` }}
-                    className="transition-transform duration-200 w-full h-full flex items-center justify-center"
+                    style={{
+                      transform: `rotate(${page.userDelta}deg)${
+                        page.userDelta === 90 || page.userDelta === 270 ? ' scale(0.75)' : ''
+                      }`,
+                    }}
+                    className="transition-transform duration-200 w-full h-full flex items-center justify-center origin-center"
                   >
                     <PdfThumbnail file={sourceFile} pageNumber={page.originalIndex + 1} />
                   </div>
@@ -364,13 +368,13 @@ export function RotateWorkspace() {
 
                 {/* Individual page rotation quick-buttons */}
                 <div
-                  className="mt-2 flex items-center justify-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/60"
+                  className="mt-2 flex items-center justify-center gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/60"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     type="button"
                     onClick={() => rotateSinglePage(index, 270)}
-                    className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                    className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
                     title="Rotate left"
                     aria-label={`Rotate page ${index + 1} left`}
                   >
@@ -379,7 +383,7 @@ export function RotateWorkspace() {
                   <button
                     type="button"
                     onClick={() => rotateSinglePage(index, 90)}
-                    className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                    className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
                     title="Rotate right"
                     aria-label={`Rotate page ${index + 1} right`}
                   >

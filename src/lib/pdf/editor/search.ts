@@ -6,7 +6,7 @@
  */
 
 import { Rect, PdfSearchMatch, PdfSearchResult } from './types';
-import { getPdfJs } from '../pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from '../pdf-renderer';
 
 export interface IndexedTextItem {
   str: string;
@@ -80,14 +80,14 @@ export class PdfSearchEngine {
       cleanup?: () => Promise<void>;
     }
     type PdfJsLoadingTask = { promise: Promise<PdfJsDocType>; destroy: () => Promise<void> };
-    type PdfJsModule = { getDocument: (params: { data: Uint8Array }) => PdfJsLoadingTask };
+    type PdfJsModule = { getDocument: (params: unknown) => PdfJsLoadingTask };
 
     let docToCleanup: { cleanup?: () => Promise<void> } | null = null;
     let loadingTaskToDestroy: { destroy: () => Promise<void> } | null = null;
 
     try {
       const pdfjs = (this.pdfjsOverride || (await getPdfJs())) as unknown as PdfJsModule;
-      const loadingTask = pdfjs.getDocument({ data: sourceBytes.slice(0) });
+      const loadingTask = pdfjs.getDocument(getPdfLoadingParams(sourceBytes));
       loadingTaskToDestroy = loadingTask;
       const doc = await loadingTask.promise;
       docToCleanup = doc;

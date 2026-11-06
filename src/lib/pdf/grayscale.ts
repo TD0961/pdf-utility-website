@@ -5,7 +5,7 @@
  */
 
 import { PDFDocument } from 'pdf-lib';
-import { getPdfJs } from './pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from './pdf-renderer';
 import { assertValidPdfOutput } from './output-validator';
 import { CancellationToken, ConversionProgress } from './conversion/types';
 
@@ -67,7 +67,7 @@ export async function convertPdfToGrayscale(
 
   const pdfjs = await getPdfJs();
   const dataCopy = rawBuffer.slice(0);
-  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(dataCopy) });
+  const loadingTask = pdfjs.getDocument(getPdfLoadingParams(dataCopy));
   const doc = await loadingTask.promise;
   const totalPages = doc.numPages;
 

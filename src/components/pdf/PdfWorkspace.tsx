@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PdfDropzone } from './PdfDropzone';
 import { PdfFileList } from './PdfFileList';
 import { PdfToolbar } from './PdfToolbar';
@@ -32,6 +32,7 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
   const [progressStage, setProgressStage] = useState('');
   const [result, setResult] = useState<ProcessResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const hiddenFileInputRef = useRef<HTMLInputElement>(null);
 
   // Clean up object URLs on component unmount
   useEffect(() => {
@@ -145,6 +146,22 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
         </div>
       )}
 
+      {/* Hidden File Input for adding more files in LOADED state */}
+      <input
+        ref={hiddenFileInputRef}
+        type="file"
+        multiple={tool.acceptsMultiple}
+        accept={tool.acceptedFileTypes?.join(',') || '.pdf,application/pdf'}
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleFilesSelected(Array.from(e.target.files));
+            e.target.value = '';
+          }
+        }}
+        aria-hidden="true"
+      />
+
       {/* State: LOADED (Files picked, ready to configure / process) */}
       {status === 'loaded' && (
         <div className="space-y-6">
@@ -152,7 +169,7 @@ export function PdfWorkspace({ tool, onProcess, customControls }: PdfWorkspacePr
             files={files}
             onRemove={handleRemoveFile}
             onReorder={handleReorder}
-            onAddMore={tool.acceptsMultiple ? () => document.querySelector<HTMLInputElement>('input[type="file"]')?.click() : undefined}
+            onAddMore={tool.acceptsMultiple ? () => hiddenFileInputRef.current?.click() : undefined}
             acceptsMultiple={tool.acceptsMultiple}
           />
 

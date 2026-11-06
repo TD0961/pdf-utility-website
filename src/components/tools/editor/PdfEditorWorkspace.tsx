@@ -377,6 +377,7 @@ export function PdfEditorWorkspace() {
 
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file || !docState) return;
     const activePage = engine.getActivePage();
     if (!activePage) return;
@@ -384,7 +385,6 @@ export function PdfEditorWorkspace() {
     const validation = await validateImageFile(file);
     if (!validation.valid) {
       setErrorMessage(validation.error || 'Invalid image file format.');
-      e.target.value = '';
       return;
     }
 

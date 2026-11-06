@@ -6,7 +6,7 @@
  */
 
 import { PDFDocument } from 'pdf-lib';
-import { getPdfJs } from './pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from './pdf-renderer';
 
 export interface DocumentDimensions {
   width: number;
@@ -120,7 +120,7 @@ export async function inspectPdfDocument(
 
   try {
     const pdfjs = await getPdfJs();
-    const loadingTask = pdfjs.getDocument({ data: bytes });
+    const loadingTask = pdfjs.getDocument(getPdfLoadingParams(bytes));
     const doc = await loadingTask.promise;
     const pagesToCheck = Math.min(doc.numPages, 3);
     let totalTextChars = 0;

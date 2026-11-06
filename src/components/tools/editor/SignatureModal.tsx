@@ -277,8 +277,11 @@ export function SignatureModal({ isOpen, onClose, onConfirm }: SignatureModalPro
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg"
-                onChange={(e) => handleFileUpload(e.target.files)}
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(e) => {
+                  handleFileUpload(e.target.files);
+                  e.target.value = '';
+                }}
                 className="hidden"
               />
 

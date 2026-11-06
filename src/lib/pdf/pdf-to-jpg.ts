@@ -10,7 +10,7 @@ import { PDFDocument } from 'pdf-lib';
 import { validatePdfMagicBytes, sanitizeDownloadFilename } from '@/lib/validation/file-validator';
 import { parsePageRanges } from './range-parser';
 import { validateJpgOutput, assertValidZipContainsJpgs } from './output-validator';
-import { getPdfJs } from './pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from './pdf-renderer';
 
 interface PdfJsPage {
   getViewport: (options: { scale: number }) => { width: number; height: number };
@@ -141,7 +141,7 @@ export async function convertPdfToJpg({
 
   if (!renderPageOverride) {
     const pdfjs = await getPdfJs();
-    loadingTask = pdfjs.getDocument({ data: new Uint8Array(arrayBuffer.slice(0)) }) as unknown as PdfJsLoadingTask;
+    loadingTask = pdfjs.getDocument(getPdfLoadingParams(arrayBuffer)) as unknown as PdfJsLoadingTask;
     doc = await loadingTask.promise;
   }
 

@@ -4,7 +4,7 @@
  * added/removed words, and structural metrics. 100% local, zero backend.
  */
 
-import { getPdfJs } from './pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from './pdf-renderer';
 
 export interface PageDiffSummary {
   pageNumber: number;
@@ -73,8 +73,8 @@ export async function comparePdfDocuments(
   const bufferB = resB.buffer;
 
   const pdfjs = await getPdfJs();
-  const taskA = pdfjs.getDocument({ data: new Uint8Array(bufferA.slice(0)) });
-  const taskB = pdfjs.getDocument({ data: new Uint8Array(bufferB.slice(0)) });
+  const taskA = pdfjs.getDocument(getPdfLoadingParams(bufferA));
+  const taskB = pdfjs.getDocument(getPdfLoadingParams(bufferB));
   const [pdfA, pdfB] = await Promise.all([taskA.promise, taskB.promise]);
 
   try {

@@ -8,7 +8,7 @@
 import { encryptPDF, AlreadyEncryptedError } from '@pdfsmaller/pdf-encrypt';
 import { isEncrypted } from '@pdfsmaller/pdf-decrypt';
 import { validatePdfMagicBytes, sanitizeDownloadFilename } from '@/lib/validation/file-validator';
-import { getPdfJs } from './pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from './pdf-renderer';
 import { PDFDocument } from 'pdf-lib';
 
 export interface ProtectPdfProgressCallback {
@@ -146,7 +146,7 @@ export async function protectPdf({
     const pdfjs = await getPdfJs();
     // Test that opening without password triggers a password challenge
     let challengeTriggered = false;
-    const lockedTask = pdfjs.getDocument({ data: new Uint8Array(encryptedBytes) });
+    const lockedTask = pdfjs.getDocument(getPdfLoadingParams(encryptedBytes));
     try {
       const lockedDoc = await lockedTask.promise;
       await lockedDoc.getPage(1);
@@ -171,7 +171,7 @@ export async function protectPdf({
 
     // Verify opening WITH the correct password succeeds and matches page count
     const authTask = pdfjs.getDocument({
-      data: new Uint8Array(encryptedBytes),
+      ...getPdfLoadingParams(encryptedBytes),
       password: userPassword,
     });
     try {

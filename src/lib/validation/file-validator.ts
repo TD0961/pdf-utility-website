@@ -28,6 +28,8 @@ export function validateFileBasics(file: File): FileValidationResult {
 
 /**
  * Checks if a file or buffer has valid PDF magic header (%PDF-)
+ * Per ISO 32000-1 §7.5.2, conforming PDF readers accept up to 1024 bytes of preliminary data
+ * (such as UTF-8 BOM, comments, or web server wrapper headers) before the %PDF- header.
  */
 export async function validatePdfMagicBytes(file: File | ArrayBuffer): Promise<FileValidationResult> {
   try {
@@ -35,14 +37,30 @@ export async function validatePdfMagicBytes(file: File | ArrayBuffer): Promise<F
     if (file instanceof File) {
       const basic = validateFileBasics(file);
       if (!basic.valid) return basic;
-      const slice = file.slice(0, 5);
+      const slice = file.slice(0, 1024);
       buffer = await slice.arrayBuffer();
     } else {
-      buffer = file.slice(0, 5);
+      buffer = file.slice(0, 1024);
     }
 
-    const header = new TextDecoder('ascii').decode(buffer);
-    if (!header.startsWith('%PDF-')) {
+    const bytes = new Uint8Array(buffer);
+    // Search for '%PDF-' (0x25, 0x50, 0x44, 0x46, 0x2D) anywhere in the first 1024 bytes
+    const magic = [0x25, 0x50, 0x44, 0x46, 0x2d];
+    let found = false;
+    for (let i = 0; i <= bytes.length - 5; i++) {
+      if (
+        bytes[i] === magic[0] &&
+        bytes[i + 1] === magic[1] &&
+        bytes[i + 2] === magic[2] &&
+        bytes[i + 3] === magic[3] &&
+        bytes[i + 4] === magic[4]
+      ) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
       return {
         valid: false,
         error: 'This file does not appear to be a valid PDF document (missing %PDF signature).',
@@ -65,15 +83,22 @@ export function validateImageFile(file: File): FileValidationResult {
   const basic = validateFileBasics(file);
   if (!basic.valid) return basic;
 
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-  if (!validTypes.includes(file.type.toLowerCase())) {
-    return {
-      valid: false,
-      error: 'Unsupported image format. Please upload JPG, PNG, or WebP images.',
-    };
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'image/jfif', 'image/bmp', 'image/gif'];
+  const ext = file.name.toLowerCase().split('.').pop() || '';
+  const validExts = ['jpg', 'jpeg', 'png', 'webp', 'jfif', 'bmp', 'gif'];
+
+  if (file.type && validTypes.includes(file.type.toLowerCase())) {
+    return { valid: true };
   }
 
-  return { valid: true };
+  if (validExts.includes(ext)) {
+    return { valid: true };
+  }
+
+  return {
+    valid: false,
+    error: 'Unsupported image format. Please upload JPG, PNG, or WebP images.',
+  };
 }
 
 /**

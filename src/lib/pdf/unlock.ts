@@ -10,7 +10,7 @@ import { saslPrep } from '@pdfsmaller/pdf-encrypt';
 import { validatePdfMagicBytes, sanitizeDownloadFilename } from '@/lib/validation/file-validator';
 import { assertValidPdfOutput } from './output-validator';
 import { PDFDocument } from 'pdf-lib';
-import { getPdfJs } from './pdf-renderer';
+import { getPdfJs, getPdfLoadingParams } from './pdf-renderer';
 
 export interface UnlockPdfProgressCallback {
   (current: number, total: number, stage: string, percentage: number): void;
@@ -130,7 +130,7 @@ export async function unlockPdf({
   // Double check with PDF.js that it opens without password prompt
   try {
     const pdfjs = await getPdfJs();
-    const verifiedTask = pdfjs.getDocument({ data: new Uint8Array(decryptedBytes) });
+    const verifiedTask = pdfjs.getDocument(getPdfLoadingParams(decryptedBytes));
     try {
       const verifiedDoc = await verifiedTask.promise;
       if (verifiedDoc.numPages !== totalPages) {

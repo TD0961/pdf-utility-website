@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { LocalProcessingNotice } from '@/components/pdf/LocalProcessingNotice';
 import { comparePdfDocuments, DocumentComparisonResult } from '@/lib/pdf/compare';
@@ -30,10 +30,14 @@ export function CompareWorkspace() {
       defaultOutputFormat: 'pdf',
     });
 
+  const fileInputRefA = useRef<HTMLInputElement>(null);
+  const fileInputRefB = useRef<HTMLInputElement>(null);
+
   const handleFileAChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFileA(e.target.files[0]);
       setErrorMessage(null);
+      e.target.value = '';
     }
   };
 
@@ -41,6 +45,7 @@ export function CompareWorkspace() {
     if (e.target.files && e.target.files[0]) {
       setFileB(e.target.files[0]);
       setErrorMessage(null);
+      e.target.value = '';
     }
   };
 
@@ -101,18 +106,23 @@ export function CompareWorkspace() {
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                 {fileA ? fileA.name : 'Select first PDF'}
               </h4>
-              <label className="inline-flex">
-                <input
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  onChange={handleFileAChange}
-                  className="hidden"
-                />
-                <Button variant="secondary" size="sm" className="cursor-pointer">
-                  <Upload className="w-4 h-4 mr-1.5" />
-                  {fileA ? 'Change Document A' : 'Choose Document A'}
-                </Button>
-              </label>
+              <input
+                ref={fileInputRefA}
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={handleFileAChange}
+                className="hidden"
+                aria-hidden="true"
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => fileInputRefA.current?.click()}
+                className="cursor-pointer"
+              >
+                <Upload className="w-4 h-4 mr-1.5" />
+                {fileA ? 'Change Document A' : 'Choose Document A'}
+              </Button>
             </div>
 
             {/* Document B */}
@@ -124,18 +134,23 @@ export function CompareWorkspace() {
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                 {fileB ? fileB.name : 'Select second PDF'}
               </h4>
-              <label className="inline-flex">
-                <input
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  onChange={handleFileBChange}
-                  className="hidden"
-                />
-                <Button variant="secondary" size="sm" className="cursor-pointer">
-                  <Upload className="w-4 h-4 mr-1.5" />
-                  {fileB ? 'Change Document B' : 'Choose Document B'}
-                </Button>
-              </label>
+              <input
+                ref={fileInputRefB}
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={handleFileBChange}
+                className="hidden"
+                aria-hidden="true"
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => fileInputRefB.current?.click()}
+                className="cursor-pointer"
+              >
+                <Upload className="w-4 h-4 mr-1.5" />
+                {fileB ? 'Change Document B' : 'Choose Document B'}
+              </Button>
             </div>
           </div>
 

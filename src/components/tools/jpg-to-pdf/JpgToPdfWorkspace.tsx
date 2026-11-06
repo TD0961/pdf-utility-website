@@ -240,8 +240,9 @@ export function JpgToPdfWorkspace() {
           onFilesSelected={handleImagesAdded}
           acceptsMultiple={true}
           acceptedTypes={['.jpg', '.jpeg', '.png', '.webp', 'image/*']}
-          title="Select JPG or PNG images"
+          title="Select JPG, PNG or WebP images"
           subtitle="or drag and drop images here to combine them into a single PDF document"
+          buttonText="Choose Image Files"
         />
       )}
 

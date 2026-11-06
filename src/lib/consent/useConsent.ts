@@ -3,7 +3,8 @@
 import { useSyncExternalStore, useCallback } from 'react';
 import {
   ConsentPreferences,
-  getEffectiveConsent,
+  DEFAULT_UNSET_CONSENT,
+  CONSENT_STORAGE_KEY,
   hasConsentDecision,
   setConsentPreferences,
   acceptAllConsent,
@@ -12,36 +13,96 @@ import {
   isDntOrGpcActive,
 } from './consent-manager';
 
-const SERVER_CONSENT: ConsentPreferences = {
-  essential: true,
-  analytics: false,
-  advertising: false,
-  timestamp: 0,
-  version: 1,
-};
+const SERVER_SNAPSHOT = JSON.stringify(DEFAULT_UNSET_CONSENT);
+
+let cachedRaw: string | null = null;
+let cachedSnapshot: string = SERVER_SNAPSHOT;
+let cachedConsent: ConsentPreferences = DEFAULT_UNSET_CONSENT;
+
+function updateCache(): void {
+  if (typeof window === 'undefined') {
+    cachedRaw = null;
+    cachedSnapshot = SERVER_SNAPSHOT;
+    cachedConsent = DEFAULT_UNSET_CONSENT;
+    return;
+  }
+
+  try {
+    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
+    if (raw === cachedRaw) {
+      return;
+    }
+    cachedRaw = raw;
+    if (!raw) {
+      cachedSnapshot = SERVER_SNAPSHOT;
+      cachedConsent = DEFAULT_UNSET_CONSENT;
+      return;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.analytics === 'boolean' && typeof parsed.advertising === 'boolean') {
+      cachedConsent = {
+        essential: true,
+        analytics: parsed.analytics,
+        advertising: parsed.advertising,
+        timestamp: parsed.timestamp || 0,
+        version: parsed.version || 1,
+      };
+      cachedSnapshot = JSON.stringify(cachedConsent);
+    } else {
+      cachedSnapshot = SERVER_SNAPSHOT;
+      cachedConsent = DEFAULT_UNSET_CONSENT;
+    }
+  } catch {
+    cachedRaw = null;
+    cachedSnapshot = SERVER_SNAPSHOT;
+    cachedConsent = DEFAULT_UNSET_CONSENT;
+  }
+}
 
 function subscribe(callback: () => void) {
-  return subscribeToConsent(callback);
+  const unsubscribeConsent = subscribeToConsent(() => {
+    updateCache();
+    callback();
+  });
+
+  const handleStorage = (e: StorageEvent) => {
+    if (e.key === CONSENT_STORAGE_KEY) {
+      updateCache();
+      callback();
+    }
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('storage', handleStorage);
+  }
+
+  return () => {
+    unsubscribeConsent();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('storage', handleStorage);
+    }
+  };
 }
 
 function getConsentSnapshot(): string {
-  if (typeof window === 'undefined') return JSON.stringify(SERVER_CONSENT);
-  return JSON.stringify(getEffectiveConsent());
+  updateCache();
+  return cachedSnapshot;
 }
 
 function getServerSnapshot(): string {
-  return JSON.stringify(SERVER_CONSENT);
+  return SERVER_SNAPSHOT;
 }
 
 export function useConsent() {
-  const consentJson = useSyncExternalStore(subscribe, getConsentSnapshot, getServerSnapshot);
+  useSyncExternalStore(subscribe, getConsentSnapshot, getServerSnapshot);
   const isMounted = useSyncExternalStore(
     () => () => {},
     () => true,
     () => false
   );
 
-  const consent: ConsentPreferences = JSON.parse(consentJson);
+  const consent = isMounted ? cachedConsent : DEFAULT_UNSET_CONSENT;
   const hasDecision = isMounted && hasConsentDecision();
   const isDnt = isMounted && isDntOrGpcActive();
 

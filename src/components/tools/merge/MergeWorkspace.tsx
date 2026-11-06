@@ -281,7 +281,7 @@ export function MergeWorkspace() {
                   type="button"
                   onClick={() => handleRemove(index)}
                   aria-label={`Remove ${item.file.name}`}
-                  className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-400 hover:text-red-600 shadow-xs hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors"
+                  className="absolute top-2 right-2 z-10 min-w-[32px] min-h-[32px] p-1.5 flex items-center justify-center rounded-full bg-white/95 dark:bg-slate-900/95 text-slate-400 hover:text-red-600 shadow-xs hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors active:scale-90 cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -308,31 +308,27 @@ export function MergeWorkspace() {
 
                 {/* Accessible Reorder Controls */}
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
                     disabled={index === 0 || isProcessing}
                     onClick={() => handleMoveUp(index)}
                     aria-label={`Move ${item.file.name} earlier in order`}
-                    className="p-1 h-7 text-xs"
+                    className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 active:scale-95 transition-colors cursor-pointer"
                   >
-                    <ArrowUp className="w-3.5 h-3.5" />
-                  </Button>
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
                   <span className="text-[10px] font-mono text-slate-400">
                     {index + 1} of {files.length}
                   </span>
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
                     disabled={index === files.length - 1 || isProcessing}
                     onClick={() => handleMoveDown(index)}
                     aria-label={`Move ${item.file.name} later in order`}
-                    className="p-1 h-7 text-xs"
+                    className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-25 active:scale-95 transition-colors cursor-pointer"
                   >
-                    <ArrowDown className="w-3.5 h-3.5" />
-                  </Button>
+                    <ArrowDown className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             ))}

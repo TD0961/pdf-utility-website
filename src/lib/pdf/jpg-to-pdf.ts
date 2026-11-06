@@ -61,6 +61,58 @@ const MARGIN_VALUES: Record<MarginOption, number> = {
 };
 
 /**
+ * In-browser canvas decoder fallback for WebP, progressive JPEGs, and images
+ * that pdf-lib cannot embed directly.
+ */
+async function rasterizeImageToPngBytes(arrayBuffer: ArrayBuffer): Promise<Uint8Array> {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    throw new Error('Canvas image conversion requires browser environment.');
+  }
+
+  return new Promise((resolve, reject) => {
+    const blob = new Blob([arrayBuffer]);
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          reject(new Error('Failed to acquire 2D canvas context.'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+
+        canvas.toBlob((b) => {
+          if (!b) {
+            reject(new Error('Failed to convert canvas to blob.'));
+            return;
+          }
+          b.arrayBuffer()
+            .then((buf) => resolve(new Uint8Array(buf)))
+            .catch(reject);
+        }, 'image/png');
+      } catch (err) {
+        URL.revokeObjectURL(url);
+        reject(err);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to decode image in browser.'));
+    };
+
+    img.src = url;
+  });
+}
+
+/**
  * Converts an ordered list of JPEG (or PNG) images into a standardized PDF.
  */
 export async function convertJpgToPdf({
@@ -129,9 +181,15 @@ export async function convertJpgToPdf({
         }
       }
     } catch {
-      throw new Error(
-        `File "${fileName}" does not appear to be a valid JPEG or PNG image, or the image data is corrupted.`
-      );
+      // In-browser canvas rasterization fallback for WebP, progressive JPEGs, and formats unsupported directly by pdf-lib
+      try {
+        const pngBytes = await rasterizeImageToPngBytes(arrayBuffer);
+        embeddedImage = await pdfDoc.embedPng(pngBytes);
+      } catch {
+        throw new Error(
+          `File "${fileName}" does not appear to be a valid JPEG, PNG, or supported image format, or the image data is corrupted.`
+        );
+      }
     }
 
     const imgWidth = embeddedImage.width;

@@ -79,6 +79,14 @@ export function hasConsentDecision(): boolean {
   return getStoredConsent() !== null;
 }
 
+export const DEFAULT_UNSET_CONSENT: ConsentPreferences = {
+  essential: true,
+  analytics: false,
+  advertising: false,
+  timestamp: 0,
+  version: 1,
+};
+
 /**
  * Returns current effective consent:
  * If user made an explicit decision, returns their stored choice.
@@ -91,13 +99,7 @@ export function getEffectiveConsent(): ConsentPreferences {
   }
 
   // If DNT is active or no decision made, non-essential cookies default to denied
-  return {
-    essential: true,
-    analytics: false,
-    advertising: false,
-    timestamp: Date.now(),
-    version: 1,
-  };
+  return DEFAULT_UNSET_CONSENT;
 }
 
 /**
